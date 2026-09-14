@@ -1,0 +1,281 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN TOKENS  —  Pro Tours & Travel Solutions
+   Palette drawn from the company logo: deep navy + brand blue,
+   with a warm gold accent for premium emphasis.
+   ============================================================ */
+@theme {
+  --color-navy-950: #04182c;
+  --color-navy-900: #062647;
+  --color-navy-800: #0a3560;
+  --color-navy-700: #0f4a80;
+
+  --color-brand-600: #0f63ad;
+  --color-brand-500: #1273c4;
+  --color-brand-400: #3f9ae0;
+  --color-brand-300: #7bbdf0;
+
+  --color-gold-600: #c2860c;
+  --color-gold-500: #e8a317;
+  --color-gold-400: #f5bc48;
+
+  --color-ink: #101c29;
+  --color-body: #43556a;
+
+  /* Cabinet Grotesk carries the whole interface — body and headings alike.
+     Cormorant Garamond is the accent serif, used italic for emphasis. */
+  --font-sans: "Cabinet Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Cabinet Grotesk", system-ui, -apple-system, sans-serif;
+  --font-accent: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-accent);
+
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.75rem;
+
+  --shadow-glow: 0 20px 60px -15px rgb(18 115 196 / 0.45);
+  --shadow-gold: 0 18px 44px -12px rgb(232 163 23 / 0.5);
+  --shadow-lift: 0 28px 70px -20px rgb(4 24 44 / 0.35);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   BASE  —  larger, more comfortable reading sizes throughout
+   ============================================================ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+    /* The root size drives every rem-based size AND every rem-based gap, so it
+       has to track the viewport. A flat large value bloated narrow layouts. */
+    font-size: 16px;
+  }
+  @media (min-width: 640px)  { html { font-size: 16.5px; } }
+  @media (min-width: 1024px) { html { font-size: 17.5px; } }
+  @media (min-width: 1440px) { html { font-size: 18.5px; } }
+
+  body {
+    @apply bg-white font-sans text-[1.12rem] leading-[1.75] text-[var(--color-body)] antialiased;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+    /* Cabinet Grotesk sets slightly wide by default; pull it in a touch. */
+    letter-spacing: -0.01em;
+    /* iOS/Android show a grey/blue flash on tap; we have real hover/active states. */
+    -webkit-tap-highlight-color: transparent;
+    /* Stops Safari's rubber-band scroll from revealing page background at the edges. */
+    overscroll-behavior-y: none;
+  }
+
+  /* iPhone notch / Android gesture bar / punch-hole cutouts (viewport-fit=cover) */
+  .safe-top    { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* iOS Safari auto-zooms any input/select/textarea under 16px on focus.
+     Every .field below 16px would trigger that; this is the floor, not a size change. */
+  input, select, textarea { font-size: max(16px, 1rem); }
+
+  /* Every interactive control gets a real 44px hit target, per Apple HIG /
+     Material — the floating buttons and nav links already clear this, this
+     is the safety net for anything smaller (chips, inline icons-as-buttons). */
+  button, a { touch-action: manipulation; }
+  @media (pointer: coarse) {
+    button, .btn { min-height: 44px; }
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display font-extrabold tracking-[-0.025em] text-[var(--color-ink)];
+    line-height: 1.12;
+  }
+
+  /* The accent serif always reads as an editorial flourish, never as body copy. */
+  .accent {
+    font-family: var(--font-accent);
+    font-style: italic;
+    font-weight: 600;
+    letter-spacing: 0;
+    /* Cormorant runs small next to a grotesk at the same px size. */
+    font-size: 1.12em;
+  }
+
+  /* Pull-quotes: the same serif upright, which stays readable at paragraph
+     length where a long italic run would not. */
+  .quote {
+    font-family: var(--font-accent);
+    font-weight: 600;
+    font-size: 1.3rem;
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+
+  ::selection { @apply bg-brand-500 text-white; }
+
+  /* Focus ring that is visible on both light and dark grounds */
+  :focus-visible {
+    outline: 3px solid var(--color-brand-400);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  img { @apply max-w-full; }
+}
+
+/* ============================================================
+   COMPONENT UTILITIES
+   ============================================================ */
+/* ---- Glassmorphism ---------------------------------------
+   Declared with @utility (not @layer components) so that
+   `@apply glass` works inside our own component classes.
+   ---------------------------------------------------------- */
+@utility glass {
+  background: rgb(255 255 255 / 0.09);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.22),
+              0 22px 60px -22px rgb(0 0 0 / 0.6);
+}
+@utility glass-strong {
+  background: rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.26);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.3),
+              0 28px 70px -24px rgb(0 0 0 / 0.65);
+}
+@utility glass-light {
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.9);
+  box-shadow: 0 22px 60px -26px rgb(4 24 44 / 0.4);
+}
+
+@layer components {
+
+  /* ---- Layout -------------------------------------------- */
+  .wrap { @apply mx-auto w-full max-w-[1240px] px-5 sm:px-7; }
+  .section { @apply py-12 md:py-20; }
+
+  /* ---- Buttons ------------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5
+           font-display text-[1.08rem] font-bold whitespace-nowrap
+           transition-all duration-300 cursor-pointer border border-transparent;
+  }
+  .btn-gold  { @apply bg-gold-500 text-navy-950 shadow-[var(--shadow-gold)] hover:bg-gold-400 hover:-translate-y-0.5; }
+  .btn-brand { @apply bg-brand-500 text-white shadow-[var(--shadow-glow)] hover:bg-brand-600 hover:-translate-y-0.5; }
+  .btn-glass { @apply glass text-white hover:bg-white/20 hover:-translate-y-0.5; }
+  .btn-ghost { @apply border-slate-200 bg-white text-[var(--color-ink)] hover:border-brand-500 hover:text-brand-500 hover:-translate-y-0.5; }
+  .btn-wa    { @apply bg-[#25d366] text-[#04270f] shadow-[0_18px_44px_-12px_rgb(37_211_102/0.55)] hover:bg-[#1eb955] hover:-translate-y-0.5; }
+
+  /* ---- Text ---------------------------------------------- */
+  .eyebrow {
+    @apply inline-flex items-center gap-2.5 font-display text-[0.86rem] font-bold
+           uppercase tracking-[0.2em] text-brand-500;
+  }
+  .eyebrow::before { content: ""; @apply h-0.5 w-7 rounded-full bg-gold-500; }
+  .eyebrow-light { @apply text-gold-400; }
+
+  /* The lower clamp bound has to fit a 360px screen, not just look good on
+     desktop — 2.6rem overflowed the hero headline on mobile. */
+  .h-hero { @apply text-[clamp(2.35rem,6.8vw,5.6rem)]; }
+  .h-sec  { @apply text-[clamp(2rem,4.4vw,3.5rem)]; }
+
+  /* ---- Field --------------------------------------------- */
+  .field-label { @apply mb-2 block font-display text-[0.88rem] font-bold uppercase tracking-[0.12em]; }
+  .field {
+    @apply w-full rounded-xl border-[1.5px] border-slate-200 bg-slate-50 px-4 py-3 text-[1.08rem]
+           transition-all duration-200 outline-none
+           focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/12;
+  }
+  .field-glass {
+    @apply w-full rounded-xl border border-white/25 bg-white/10 px-4 py-3 text-[1.08rem] text-white
+           placeholder:text-white/55 backdrop-blur-xl transition-all duration-200 outline-none
+           focus:border-white/60 focus:bg-white/20;
+  }
+  .field-glass option { @apply bg-navy-900 text-white; }
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+/* ============================================================
+   GSAP SplitText + Lenis support
+   ============================================================ */
+/* Masked lines: words rise out of an invisible edge. */
+.split-line { overflow: hidden; padding-bottom: 0.06em; }
+
+/* Hero elements the intro timeline animates in.
+   Hidden only when scripting is available, and never when the visitor has
+   asked for reduced motion — so the content can't get stranded invisible. */
+.js .js-hide { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .js .js-hide { visibility: visible; }
+}
+
+/* Lenis drives the real scroll position, so native smooth-scroll must be
+   off or the two fight each other. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+
+  /* Masks the hard bottom edge of a full-bleed hero photo */
+  .fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 72%, transparent 100%);
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Slow cinematic drift on hero imagery */
+  .animate-kenburns { animation: kenburns 26s ease-in-out infinite alternate; }
+  @keyframes kenburns {
+    from { transform: scale(1.04) translate3d(0, 0, 0); }
+    to   { transform: scale(1.16) translate3d(-1.5%, -1.5%, 0); }
+  }
+
+  .animate-float { animation: float 7s ease-in-out infinite; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-13px); }
+  }
+
+  /* WhatsApp pulse halo */
+  .animate-halo::after {
+    content: "";
+    @apply absolute inset-0 rounded-full bg-[#25d366];
+    z-index: -1;
+    animation: halo 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes halo {
+    0%   { transform: scale(1);    opacity: 0.55; }
+    70%  { transform: scale(1.75); opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2.6s linear infinite;
+  }
+  @keyframes shimmer {
+    to { background-position: -200% 0; }
+  }
+}
+
+/* Respect the user's motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
