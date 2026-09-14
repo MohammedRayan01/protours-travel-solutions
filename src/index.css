@@ -79,10 +79,23 @@
   /* Every interactive control gets a real 44px hit target, per Apple HIG /
      Material — the floating buttons and nav links already clear this, this
      is the safety net for anything smaller (chips, inline icons-as-buttons). */
-  button, a { touch-action: manipulation; }
   @media (pointer: coarse) {
     button, .btn { min-height: 44px; }
   }
+
+  /* NOTE: `touch-action: manipulation` on every <a>/<button> sitewide was
+     removed. In this codebase many <a> elements ARE entire cards — every
+     destination tile, package card and service card is one full-bleed
+     <Link>, so that blanket rule put a restricted touch-action on huge
+     swaths of the page, anywhere a user might naturally start a scroll
+     swipe. Reported symptom matched exactly: one-finger drag wouldn't
+     scroll, a two-finger gesture (a different browser gesture-recognition
+     path, unaffected by touch-action the same way) did.
+     The rule's only real benefit — killing the ~300ms tap delay — is
+     already moot: every modern mobile browser removes that delay on its
+     own once a page ships `width=device-width` in its viewport meta,
+     which this site does. Not worth the risk for a benefit we already
+     have for free. */
 
   h1, h2, h3, h4, h5 {
     @apply font-display font-extrabold tracking-[-0.025em] text-[var(--color-ink)];
