@@ -161,11 +161,27 @@ export function useHashScroll(offset = -90) {
 
 /**
  * Freeze/unfreeze page scrolling — used by the mobile drawer.
- * `body { overflow: hidden }` alone does nothing once Lenis owns the scroll,
- * so Lenis has to be stopped explicitly; the overflow rule stays as the
- * fallback for when Lenis is not running.
+ *
+ * When Lenis is running, its own start()/stop() is the ONLY mechanism used:
+ * traced through Lenis's source, a stopped instance calls preventDefault()
+ * on every touch AND wheel event symmetrically, so both input types are
+ * blocked/unblocked together from one single flag.
+ *
+ * Previously this ALSO set `document.body.style.overflow` unconditionally
+ * alongside Lenis's own lock. That was redundant and, worse, asymmetric:
+ * Lenis's programmatic scrollTo (used for desktop wheel) sets scrollTop
+ * directly and isn't stopped by a CSS overflow rule, but a real touch drag
+ * is native browser-driven and IS blocked by body{overflow:hidden} — so if
+ * that CSS flag ever outlived the drawer closing (any missed cleanup path),
+ * the exact symptom was: desktop scroll fine, mobile touch scroll frozen,
+ * taps still work. Two independently-toggled locks meant two ways to desync;
+ * now there is only one when Lenis exists, and the CSS toggle is kept purely
+ * as the fallback for reduced-motion visitors who have no Lenis instance.
  */
 export const lockScroll = (locked) => {
-  if (window.lenis) locked ? window.lenis.stop() : window.lenis.start()
+  if (window.lenis) {
+    locked ? window.lenis.stop() : window.lenis.start()
+    return
+  }
   document.body.style.overflow = locked ? 'hidden' : ''
 }
