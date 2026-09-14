@@ -57,17 +57,39 @@ export default function SmoothScroll({ children }) {
   // A hash in the URL (/services#hotels) means the page wants to land on a
   // section, so we leave the position alone and let that page scroll itself.
   useEffect(() => {
+    const lenis = lenisRef.current
     if (!hash) {
-      const lenis = lenisRef.current
       if (lenis) lenis.scrollTo(0, { immediate: true })
       else window.scrollTo(0, 0)
     }
+
+    // Defense in depth: the only thing that ever calls lenis.stop() is the
+    // mobile drawer closing. If that ever desyncs — a route change firing
+    // mid-close, a missed cleanup — scrolling stays permanently frozen with
+    // no way to recover short of a refresh. A route change is proof the user
+    // is not looking at an open drawer, so force-restart here unconditionally.
+    if (lenis?.isStopped) lenis.start()
+    document.body.style.overflow = ''
 
     const id = requestAnimationFrame(() => {
       requestAnimationFrame(() => ScrollTrigger.refresh())
     })
     return () => cancelAnimationFrame(id)
   }, [pathname, hash])
+
+  // Same safety net for the app being backgrounded/foregrounded (phone locked
+  // mid-scroll, browser tab switched away and back) — some mobile browsers
+  // can suspend timers/rAF while hidden in ways that leave Lenis's internal
+  // state stale on return.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      const lenis = lenisRef.current
+      if (lenis?.isStopped) lenis.start()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
 
   // Images settling in changes page height, which moves every trigger below them.
   useEffect(() => {
