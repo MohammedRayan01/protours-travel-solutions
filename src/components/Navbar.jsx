@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin, ArrowRight } from 'lucide-react'
 import { BIZ, NAV, waLink } from '../data/site.js'
 import { lockScroll } from './SmoothScroll.jsx'
@@ -141,22 +141,41 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* ---------- Mobile drawer ---------- */}
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setOpen(false)}
-              className="fixed inset-0 z-40 bg-navy-950/70 backdrop-blur-sm xl:hidden"
-            />
-            <motion.nav
-              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-              transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-0 right-0 z-50 flex h-[100dvh] w-[86%] max-w-sm flex-col overflow-y-auto bg-navy-950 px-7 pt-7 pb-10 xl:hidden"
-              aria-label="Mobile"
-            >
+      {/*
+        Mobile drawer — deliberately NOT gated by AnimatePresence mount/unmount.
+        Real bug found via testing the production bundle (not the dev server):
+        AnimatePresence keeps the exiting backdrop/panel mounted, at full size,
+        until Framer Motion's exit transition reports complete. If that never
+        fires cleanly on a given device (a throttled/backgrounded phone, low
+        power mode, or any rAF hiccup — the same class of thing we've hit with
+        this animation stack before), the fixed inset-0 backdrop stays mounted
+        and can keep intercepting scroll/tap input over the whole page even
+        though `open` has already gone back to false and the button no longer
+        looks pressed.
+        Fix: keep both elements permanently mounted, animate them by feeding
+        `open` into `animate` (not by mounting/unmounting), and tie
+        `pointerEvents` directly to the `open` boolean via inline style —
+        that applies in the same render as the state change, synchronously,
+        regardless of whether any animation ever finishes.
+      */}
+      <motion.div
+        initial={false}
+        animate={{ opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={() => setOpen(false)}
+        style={{ pointerEvents: open ? 'auto' : 'none' }}
+        aria-hidden={!open}
+        className="fixed inset-0 z-40 bg-navy-950/70 backdrop-blur-sm xl:hidden"
+      />
+      <motion.nav
+        initial={false}
+        animate={{ x: open ? 0 : '100%' }}
+        transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+        style={{ pointerEvents: open ? 'auto' : 'none' }}
+        aria-hidden={!open}
+        className="fixed top-0 right-0 z-50 flex h-[100dvh] w-[86%] max-w-sm flex-col overflow-y-auto bg-navy-950 px-7 pt-7 pb-10 xl:hidden"
+        aria-label="Mobile"
+      >
               <div className="mb-8 flex items-center justify-between">
                 <span className="font-display text-[0.75rem] font-bold uppercase tracking-[0.3em] text-gold-400">
                   Menu
@@ -177,9 +196,12 @@ export default function Navbar() {
                 {NAV.map((n, i) => (
                   <motion.div
                     key={n.to}
-                    initial={{ opacity: 0, x: 28 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + i * 0.055, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    initial={false}
+                    // Tied to `open` (not mount) since the drawer itself no longer
+                    // remounts on every open — otherwise this stagger only ever
+                    // played once, on first page load.
+                    animate={open ? { opacity: 1, x: 0 } : { opacity: 0, x: 28 }}
+                    transition={{ delay: open ? 0.1 + i * 0.055 : 0, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <NavLink
                       to={n.to}
@@ -211,9 +233,6 @@ export default function Navbar() {
                 </a>
               </div>
             </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
     </>
   )
 }
