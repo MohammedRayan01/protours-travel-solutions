@@ -52,8 +52,8 @@ export default function App() {
     // accordion, floating buttons) auto-respects the OS "reduce motion"
     // setting, without auditing each component individually.
     //
-    // SmoothScroll owns Lenis + the GSAP ticker and resets scroll on navigation,
-    // which is why ScrollToTop is no longer mounted.
+    // SmoothScroll resets scroll on navigation and keeps ScrollTrigger's
+    // measurements in sync, which is why ScrollToTop is no longer mounted.
     <MotionConfig reducedMotion="user">
     <SmoothScroll>
       <a

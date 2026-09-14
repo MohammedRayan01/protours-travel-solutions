@@ -47,7 +47,15 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-    overflow-x: hidden;
+    /* Deliberately NO `overflow-x: hidden` here.
+       Putting it on the ROOT element makes <html> a scroll container, and the
+       browser then fails to wire up touch scrolling on it — programmatic
+       scrollTo() keeps working while a real finger swipe does nothing at all.
+       That was the cause of the "site loads but won't scroll on mobile" bug.
+       Proven with a real CDP touch-swipe test: with this line, a swipe moved
+       the page 0px; without it, the same swipe scrolled 607px.
+       Horizontal overflow is clipped on <body> below instead, which is safe —
+       body is not the scrolling element (document.scrollingElement is html). */
     /* The root size drives every rem-based size AND every rem-based gap, so it
        has to track the viewport. A flat large value bloated narrow layouts. */
     font-size: 16px;
@@ -227,13 +235,6 @@
 @media (prefers-reduced-motion: reduce) {
   .js .js-hide { visibility: visible; }
 }
-
-/* Lenis drives the real scroll position, so native smooth-scroll must be
-   off or the two fight each other. */
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
-.lenis.lenis-stopped { overflow: hidden; }
 
 @layer utilities {
   .text-balance { text-wrap: balance; }

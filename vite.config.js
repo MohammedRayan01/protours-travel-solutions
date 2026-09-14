@@ -14,7 +14,7 @@ export default defineConfig({
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
           motion: ['framer-motion'],
-          gsap: ['gsap', '@gsap/react', 'lenis'],
+          gsap: ['gsap', '@gsap/react'],
           icons: ['lucide-react'],
         },
       },

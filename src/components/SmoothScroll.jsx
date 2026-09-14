@@ -1,74 +1,37 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import Lenis from 'lenis'
-import { gsap, ScrollTrigger, reduceMotion } from '../lib/gsap.js'
+import { ScrollTrigger, reduceMotion } from '../lib/gsap.js'
 
 /**
- * Lenis inertial smooth scrolling, driven by GSAP's ticker and kept in
- * lockstep with ScrollTrigger.
+ * Scroll handling for the app: native browser scrolling, plus the GSAP
+ * ScrollTrigger bookkeeping every page's reveal animations depend on.
  *
- * Why the ticker rather than Lenis's own rAF loop: running both on GSAP's
- * single ticker keeps scroll position and tween playheads on the same frame,
- * which is what stops pinned/scrubbed sections from juddering.
+ * This used to run scrolling through Lenis for an inertial "smooth scroll"
+ * feel. It was removed after repeated, confirmed mobile touch-scroll
+ * failures traced back to it — a smooth-scroll library sits between the
+ * user's finger and the page, and every real bug we found this session
+ * (a stuck stop() state freezing input, an asymmetric CSS/JS lock, a
+ * scrollTo() that silently no-ops) came from that layer, not from React,
+ * GSAP, or anything else in the stack. Native scroll cannot have this class
+ * of bug on any device — there's no library in the middle to get stuck.
  *
- * Lenis drives the real scroll position (no transform on <body>), so
- * `position: fixed` layers — the Umrah background, the navbar, the floating
- * buttons — keep working normally.
+ * GSAP's ScrollTrigger does not need Lenis: it attaches its own listener to
+ * the native window scroll by default and works correctly against it.
+ * Removing Lenis does not touch any of the scroll-triggered reveal/parallax
+ * work elsewhere in the app.
  */
 export default function SmoothScroll({ children }) {
-  const lenisRef = useRef(null)
   const { pathname, hash } = useLocation()
 
+  // On navigation: jump to top (unless the URL wants a specific section),
+  // then recalculate every trigger once the new page has laid out. Without
+  // the refresh, triggers keep the old page's measurements and fire at the
+  // wrong scroll offsets.
   useEffect(() => {
-    // Respect the OS setting: no smoothing, no hijacked wheel.
-    if (reduceMotion()) return
+    if (!hash) window.scrollTo(0, 0)
 
-    const lenis = new Lenis({
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expo out
-      smoothWheel: true,
-      syncTouch: false,   // native momentum on touch feels better than emulated
-      touchMultiplier: 1.6,
-      wheelMultiplier: 1,
-    })
-
-    lenisRef.current = lenis
-    window.lenis = lenis // used by back-to-top and in-page anchors
-
-    // Keep ScrollTrigger's cached positions in sync with every Lenis frame.
-    lenis.on('scroll', ScrollTrigger.update)
-
-    const raf = (time) => lenis.raf(time * 1000) // GSAP ticker is in seconds
-    gsap.ticker.add(raf)
-    gsap.ticker.lagSmoothing(0)
-
-    return () => {
-      gsap.ticker.remove(raf)
-      lenis.destroy()
-      lenisRef.current = null
-      delete window.lenis
-    }
-  }, [])
-
-  // On navigation: jump to top, then recalculate every trigger once the new
-  // page has laid out. Without the refresh, triggers keep the old page's
-  // measurements and fire at the wrong scroll offsets.
-  //
-  // A hash in the URL (/services#hotels) means the page wants to land on a
-  // section, so we leave the position alone and let that page scroll itself.
-  useEffect(() => {
-    const lenis = lenisRef.current
-    if (!hash) {
-      if (lenis) lenis.scrollTo(0, { immediate: true })
-      else window.scrollTo(0, 0)
-    }
-
-    // Defense in depth: the only thing that ever calls lenis.stop() is the
-    // mobile drawer closing. If that ever desyncs — a route change firing
-    // mid-close, a missed cleanup — scrolling stays permanently frozen with
-    // no way to recover short of a refresh. A route change is proof the user
-    // is not looking at an open drawer, so force-restart here unconditionally.
-    if (lenis?.isStopped) lenis.start()
+    // Belt-and-braces: a route change is proof no modal/drawer should still
+    // be holding scroll locked, so always clear it here too.
     document.body.style.overflow = ''
 
     const id = requestAnimationFrame(() => {
@@ -76,20 +39,6 @@ export default function SmoothScroll({ children }) {
     })
     return () => cancelAnimationFrame(id)
   }, [pathname, hash])
-
-  // Same safety net for the app being backgrounded/foregrounded (phone locked
-  // mid-scroll, browser tab switched away and back) — some mobile browsers
-  // can suspend timers/rAF while hidden in ways that leave Lenis's internal
-  // state stale on return.
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState !== 'visible') return
-      const lenis = lenisRef.current
-      if (lenis?.isStopped) lenis.start()
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [])
 
   // Images settling in changes page height, which moves every trigger below them.
   useEffect(() => {
@@ -121,20 +70,19 @@ export default function SmoothScroll({ children }) {
   return children
 }
 
-/** Scroll to an element (or the top) through Lenis when it is running. */
+/** Scroll to an element, a hash target, or a numeric offset — native smooth scroll. */
 export const scrollTo = (target, options = {}) => {
-  if (window.lenis) {
-    window.lenis.scrollTo(target, { duration: 1.2, ...options })
+  const behavior = reduceMotion() ? 'auto' : 'smooth'
+
+  if (typeof target === 'number') {
+    window.scrollTo({ top: target, behavior })
     return
   }
-  // Lenis is absent (reduced motion, or not mounted yet) — fall back to native.
+
   const el = typeof target === 'string' ? document.querySelector(target) : target
-  if (typeof target === 'number') {
-    window.scrollTo({ top: target, behavior: 'smooth' })
-  } else if (el) {
-    const top = el.getBoundingClientRect().top + window.scrollY + (options.offset || 0)
-    window.scrollTo({ top, behavior: 'smooth' })
-  }
+  if (!el) return
+  const top = el.getBoundingClientRect().top + window.scrollY + (options.offset || 0)
+  window.scrollTo({ top, behavior })
 }
 
 /**
@@ -161,27 +109,11 @@ export function useHashScroll(offset = -90) {
 
 /**
  * Freeze/unfreeze page scrolling — used by the mobile drawer.
- *
- * When Lenis is running, its own start()/stop() is the ONLY mechanism used:
- * traced through Lenis's source, a stopped instance calls preventDefault()
- * on every touch AND wheel event symmetrically, so both input types are
- * blocked/unblocked together from one single flag.
- *
- * Previously this ALSO set `document.body.style.overflow` unconditionally
- * alongside Lenis's own lock. That was redundant and, worse, asymmetric:
- * Lenis's programmatic scrollTo (used for desktop wheel) sets scrollTop
- * directly and isn't stopped by a CSS overflow rule, but a real touch drag
- * is native browser-driven and IS blocked by body{overflow:hidden} — so if
- * that CSS flag ever outlived the drawer closing (any missed cleanup path),
- * the exact symptom was: desktop scroll fine, mobile touch scroll frozen,
- * taps still work. Two independently-toggled locks meant two ways to desync;
- * now there is only one when Lenis exists, and the CSS toggle is kept purely
- * as the fallback for reduced-motion visitors who have no Lenis instance.
+ * Plain CSS `overflow: hidden` on body. With no smooth-scroll library
+ * intercepting scroll, this is symmetric for touch and wheel input by
+ * construction — there's no second, independently-toggled lock left to
+ * desync from this one.
  */
 export const lockScroll = (locked) => {
-  if (window.lenis) {
-    locked ? window.lenis.stop() : window.lenis.start()
-    return
-  }
   document.body.style.overflow = locked ? 'hidden' : ''
 }
