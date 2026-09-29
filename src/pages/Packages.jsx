@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { MapPin, Check, X, Crown, Star, Sparkles, Hotel, CreditCard } from 'lucide-react'
 
 import { BIZ, PACKAGES, TIERS, waLink } from '../data/site.js'
@@ -27,12 +28,15 @@ function PackagePay({ p, tier }) {
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [message, setMessage] = useState('')
   const [paymentId, setPaymentId] = useState('')
+  const [agreed, setAgreed] = useState(false)
+  const checkboxId = `agree-${p.id}-${tier}`
 
   const enquiryMsg = waLink(
     `Hello Pro Tours & Travel Solutions, I am interested in: ${p.name} — ${tier} tier (${price}). Please share details and availability.`
   )
 
   const handlePay = async () => {
+    if (!agreed) return
     setStatus('loading')
     setMessage('')
     try {
@@ -117,7 +121,24 @@ function PackagePay({ p, tier }) {
   }
 
   return (
-    <div className="mt-auto flex flex-col items-start gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-auto flex flex-col gap-3 pt-6">
+      <label htmlFor={checkboxId} className="flex items-start gap-2.5 text-[0.82rem] text-slate-500">
+        <input
+          id={checkboxId}
+          type="checkbox"
+          checked={agreed}
+          onChange={(e) => setAgreed(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-brand-500"
+        />
+        <span>
+          I agree to the{' '}
+          <Link to="/terms" target="_blank" className="font-semibold text-brand-500 hover:underline">Terms & Conditions</Link>{' '}
+          and{' '}
+          <Link to="/refund-policy" target="_blank" className="font-semibold text-brand-500 hover:underline">Cancellation & Refund Policy</Link>.
+        </span>
+      </label>
+
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <span className="block text-[0.75rem] tracking-wider text-slate-500 uppercase">
           {tier} · per person
@@ -127,8 +148,9 @@ function PackagePay({ p, tier }) {
       <div className="flex flex-col items-end gap-1.5">
         <button
           onClick={handlePay}
-          disabled={status === 'loading'}
-          className="btn btn-gold !px-5 !py-2.5 !text-[0.95rem] disabled:cursor-wait disabled:opacity-60"
+          disabled={status === 'loading' || !agreed}
+          title={!agreed ? 'Please accept the Terms & Cancellation Policy to continue' : undefined}
+          className="btn btn-gold !px-5 !py-2.5 !text-[0.95rem] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {status === 'loading' ? 'Processing…' : <>Pay Now <CreditCard size={15} /></>}
         </button>
@@ -138,6 +160,7 @@ function PackagePay({ p, tier }) {
         {status === 'error' && (
           <span className="max-w-[230px] text-right text-[0.78rem] text-rose-600">{message}</span>
         )}
+      </div>
       </div>
     </div>
   )
