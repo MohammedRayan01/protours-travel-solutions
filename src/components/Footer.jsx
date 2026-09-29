@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Phone, Mail, MapPin, Clock, Instagram, MessageCircle } from 'lucide-react'
+import { Phone, Mail, MapPin, Clock, Instagram, MessageCircle, ShieldCheck } from 'lucide-react'
 import { BIZ, NAV, SERVICES, waLink } from '../data/site.js'
 
 export default function Footer() {
@@ -137,6 +137,13 @@ export default function Footer() {
           <Link to="/terms" className="transition-colors hover:text-gold-400">Terms & Conditions</Link>
           <Link to="/privacy" className="transition-colors hover:text-gold-400">Privacy Policy</Link>
           <Link to="/refund-policy" className="transition-colors hover:text-gold-400">Cancellation & Refund Policy</Link>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.85rem] text-white/50 sm:justify-start">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck size={14} className="text-emerald-400" /> Payments secured by Razorpay
+          </span>
+          <span>We accept Visa · Mastercard · RuPay · American Express · UPI · Net Banking</span>
         </div>
 
         <div className="mt-5 flex flex-col items-center justify-between gap-5 pt-2 text-[0.94rem] sm:flex-row">

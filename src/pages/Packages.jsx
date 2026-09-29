@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Check, Crown, Star, Sparkles, Hotel, CreditCard } from 'lucide-react'
+import { MapPin, Check, X, Crown, Star, Sparkles, Hotel, CreditCard } from 'lucide-react'
 
 import { BIZ, PACKAGES, TIERS, waLink } from '../data/site.js'
 import { Reveal, SectionHeading, PageHero } from '../components/ui.jsx'
@@ -191,6 +191,23 @@ function PackageCard({ p, tier, delay }) {
               </li>
             ))}
           </ul>
+
+          {p.exc?.length > 0 && (
+            <>
+              <div className="mt-4 mb-3.5 flex items-center gap-2 border-t border-slate-200 pt-3.5">
+                <X size={15} className="text-slate-400" />
+                <span className="font-display text-[0.85rem] font-bold text-slate-500">Not included</span>
+              </div>
+              <ul className="grid gap-2.5">
+                {p.exc.map((x) => (
+                  <li key={x} className="flex gap-2.5 text-[0.92rem] text-slate-500">
+                    <X size={14} strokeWidth={3} className="mt-1 shrink-0 text-slate-400" />
+                    <span className="text-pretty">{x}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
 
         <PackagePay p={p} tier={tier} />
