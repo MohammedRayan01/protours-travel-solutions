@@ -219,9 +219,9 @@ export const PACKAGES = [
     desc: 'Burj Khalifa level 124, a dhow cruise dinner on the Creek, red-dune desert safari with BBQ, and a full day in Abu Dhabi at the Grand Mosque.',
     exc: ['Personal expenses, shopping and laundry', 'Tips and gratuities', 'Travel insurance (available on request)', 'Meals or activities not listed under your selected tier'],
     tiers: {
-      Economy: { price: '₹42,900', hotel: '3★ Deira / Bur Dubai', inc: ['Return economy flights', 'Daily breakfast', 'Desert safari with BBQ', 'Shared transfers', 'UAE tourist visa'] },
-      Deluxe:  { price: '₹58,500', hotel: '4★ Downtown / Marina', inc: ['Return flights, preferred airline', 'Breakfast + 2 dinners', 'Burj Khalifa 124 + Dhow cruise', 'Private AC transfers', 'UAE visa + insurance'] },
-      Premium: { price: '₹82,000', hotel: '5★ Palm / Downtown', inc: ['Direct flights, extra baggage', 'Full board', 'Burj Khalifa 148 + Desert VIP', 'Private chauffeur throughout', 'Abu Dhabi day with guide'] },
+      Economy: { hotel: '3★ Deira / Bur Dubai', inc: ['Return economy flights', 'Daily breakfast', 'Desert safari with BBQ', 'Shared transfers', 'UAE tourist visa'] },
+      Deluxe:  { hotel: '4★ Downtown / Marina', inc: ['Return flights, preferred airline', 'Breakfast + 2 dinners', 'Burj Khalifa 124 + Dhow cruise', 'Private AC transfers', 'UAE visa + insurance'] },
+      Premium: { hotel: '5★ Palm / Downtown', inc: ['Direct flights, extra baggage', 'Full board', 'Burj Khalifa 148 + Desert VIP', 'Private chauffeur throughout', 'Abu Dhabi day with guide'] },
     },
   },
   {
@@ -235,9 +235,9 @@ export const PACKAGES = [
     desc: 'A water villa with a private sundeck, sunset dolphin cruise, snorkelling on the house reef and a candle-light dinner on the sand.',
     exc: ['Personal expenses and shopping', 'Tips and gratuities for resort staff', 'Travel insurance (available on request)', 'Spa treatments or excursions not listed under your selected tier'],
     tiers: {
-      Economy: { price: '₹68,500', hotel: 'Beach villa, 4★ resort', inc: ['Return flights', 'Breakfast + dinner', 'Speedboat transfers', 'Snorkelling equipment', 'Honeymoon cake & decor'] },
-      Deluxe:  { price: '₹96,000', hotel: 'Water villa, 4★ resort', inc: ['Return flights', 'Full board', 'Speedboat transfers', 'Sunset dolphin cruise', 'Candle-light beach dinner'] },
-      Premium: { price: '₹1,48,000', hotel: 'Water villa with pool, 5★', inc: ['Direct flights', 'All-inclusive with drinks', 'Seaplane transfer', 'Private sandbank picnic', 'Couple spa ritual'] },
+      Economy: { hotel: 'Beach villa, 4★ resort', inc: ['Return flights', 'Breakfast + dinner', 'Speedboat transfers', 'Snorkelling equipment', 'Honeymoon cake & decor'] },
+      Deluxe:  { hotel: 'Water villa, 4★ resort', inc: ['Return flights', 'Full board', 'Speedboat transfers', 'Sunset dolphin cruise', 'Candle-light beach dinner'] },
+      Premium: { hotel: 'Water villa with pool, 5★', inc: ['Direct flights', 'All-inclusive with drinks', 'Seaplane transfer', 'Private sandbank picnic', 'Couple spa ritual'] },
     },
   },
   {
@@ -251,9 +251,9 @@ export const PACKAGES = [
     desc: 'Rice terraces and temples in Ubud, beach days in Kuta, and a full-day Nusa Penida island trip with a floating breakfast to finish.',
     exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (available on request)', 'Meals or excursions not listed under your selected tier'],
     tiers: {
-      Economy: { price: '₹54,000', hotel: '3★ Kuta + Ubud', inc: ['Return flights', 'Daily breakfast', 'Ubud & Kintamani tour', 'Shared transfers', 'Visa on arrival guidance'] },
-      Deluxe:  { price: '₹72,500', hotel: '4★ + private pool villa', inc: ['Return flights', 'Breakfast + 3 dinners', 'Nusa Penida day trip', 'Private car with driver', 'Floating breakfast'] },
-      Premium: { price: '₹1,05,000', hotel: '5★ cliff-side resort', inc: ['Direct flights', 'Full board', 'Private yacht day', 'Dedicated guide', 'Couple spa & photoshoot'] },
+      Economy: { hotel: '3★ Kuta + Ubud', inc: ['Return flights', 'Daily breakfast', 'Ubud & Kintamani tour', 'Shared transfers', 'Visa on arrival guidance'] },
+      Deluxe:  { hotel: '4★ + private pool villa', inc: ['Return flights', 'Breakfast + 3 dinners', 'Nusa Penida day trip', 'Private car with driver', 'Floating breakfast'] },
+      Premium: { hotel: '5★ cliff-side resort', inc: ['Direct flights', 'Full board', 'Private yacht day', 'Dedicated guide', 'Couple spa & photoshoot'] },
     },
   },
   {
@@ -267,9 +267,9 @@ export const PACKAGES = [
     desc: 'Gardens by the Bay, the Sentosa cable car, a Universal Studios day pass and a night safari — paced properly for travelling with children.',
     exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (available on request)', 'Attraction tickets not listed under your selected tier'],
     tiers: {
-      Economy: { price: '₹59,900', hotel: '3★ Little India', inc: ['Return flights', 'Daily breakfast', 'City tour + Gardens by the Bay', 'Shared transfers', 'Visa assistance'] },
-      Deluxe:  { price: '₹78,000', hotel: '4★ Clarke Quay', inc: ['Return flights', 'Breakfast + 2 dinners', 'Universal Studios + Sentosa', 'Private transfers', 'Night Safari'] },
-      Premium: { price: '₹1,12,000', hotel: '5★ Marina Bay', inc: ['Direct flights', 'Full board', 'All attraction passes', 'Private guide & car', 'Sentosa island resort night'] },
+      Economy: { hotel: '3★ Little India', inc: ['Return flights', 'Daily breakfast', 'City tour + Gardens by the Bay', 'Shared transfers', 'Visa assistance'] },
+      Deluxe:  { hotel: '4★ Clarke Quay', inc: ['Return flights', 'Breakfast + 2 dinners', 'Universal Studios + Sentosa', 'Private transfers', 'Night Safari'] },
+      Premium: { hotel: '5★ Marina Bay', inc: ['Direct flights', 'Full board', 'All attraction passes', 'Private guide & car', 'Sentosa island resort night'] },
     },
   },
   {
@@ -283,9 +283,9 @@ export const PACKAGES = [
     desc: 'The Eiffel Tower summit, Jungfraujoch, a Venice gondola and the Colosseum — on a comfortable coach-and-rail routing with Indian meals throughout.',
     exc: ['Personal expenses and shopping', 'Tips and gratuities for coach driver and guide', 'Travel insurance (available on request)', 'Schengen visa fee, unless listed under your selected tier'],
     tiers: {
-      Economy: { price: '₹1,68,000', hotel: '3★ city outskirts', inc: ['Return flights', 'Daily Indian breakfast + dinner', 'Coach tour with guide', 'Schengen visa assistance', 'Rail pass where applicable'] },
-      Deluxe:  { price: '₹2,15,000', hotel: '4★ central', inc: ['Return flights', 'Full board, Indian meals', 'Eiffel summit + Jungfraujoch', 'Gondola ride, Swiss rail', 'Visa + travel insurance'] },
-      Premium: { price: '₹3,10,000', hotel: '5★ landmark hotels', inc: ['Premium economy flights', 'Full board with wine dinners', 'Private guided tours', 'First-class Swiss rail', 'Airport-to-hotel chauffeur'] },
+      Economy: { hotel: '3★ city outskirts', inc: ['Return flights', 'Daily Indian breakfast + dinner', 'Coach tour with guide', 'Schengen visa assistance', 'Rail pass where applicable'] },
+      Deluxe:  { hotel: '4★ central', inc: ['Return flights', 'Full board, Indian meals', 'Eiffel summit + Jungfraujoch', 'Gondola ride, Swiss rail', 'Visa + travel insurance'] },
+      Premium: { hotel: '5★ landmark hotels', inc: ['Premium economy flights', 'Full board with wine dinners', 'Private guided tours', 'First-class Swiss rail', 'Airport-to-hotel chauffeur'] },
     },
   },
   {
@@ -299,9 +299,9 @@ export const PACKAGES = [
     desc: 'Phi Phi by speedboat, James Bond island canoeing, and a free evening in Patong. Easy visa, short flight, excellent value.',
     exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (available on request)', 'Optional excursions not listed under your selected tier'],
     tiers: {
-      Economy: { price: '₹38,500', hotel: '3★ Patong', inc: ['Return flights', 'Daily breakfast', 'Phi Phi island tour', 'Shared transfers', 'Visa on arrival guidance'] },
-      Deluxe:  { price: '₹52,000', hotel: '4★ beachfront', inc: ['Return flights', 'Breakfast + 2 dinners', 'Phi Phi + James Bond island', 'Private transfers', 'Krabi extension'] },
-      Premium: { price: '₹74,500', hotel: '5★ pool villa', inc: ['Direct flights', 'Full board', 'Private speedboat charter', 'Thai spa package', 'Private guide'] },
+      Economy: { hotel: '3★ Patong', inc: ['Return flights', 'Daily breakfast', 'Phi Phi island tour', 'Shared transfers', 'Visa on arrival guidance'] },
+      Deluxe:  { hotel: '4★ beachfront', inc: ['Return flights', 'Breakfast + 2 dinners', 'Phi Phi + James Bond island', 'Private transfers', 'Krabi extension'] },
+      Premium: { hotel: '5★ pool villa', inc: ['Direct flights', 'Full board', 'Private speedboat charter', 'Thai spa package', 'Private guide'] },
     },
   },
   {
@@ -315,9 +315,9 @@ export const PACKAGES = [
     desc: 'Tea gardens in Munnar, a spice plantation walk in Thekkady, and an overnight private houseboat drifting the Alleppey backwaters.',
     exc: ['Flights or train travel to Kochi/Kerala (not included in this package)', 'Personal expenses and shopping', 'Tips and gratuities for driver and guides', 'Travel insurance (available on request)'],
     tiers: {
-      Economy: { price: '₹21,900', hotel: '3★ + shared houseboat', inc: ['AC car throughout', 'Daily breakfast', 'Munnar & Thekkady sightseeing', 'Shared houseboat night', 'Driver allowance included'] },
-      Deluxe:  { price: '₹32,500', hotel: '4★ + private houseboat', inc: ['AC car throughout', 'Breakfast + dinner', 'Private houseboat with chef', 'Spice plantation tour', 'Kathakali show'] },
-      Premium: { price: '₹48,000', hotel: '5★ resorts + luxury boat', inc: ['Premium SUV with driver', 'Full board', 'Luxury houseboat suite', 'Ayurvedic spa sessions', 'Private guide throughout'] },
+      Economy: { hotel: '3★ + shared houseboat', inc: ['AC car throughout', 'Daily breakfast', 'Munnar & Thekkady sightseeing', 'Shared houseboat night', 'Driver allowance included'] },
+      Deluxe:  { hotel: '4★ + private houseboat', inc: ['AC car throughout', 'Breakfast + dinner', 'Private houseboat with chef', 'Spice plantation tour', 'Kathakali show'] },
+      Premium: { hotel: '5★ resorts + luxury boat', inc: ['Premium SUV with driver', 'Full board', 'Luxury houseboat suite', 'Ayurvedic spa sessions', 'Private guide throughout'] },
     },
   },
   {
@@ -331,9 +331,9 @@ export const PACKAGES = [
     desc: 'A shikara ride on Dal Lake, a night on a deluxe houseboat, the Gulmarg gondola and the meadows and pine valleys of Pahalgam.',
     exc: ['Personal expenses and shopping', 'Adventure activity charges beyond the listed pass', 'Tips and gratuities', 'Travel insurance (available on request)'],
     tiers: {
-      Economy: { price: '₹27,500', hotel: '3★ + houseboat night', inc: ['Return flights', 'Breakfast + dinner', 'Shikara ride', 'Gulmarg & Pahalgam day trips', 'All transfers'] },
-      Deluxe:  { price: '₹38,900', hotel: '4★ + deluxe houseboat', inc: ['Return flights', 'Full board', 'Gondola phase 1 & 2', 'Private cab throughout', 'Sonmarg day trip'] },
-      Premium: { price: '₹56,000', hotel: '5★ lake-view resorts', inc: ['Return flights', 'Full board', 'Luxury houseboat suite', 'Private guide & SUV', 'Candle-light shikara dinner'] },
+      Economy: { hotel: '3★ + houseboat night', inc: ['Return flights', 'Breakfast + dinner', 'Shikara ride', 'Gulmarg & Pahalgam day trips', 'All transfers'] },
+      Deluxe:  { hotel: '4★ + deluxe houseboat', inc: ['Return flights', 'Full board', 'Gondola phase 1 & 2', 'Private cab throughout', 'Sonmarg day trip'] },
+      Premium: { hotel: '5★ lake-view resorts', inc: ['Return flights', 'Full board', 'Luxury houseboat suite', 'Private guide & SUV', 'Candle-light shikara dinner'] },
     },
   },
   {
@@ -347,9 +347,9 @@ export const PACKAGES = [
     desc: 'The Taj at sunrise, Amber Fort in Jaipur, Qutub Minar and the food lanes of Old Delhi — the classic first circuit of North India.',
     exc: ['Flights or train travel to Delhi (not included in this package)', 'Personal expenses and shopping', 'Monument entry fees not listed under your selected tier', 'Tips and gratuities'],
     tiers: {
-      Economy: { price: '₹24,500', hotel: '3★ hotels', inc: ['AC car throughout', 'Daily breakfast', 'Monument entry tickets', 'Driver allowance', 'All transfers'] },
-      Deluxe:  { price: '₹36,000', hotel: '4★ hotels', inc: ['AC car throughout', 'Breakfast + dinner', 'Local guides at each city', 'Taj sunrise visit', 'Amber Fort jeep ride'] },
-      Premium: { price: '₹62,000', hotel: '5★ heritage palaces', inc: ['Premium SUV with chauffeur', 'Full board', 'Private historian guide', 'Heritage palace stay in Jaipur', 'Old Delhi food walk'] },
+      Economy: { hotel: '3★ hotels', inc: ['AC car throughout', 'Daily breakfast', 'Monument entry tickets', 'Driver allowance', 'All transfers'] },
+      Deluxe:  { hotel: '4★ hotels', inc: ['AC car throughout', 'Breakfast + dinner', 'Local guides at each city', 'Taj sunrise visit', 'Amber Fort jeep ride'] },
+      Premium: { hotel: '5★ heritage palaces', inc: ['Premium SUV with chauffeur', 'Full board', 'Private historian guide', 'Heritage palace stay in Jaipur', 'Old Delhi food walk'] },
     },
   },
   {
@@ -363,9 +363,9 @@ export const PACKAGES = [
     desc: 'North and South Goa sightseeing, a Mandovi river cruise, and plenty of unscheduled beach time. Flights from Bengaluru included.',
     exc: ['Personal expenses and shopping', 'Water sports beyond the package', 'Tips and gratuities', 'Travel insurance (available on request)'],
     tiers: {
-      Economy: { price: '₹16,900', hotel: '3★ North Goa', inc: ['Return flights from BLR', 'Daily breakfast', 'North Goa sightseeing', 'Airport transfers', 'Mandovi river cruise'] },
-      Deluxe:  { price: '₹26,500', hotel: '4★ beach resort', inc: ['Return flights', 'Breakfast + dinner', 'North & South Goa tours', 'Private cab', 'Water sports package'] },
-      Premium: { price: '₹42,000', hotel: '5★ beachfront villa', inc: ['Return flights', 'Full board', 'Private yacht sunset cruise', 'Chauffeur throughout', 'Spa & candle-light dinner'] },
+      Economy: { hotel: '3★ North Goa', inc: ['Return flights from BLR', 'Daily breakfast', 'North Goa sightseeing', 'Airport transfers', 'Mandovi river cruise'] },
+      Deluxe:  { hotel: '4★ beach resort', inc: ['Return flights', 'Breakfast + dinner', 'North & South Goa tours', 'Private cab', 'Water sports package'] },
+      Premium: { hotel: '5★ beachfront villa', inc: ['Return flights', 'Full board', 'Private yacht sunset cruise', 'Chauffeur throughout', 'Spa & candle-light dinner'] },
     },
   },
   {
@@ -379,9 +379,9 @@ export const PACKAGES = [
     desc: 'Sail Dubai, Abu Dhabi, Sir Bani Yas and Doha with all meals, live entertainment and the pool deck included on board.',
     exc: ['Alcoholic beverages beyond the package drink plan', 'Shore excursions not listed under your selected tier', 'Gratuities for cabin/dining crew', 'Travel insurance (available on request)'],
     tiers: {
-      Economy: { price: '₹46,000', hotel: 'Interior cabin', inc: ['Return flights to Dubai', 'All meals on board', 'Port charges & taxes', 'Live entertainment', 'Port visas'] },
-      Deluxe:  { price: '₹62,000', hotel: 'Balcony cabin', inc: ['Return flights', 'All meals + select drinks', 'Shore excursions', 'Pre-cruise Dubai night', 'Port visas & transfers'] },
-      Premium: { price: '₹94,000', hotel: 'Yacht Club suite', inc: ['Direct flights', 'All-inclusive with butler', 'Private shore excursions', '2 nights 5★ Dubai', 'Priority embarkation'] },
+      Economy: { hotel: 'Interior cabin', inc: ['Return flights to Dubai', 'All meals on board', 'Port charges & taxes', 'Live entertainment', 'Port visas'] },
+      Deluxe:  { hotel: 'Balcony cabin', inc: ['Return flights', 'All meals + select drinks', 'Shore excursions', 'Pre-cruise Dubai night', 'Port visas & transfers'] },
+      Premium: { hotel: 'Yacht Club suite', inc: ['Direct flights', 'All-inclusive with butler', 'Private shore excursions', '2 nights 5★ Dubai', 'Priority embarkation'] },
     },
   },
   {
@@ -395,9 +395,9 @@ export const PACKAGES = [
     desc: 'India’s own cruise line — Indian and international buffets, casino, kids’ club, live shows and a full shore day in Goa.',
     exc: ['Travel to the Mumbai departure port (not included)', 'Alcoholic beverages', 'Personal expenses and casino spend', 'Gratuities for cabin/dining crew'],
     tiers: {
-      Economy: { price: '₹19,500', hotel: 'Interior cabin', inc: ['All meals on board', 'Live entertainment', 'Kids’ club access', 'Port charges', 'No visa required'] },
-      Deluxe:  { price: '₹28,000', hotel: 'Sea-view cabin', inc: ['All meals on board', 'Goa shore excursion', 'Speciality dining credit', 'Priority boarding', 'Port charges'] },
-      Premium: { price: '₹44,000', hotel: 'Balcony suite', inc: ['All meals + beverage package', 'Private Goa excursion', 'Spa credit', 'Butler service', 'Mumbai hotel night'] },
+      Economy: { hotel: 'Interior cabin', inc: ['All meals on board', 'Live entertainment', 'Kids’ club access', 'Port charges', 'No visa required'] },
+      Deluxe:  { hotel: 'Sea-view cabin', inc: ['All meals on board', 'Goa shore excursion', 'Speciality dining credit', 'Priority boarding', 'Port charges'] },
+      Premium: { hotel: 'Balcony suite', inc: ['All meals + beverage package', 'Private Goa excursion', 'Spa credit', 'Butler service', 'Mumbai hotel night'] },
     },
   },
   {
@@ -411,9 +411,9 @@ export const PACKAGES = [
     desc: 'Umrah visa, return tickets, hotels within walking distance of the Haram, Ziyarat tours and a group co-ordinator with you throughout.',
     exc: ['Qurbani/sacrifice cost', 'Laundry and personal expenses', 'Ziyarat or excursions outside the group itinerary', 'Travel insurance (available on request)'],
     tiers: {
-      Economy: { price: '₹74,500', hotel: '3★, 600–800 m from Haram', inc: ['Umrah visa included', 'Return economy flights', 'Quad sharing rooms', 'Makkah–Madinah bus transfers', 'Ziyarat in both cities'] },
-      Deluxe:  { price: '₹1,08,000', hotel: '4★, within 300 m of Haram', inc: ['Umrah visa included', 'Preferred-airline flights', 'Triple sharing, breakfast + dinner', 'Private AC coach transfers', 'Group co-ordinator throughout'] },
-      Premium: { price: '₹1,45,000', hotel: '5★ Haram-view', inc: ['Umrah visa included', 'Direct flights, preferred seats', 'Double sharing, full board', 'Private car + Haramain train', 'Dedicated scholar with the group'] },
+      Economy: { hotel: '3★, 600–800 m from Haram', inc: ['Umrah visa included', 'Return economy flights', 'Quad sharing rooms', 'Makkah–Madinah bus transfers', 'Ziyarat in both cities'] },
+      Deluxe:  { hotel: '4★, within 300 m of Haram', inc: ['Umrah visa included', 'Preferred-airline flights', 'Triple sharing, breakfast + dinner', 'Private AC coach transfers', 'Group co-ordinator throughout'] },
+      Premium: { hotel: '5★ Haram-view', inc: ['Umrah visa included', 'Direct flights, preferred seats', 'Double sharing, full board', 'Private car + Haramain train', 'Dedicated scholar with the group'] },
     },
   },
 ]
