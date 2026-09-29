@@ -209,21 +209,6 @@ export const TIERS = ['Economy', 'Deluxe', 'Premium']
 /* ---- Packages (each carries all three tiers) ---- */
 export const PACKAGES = [
   {
-    id: 'test-1rupee',
-    name: 'Bali — Payment Test',
-    region: 'Indonesia',
-    cats: ['international', 'india', 'honeymoon', 'family', 'cruise', 'umrah'],
-    badge: 'TEST ₹1',
-    nights: '5N / 6D',
-    img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=72',
-    desc: 'Test entry to check the payment gateway end to end. Always shown first, in every filter, at ₹1.',
-    tiers: {
-      Economy: { price: '₹1', hotel: 'Test tier', inc: ['This is a ₹1 test booking', 'Used only to verify the payment flow', 'Real charge in live mode', 'Remove once testing is done'] },
-      Deluxe:  { price: '₹1', hotel: 'Test tier', inc: ['This is a ₹1 test booking', 'Used only to verify the payment flow', 'Real charge in live mode', 'Remove once testing is done'] },
-      Premium: { price: '₹1', hotel: 'Test tier', inc: ['This is a ₹1 test booking', 'Used only to verify the payment flow', 'Real charge in live mode', 'Remove once testing is done'] },
-    },
-  },
-  {
     id: 'dubai',
     name: 'Dubai City Break & Desert Safari',
     region: 'United Arab Emirates',
