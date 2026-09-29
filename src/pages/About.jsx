@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Check, Phone, Mail, Globe2, ArrowRight } from 'lucide-react'
+import { Check, Phone, Mail, ArrowRight } from 'lucide-react'
 
 import { BIZ, STATS, waLink } from '../data/site.js'
 import { Reveal, SectionHeading, Counter, PageHero } from '../components/ui.jsx'
@@ -176,18 +176,18 @@ export default function About() {
                   </span>
                   {BIZ.phoneDisplay}
                 </a>
+                <a href={`mailto:${BIZ.email2}`} className="flex items-center gap-3.5 text-[1.07rem] hover:text-brand-500">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-500/10 text-brand-500">
+                    <Mail size={17} />
+                  </span>
+                  {BIZ.email2}
+                </a>
                 <a href={`mailto:${BIZ.email}`} className="flex items-center gap-3.5 text-[1.07rem] hover:text-brand-500">
                   <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-500/10 text-brand-500">
                     <Mail size={17} />
                   </span>
                   {BIZ.email}
                 </a>
-                <div className="flex items-center gap-3.5 text-[1.07rem]">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-500/10 text-brand-500">
-                    <Globe2 size={17} />
-                  </span>
-                  Skype: {BIZ.skype}
-                </div>
               </div>
             </Reveal>
           </div>

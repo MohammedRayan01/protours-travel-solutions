@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Check, Crown, Star, Sparkles, Hotel } from 'lucide-react'
+import { MapPin, Check, Crown, Star, Sparkles, Hotel, CreditCard } from 'lucide-react'
 
-import { PACKAGES, TIERS, waLink } from '../data/site.js'
+import { BIZ, PACKAGES, TIERS, waLink } from '../data/site.js'
 import { Reveal, SectionHeading, PageHero } from '../components/ui.jsx'
+import { loadRazorpayCheckout, priceToRupees } from '../lib/razorpay.js'
 
 const FILTERS = [
   { k: 'all', label: 'All Packages' },
@@ -19,6 +20,127 @@ const TIER_META = {
   Economy: { icon: Star,     blurb: 'Smart value, everything essential covered' },
   Deluxe:  { icon: Sparkles, blurb: 'Better hotels, more inclusions, private transfers' },
   Premium: { icon: Crown,    blurb: 'Five-star throughout, private guides, full board' },
+}
+
+function PackagePay({ p, tier }) {
+  const price = p.tiers[tier].price
+  const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [message, setMessage] = useState('')
+  const [paymentId, setPaymentId] = useState('')
+
+  const enquiryMsg = waLink(
+    `Hello Pro Tours & Travel Solutions, I am interested in: ${p.name} — ${tier} tier (${price}). Please share details and availability.`
+  )
+
+  const handlePay = async () => {
+    setStatus('loading')
+    setMessage('')
+    try {
+      const orderRes = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: priceToRupees(price), packageName: p.name, tier }),
+      })
+      const order = await orderRes.json().catch(() => null)
+      if (!order) throw new Error('Payment service is unavailable right now. Please enquire on WhatsApp instead.')
+      if (!orderRes.ok) throw new Error(order.error || 'Could not start payment.')
+
+      const ready = await loadRazorpayCheckout()
+      if (!ready) throw new Error('Could not load the payment window. Check your connection and try again.')
+
+      const rzp = new window.Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.orderId,
+        name: BIZ.name,
+        description: `${p.name} — ${tier} tier`,
+        theme: { color: '#1273c4' },
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              }),
+            })
+            const verify = await verifyRes.json().catch(() => null)
+            if (!verify || !verifyRes.ok || !verify.valid) throw new Error('unverified')
+
+            setPaymentId(response.razorpay_payment_id)
+            setStatus('success')
+            window.open(
+              waLink(
+                `Hello Pro Tours & Travel Solutions, I just paid for ${p.name} — ${tier} tier (${price}). Payment ID: ${response.razorpay_payment_id}. Please confirm my booking.`
+              ),
+              '_blank', 'noopener,noreferrer'
+            )
+          } catch {
+            setStatus('error')
+            setMessage(`Payment went through but we could not verify it automatically. Please message us with Payment ID: ${response.razorpay_payment_id}`)
+          }
+        },
+        modal: {
+          ondismiss: () => setStatus((s) => (s === 'loading' ? 'idle' : s)),
+        },
+      })
+
+      rzp.on('payment.failed', (resp) => {
+        setStatus('error')
+        setMessage(resp.error?.description || 'Payment failed. Please try again.')
+      })
+
+      rzp.open()
+      setStatus('idle')
+    } catch (e) {
+      setStatus('error')
+      setMessage(e.message || 'Something went wrong. Please try again.')
+    }
+  }
+
+  if (status === 'success') {
+    return (
+      <div className="mt-auto flex flex-col gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-[0.92rem] text-emerald-800">
+        <span className="font-display font-bold">Payment received — thank you!</span>
+        <span>Payment ID: {paymentId}</span>
+        <span>
+          We opened WhatsApp to confirm your booking. If it did not open,{' '}
+          <a href={enquiryMsg} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+            tap here
+          </a>.
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-auto flex flex-col items-start gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <span className="block text-[0.75rem] tracking-wider text-slate-500 uppercase">
+          {tier} · per person
+        </span>
+        <span className="font-display text-[1.54rem] font-extrabold text-navy-900">{price}</span>
+      </div>
+      <div className="flex flex-col items-end gap-1.5">
+        <button
+          onClick={handlePay}
+          disabled={status === 'loading'}
+          className="btn btn-gold !px-5 !py-2.5 !text-[0.95rem] disabled:cursor-wait disabled:opacity-60"
+        >
+          {status === 'loading' ? 'Processing…' : <>Pay Now <CreditCard size={15} /></>}
+        </button>
+        <a href={enquiryMsg} target="_blank" rel="noopener noreferrer" className="text-[0.82rem] font-semibold text-brand-500 hover:underline">
+          Or enquire on WhatsApp
+        </a>
+        {status === 'error' && (
+          <span className="max-w-[230px] text-right text-[0.78rem] text-rose-600">{message}</span>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function PackageCard({ p, tier, delay }) {
@@ -71,21 +193,7 @@ function PackageCard({ p, tier, delay }) {
           </ul>
         </div>
 
-        <div className="mt-auto flex flex-col items-start gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <span className="block text-[0.75rem] tracking-wider text-slate-500 uppercase">
-              {tier} · per person
-            </span>
-            <span className="font-display text-[1.54rem] font-extrabold text-navy-900">{t.price}</span>
-          </div>
-          <a
-            href={waLink(`Hello Pro Tours & Travel Solutions, I am interested in: ${p.name} — ${tier} tier (${t.price}). Please share details and availability.`)}
-            target="_blank" rel="noopener noreferrer"
-            className="btn btn-gold !px-5 !py-2.5 !text-[0.95rem]"
-          >
-            Enquire
-          </a>
-        </div>
+        <PackagePay p={p} tier={tier} />
       </div>
     </motion.article>
   )
@@ -107,7 +215,7 @@ export default function Packages() {
         alt="Tropical beach at sunset"
         eyebrow="Tour packages"
         title="Holidays you can actually book this month"
-        sub="Every destination comes in three tiers — Economy, Deluxe and Premium. Same trip, your choice of comfort. All prices per person on twin sharing."
+        sub="Every destination comes in three tiers — Economy, Deluxe and Premium. Same trip, your choice of comfort. All prices per person on twin sharing — pay securely online or enquire on WhatsApp."
       />
 
       {/* ---- Tier selector ---- */}
@@ -200,7 +308,7 @@ export default function Packages() {
       {/* ---- Always included ---- */}
       <section className="section bg-slate-50">
         <div className="wrap">
-          <SectionHeading center eyebrow="Every package includes" title="What is always in the price" />
+          <SectionHeading center eyebrow="Every package includes" title="What is always included" />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
             {[
               ['Confirmed hotel vouchers', 'Issued before you travel, never “on request”.'],

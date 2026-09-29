@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SINGLE SOURCE OF TRUTH
    Change business details here and they update everywhere.
    ============================================================ */
@@ -12,7 +12,7 @@ export const BIZ = {
   phoneDisplay: '+91 99005 17604',
   wa: '919900517604',
   email: 'luckysaj@gmail.com',
-  skype: 'luckysaj',
+  email2: 'protours@protours.co.in',
   instagram: 'https://www.instagram.com/protoursandtravelsolutions/',
   instagramHandle: '@protoursandtravelsolutions',
   mapsUrl: 'https://maps.google.com/?q=A+M+Plaza+Hospital+Road+Shivaji+Nagar+Bengaluru+560001',
@@ -24,7 +24,6 @@ export const BIZ = {
   addressOneLine:
     '21/1, G-2 Plain Street, A.M. Plaza, Ground Floor, Hospital Road, Near Infantry Road, Shivaji Nagar, Bengaluru, Karnataka 560001',
   hours: 'Monday – Saturday: 10:00 AM – 8:00 PM',
-  hoursNote: 'Sunday: by appointment',
   rating: 4.5,
   reviewCount: 128,
   since: 2009,
@@ -41,6 +40,7 @@ export const NAV = [
   { to: '/', label: 'Home' },
   { to: '/services', label: 'Services' },
   { to: '/packages', label: 'Packages' },
+  { to: '/flights-hotels', label: 'Flights & Hotels' },
   { to: '/umrah', label: 'Hajj & Umrah' },
   { to: '/visa', label: 'Visa & Passport' },
   { to: '/contact', label: 'Contact' },
@@ -193,14 +193,14 @@ export const SERVICES = [
 
 /* ---- Destinations ---- */
 export const DESTINATIONS = [
-  { name: 'Dubai & Abu Dhabi', country: 'United Arab Emirates', price: '₹42,900', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=72' },
-  { name: 'Maldives', country: 'Indian Ocean', price: '₹68,500', nights: '3N / 4D', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=72' },
-  { name: 'Bali', country: 'Indonesia', price: '₹54,000', nights: '5N / 6D', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=72' },
-  { name: 'Singapore', country: 'Southeast Asia', price: '₹59,900', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=72' },
-  { name: 'Europe', country: 'Paris · Swiss · Italy', price: '₹1,68,000', nights: '8N / 9D', img: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=72' },
-  { name: 'Thailand', country: 'Phuket & Krabi', price: '₹38,500', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=800&q=72' },
-  { name: 'Kerala', country: 'India', price: '₹21,900', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=72' },
-  { name: 'Makkah & Madinah', country: 'Saudi Arabia', price: '₹74,500', nights: '10 Nights', img: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Dubai & Abu Dhabi', country: 'United Arab Emirates', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Maldives', country: 'Indian Ocean', nights: '3N / 4D', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Bali', country: 'Indonesia', nights: '5N / 6D', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Singapore', country: 'Southeast Asia', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Europe', country: 'Paris · Swiss · Italy', nights: '8N / 9D', img: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Thailand', country: 'Phuket & Krabi', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Kerala', country: 'India', nights: '4N / 5D', img: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=72' },
+  { name: 'Makkah & Madinah', country: 'Saudi Arabia', nights: '10 Nights', img: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=72' },
 ]
 
 /* ---- Package tiers offered on every destination ---- */
@@ -208,6 +208,21 @@ export const TIERS = ['Economy', 'Deluxe', 'Premium']
 
 /* ---- Packages (each carries all three tiers) ---- */
 export const PACKAGES = [
+  {
+    id: 'test-1rupee',
+    name: 'Bali — Payment Test',
+    region: 'Indonesia',
+    cats: ['international', 'india', 'honeymoon', 'family', 'cruise', 'umrah'],
+    badge: 'TEST ₹1',
+    nights: '5N / 6D',
+    img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=72',
+    desc: 'Test entry to check the payment gateway end to end. Always shown first, in every filter, at ₹1.',
+    tiers: {
+      Economy: { price: '₹1', hotel: 'Test tier', inc: ['This is a ₹1 test booking', 'Used only to verify the payment flow', 'Real charge in live mode', 'Remove once testing is done'] },
+      Deluxe:  { price: '₹1', hotel: 'Test tier', inc: ['This is a ₹1 test booking', 'Used only to verify the payment flow', 'Real charge in live mode', 'Remove once testing is done'] },
+      Premium: { price: '₹1', hotel: 'Test tier', inc: ['This is a ₹1 test booking', 'Used only to verify the payment flow', 'Real charge in live mode', 'Remove once testing is done'] },
+    },
+  },
   {
     id: 'dubai',
     name: 'Dubai City Break & Desert Safari',

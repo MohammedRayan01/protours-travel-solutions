@@ -14,7 +14,6 @@ const TIERS = [
     name: 'Economy',
     icon: Star,
     duration: '10 Nights — 5 Makkah / 5 Madinah',
-    price: '₹74,500',
     featured: false,
     inc: [
       'Umrah visa included',
@@ -29,7 +28,6 @@ const TIERS = [
     name: 'Deluxe',
     icon: Sparkles,
     duration: '12 Nights — 6 Makkah / 6 Madinah',
-    price: '₹1,08,000',
     featured: true,
     inc: [
       'Umrah visa included',
@@ -44,7 +42,6 @@ const TIERS = [
     name: 'Premium',
     icon: Crown,
     duration: '14 Nights — 7 Makkah / 7 Madinah',
-    price: '₹1,45,000',
     featured: false,
     inc: [
       'Umrah visa included',
@@ -69,7 +66,7 @@ const UMRAH_FAQS = [
   { q: 'How far are the hotels from the Haram?', a: 'Economy hotels are typically 600–800 m, Deluxe within 300 m, and Premium are Haram-view properties. We give you the hotel name and the actual walking distance before you pay — never a vague "close to Haram".' },
   { q: 'Can you arrange a package for just my family?', a: 'Yes. Private family Umrah is common — your own dates, your own hotel choice, private transfers, and no group schedule to follow.' },
   { q: 'Do you handle Hajj as well?', a: 'Yes, subject to quota and the Hajj Committee process for that year. Hajj arrangements need to start many months ahead — contact us early so we can advise on the correct route for your case.' },
-  { q: 'Is the price per person or per family?', a: 'Per person, based on the room sharing shown in each tier. Double or triple occupancy changes the price, and children sharing with parents are quoted separately. We break this down clearly in your quotation.' },
+  { q: 'Is the quote per person or per family?', a: 'Per person, based on the room sharing shown in each tier. Double or triple occupancy changes the quote, and children sharing with parents are quoted separately. We break this down clearly for you.' },
 ]
 
 export default function Umrah() {
@@ -175,7 +172,7 @@ export default function Umrah() {
             <Reveal delay={0.16}>
               <p className="mt-5 text-white/65 text-pretty">
                 Per person, based on the sharing shown. Includes visa, return airfare, hotels and transfers.
-                Prices move with the season — ask us for today's exact figure.
+                Ask us for today's exact quote.
               </p>
             </Reveal>
           </div>
@@ -203,11 +200,6 @@ export default function Umrah() {
                   <h3 className="!text-white text-[1.54rem]">{t.name}</h3>
                   <span className="mt-1.5 block text-[0.94rem] font-semibold text-brand-300">{t.duration}</span>
 
-                  <div className="mt-6 border-t border-white/15 pt-6">
-                    <span className="block font-display text-[1.85rem] leading-none font-extrabold text-white xl:text-[2.31rem]">{t.price}</span>
-                    <span className="mt-1 block text-[0.94rem] text-white/70">/ person</span>
-                  </div>
-
                   <ul className="mt-7 grid flex-1 gap-3">
                     {t.inc.map((x) => (
                       <li key={x} className="flex gap-3 text-[1.01rem] text-white/75">
@@ -218,7 +210,7 @@ export default function Umrah() {
                   </ul>
 
                   <a
-                    href={waLink(`Hello Pro Tours & Travel Solutions, I am interested in the Umrah ${t.name} package (${t.duration}, ${t.price} per person). Please share current rates and availability.`)}
+                    href={waLink(`Hello Pro Tours & Travel Solutions, I am interested in the Umrah ${t.name} package (${t.duration}). Please share current rates and availability.`)}
                     target="_blank" rel="noopener noreferrer"
                     className={`btn mt-8 w-full ${t.featured ? 'btn-gold' : 'btn-glass'}`}
                   >
@@ -321,7 +313,7 @@ export default function Umrah() {
               <h2 className="h-sec !text-white text-balance">Planning your Umrah?</h2>
               <p className="mx-auto mt-5 max-w-xl text-[1.14rem] text-white/70 text-pretty">
                 Send us your travel window. We will come back with hotel names, walking distances and a clear
-                per-person price.
+                quotation.
               </p>
               <div className="mt-10 flex flex-wrap justify-center gap-4">
                 <a

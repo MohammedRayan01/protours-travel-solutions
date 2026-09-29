@@ -176,31 +176,6 @@ export function Magnetic({ children, strength = 0.32, className = '' }) {
 }
 
 /* ============================================================
-   ScrollProgress — thin reading-progress bar under the navbar.
-   ============================================================ */
-export function ScrollProgress() {
-  const ref = useRef(null)
-
-  useGSAP(() => {
-    const el = ref.current
-    if (!el) return
-    gsap.set(el, { scaleX: 0, transformOrigin: 'left center' })
-    const st = ScrollTrigger.create({
-      start: 0,
-      end: () => document.documentElement.scrollHeight - window.innerHeight,
-      onUpdate: (self) => gsap.set(el, { scaleX: self.progress }),
-    })
-    return () => st.kill()
-  })
-
-  return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px]">
-      <div ref={ref} className="h-full w-full bg-gradient-to-r from-brand-400 via-brand-500 to-gold-500" />
-    </div>
-  )
-}
-
-/* ============================================================
    CountUp — number animation driven by ScrollTrigger.
    ============================================================ */
 export function CountUp({ value, suffix = '', duration = 1.9, className = '' }) {

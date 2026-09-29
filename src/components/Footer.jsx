@@ -44,7 +44,13 @@ export default function Footer() {
                 <Phone size={18} />
               </a>
               <a
-                href={`mailto:${BIZ.email}`} aria-label="Email us"
+                href={`mailto:${BIZ.email2}`} aria-label="Email us"
+                className="grid h-11 w-11 place-items-center rounded-xl bg-white/8 transition-all hover:-translate-y-1 hover:bg-gold-500 hover:text-navy-950"
+              >
+                <Mail size={18} />
+              </a>
+              <a
+                href={`mailto:${BIZ.email}`} aria-label="Alternate email"
                 className="grid h-11 w-11 place-items-center rounded-xl bg-white/8 transition-all hover:-translate-y-1 hover:bg-gold-500 hover:text-navy-950"
               >
                 <Mail size={18} />
@@ -74,7 +80,14 @@ export default function Footer() {
               {SERVICES.map((s) => (
                 <li key={s.id}>
                   <Link
-                    to={s.id === 'umrah' ? '/umrah' : s.id === 'passport' ? '/visa#passport' : s.id === 'visa' ? '/visa' : `/services#${s.id}`}
+                    to={
+                      s.id === 'umrah' ? '/umrah'
+                      : s.id === 'passport' ? '/visa#passport'
+                      : s.id === 'visa' ? '/visa'
+                      : s.id === 'flights' ? '/flights-hotels#flights'
+                      : s.id === 'hotels' ? '/flights-hotels#hotels'
+                      : `/services#${s.id}`
+                    }
                     className="inline-flex items-center gap-2.5 transition-colors hover:text-gold-400"
                   >
                     <span className="h-1 w-1 rounded-full bg-gold-500/70" />
@@ -101,7 +114,10 @@ export default function Footer() {
               </li>
               <li className="flex gap-3">
                 <Mail size={17} className="mt-1 shrink-0 text-gold-500" />
-                <a href={`mailto:${BIZ.email}`} className="hover:text-gold-400">{BIZ.email}</a>
+                <span className="flex flex-col gap-1">
+                  <a href={`mailto:${BIZ.email2}`} className="hover:text-gold-400">{BIZ.email2}</a>
+                  <a href={`mailto:${BIZ.email}`} className="hover:text-gold-400">{BIZ.email}</a>
+                </span>
               </li>
               <li className="flex gap-3">
                 <Instagram size={17} className="mt-1 shrink-0 text-gold-500" />
@@ -111,14 +127,21 @@ export default function Footer() {
               </li>
               <li className="flex gap-3">
                 <Clock size={17} className="mt-1 shrink-0 text-gold-500" />
-                <span>{BIZ.hours}<br />{BIZ.hoursNote}<br />Skype: {BIZ.skype}</span>
+                <span>{BIZ.hours}</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-7 text-[0.94rem] sm:flex-row">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 pt-7 text-[0.9rem] sm:justify-start">
+          <Link to="/terms" className="transition-colors hover:text-gold-400">Terms & Conditions</Link>
+          <Link to="/privacy" className="transition-colors hover:text-gold-400">Privacy Policy</Link>
+          <Link to="/refund-policy" className="transition-colors hover:text-gold-400">Cancellation & Refund Policy</Link>
+        </div>
+
+        <div className="mt-5 flex flex-col items-center justify-between gap-5 pt-2 text-[0.94rem] sm:flex-row">
           <span>© {year} {BIZ.name}. All rights reserved.</span>
+          <img src="/iata-logo.png" alt="IATA Accredited Travel Agent" width={512} height={512} className="h-14 w-14 shrink-0" />
           <span>Bengaluru, Karnataka · India</span>
         </div>
       </div>

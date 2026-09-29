@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <script>
+      // Every load/reload lands on the hero, never at the browser's
+      // remembered scroll position — this must run before first paint,
+      // ahead of the app bundle, so there's no visible jump.
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    </script>
     <title>Pro Tours &amp; Travel Solutions | One Stop Travel Solutions, Bengaluru</title>
     <meta name="description" content="One stop travel solutions for all your travel needs. Flight booking, hotels worldwide, tailor-made packages, tour packages, visa, passport, cruises and Umrah — from Shivaji Nagar, Bengaluru." />
     <meta name="theme-color" content="#04182c" />

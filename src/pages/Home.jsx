@@ -376,7 +376,7 @@ function DestinationsSection() {
           center
           eyebrow="Where our travellers go"
           title="Popular destinations this season"
-          sub="Visa-friendly, well-priced and tested by our own clients — these are the trips we book most from Bengaluru."
+          sub="Visa-friendly and tested by our own clients — these are the trips we book most from Bengaluru."
         />
 
         <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
@@ -404,9 +404,6 @@ function DestinationsSection() {
                     <MapPin size={12} /> {d.country}
                   </span>
                   <h3 className="!text-white text-[1.23rem]">{d.name}</h3>
-                  <p className="mt-1 text-[0.95rem] text-white/70">
-                    from <span className="font-display font-bold text-white">{d.price}</span>
-                  </p>
                 </div>
               </Link>
               </TiltCard>
@@ -431,7 +428,7 @@ function PackagesSection() {
           center
           eyebrow="Handpicked holidays"
           title="Featured tour packages"
-          sub="Every package comes in Economy, Deluxe and Premium — same destination, your choice of comfort. Prices are per person on twin sharing."
+          sub="Every package comes in Economy, Deluxe and Premium — same destination, your choice of comfort, on twin sharing."
         />
 
         <div className="grid gap-7 md:grid-cols-3">
@@ -463,18 +460,12 @@ function PackagesSection() {
                   <div className="mt-5 flex flex-wrap gap-2">
                     {['Economy', 'Deluxe', 'Premium'].map((t) => (
                       <span key={t} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[0.81rem] font-semibold">
-                        {t} · {p.tiers[t].price}
+                        {t}
                       </span>
                     ))}
                   </div>
 
-                  <div className="mt-6 flex items-center justify-between gap-4 border-t border-dashed border-slate-200 pt-5">
-                    <div>
-                      <span className="block text-[0.75rem] tracking-wider text-slate-500 uppercase">Starting from</span>
-                      <span className="font-display text-[1.45rem] font-extrabold text-navy-900">
-                        {p.tiers.Economy.price}
-                      </span>
-                    </div>
+                  <div className="mt-6 flex items-center justify-end gap-4 border-t border-dashed border-slate-200 pt-5">
                     <Link to="/packages" className="btn btn-brand !px-5 !py-2.5 !text-[0.95rem]">
                       View Tiers
                     </Link>
@@ -725,7 +716,7 @@ function CtaSection() {
 
             <h2 className="h-sec !text-white text-balance">Ready when you are</h2>
             <p className="mx-auto mt-5 max-w-xl text-[1.17rem] text-white/75 text-pretty">
-              Tell us where you want to go. We will come back with a clear plan, a real price and a date you can book.
+              Tell us where you want to go. We will come back with a clear plan and a date you can book.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Magnetic>

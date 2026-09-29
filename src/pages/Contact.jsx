@@ -21,8 +21,8 @@ const CARDS = [
   {
     icon: Mail,
     title: 'Email',
-    lines: [BIZ.email, 'We reply within one working day'],
-    href: `mailto:${BIZ.email}`,
+    emails: [BIZ.email2, BIZ.email],
+    lines: ['We reply within one working day'],
   },
   {
     icon: Instagram,
@@ -34,7 +34,7 @@ const CARDS = [
   {
     icon: Clock,
     title: 'Working Hours',
-    lines: [BIZ.hours, BIZ.hoursNote, `Skype: ${BIZ.skype}`],
+    lines: [BIZ.hours],
   },
 ]
 
@@ -73,6 +73,16 @@ export default function Contact() {
                     </span>
                     <div className="min-w-0">
                       <div className="font-display text-[1.08rem] font-bold text-ink">{c.title}</div>
+                      {c.emails?.map((e) => (
+                        <a
+                          key={e}
+                          href={`mailto:${e}`}
+                          onClick={(ev) => ev.stopPropagation()}
+                          className="mt-0.5 block text-[1.01rem] text-pretty hover:text-brand-500 hover:underline"
+                        >
+                          {e}
+                        </a>
+                      ))}
                       {c.lines.map((l, k) => (
                         <p key={k} className="mt-0.5 text-[1.01rem] text-pretty">{l}</p>
                       ))}

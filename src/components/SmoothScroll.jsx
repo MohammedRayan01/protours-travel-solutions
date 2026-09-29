@@ -28,7 +28,13 @@ export default function SmoothScroll({ children }) {
   // the refresh, triggers keep the old page's measurements and fire at the
   // wrong scroll offsets.
   useEffect(() => {
-    if (!hash) window.scrollTo(0, 0)
+    // { behavior: 'instant' } is deliberate: the site sets `scroll-behavior:
+    // smooth` globally, so the bare `window.scrollTo(0, 0)` form inherits
+    // that and animates — and ScrollTrigger.refresh() right below, plus the
+    // new page's own layout settling, can cut that animation short partway,
+    // landing on a random scroll offset instead of the top. `instant`
+    // bypasses CSS smooth-scroll and always lands exactly at 0.
+    if (!hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
 
     // Belt-and-braces: a route change is proof no modal/drawer should still
     // be holding scroll locked, so always clear it here too.

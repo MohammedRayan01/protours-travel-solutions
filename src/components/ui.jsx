@@ -7,7 +7,7 @@ import { Reveal, CountUp, SplitHeading } from './motion.jsx'
 /* Scroll-driven animation lives in motion.jsx (GSAP + ScrollTrigger).
    Re-exported here so every existing import keeps working. */
 export { Reveal, SplitHeading }
-export { Stagger, Parallax, Magnetic, TiltCard, PinnedPanels, ScrollProgress } from './motion.jsx'
+export { Stagger, Parallax, Magnetic, TiltCard, PinnedPanels } from './motion.jsx'
 
 /** Counter kept as a named export; now GSAP-driven. */
 export function Counter({ value, suffix = '' }) {

@@ -3,13 +3,21 @@ import { NavLink, Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin, ArrowRight } from 'lucide-react'
 import { BIZ, NAV, waLink } from '../data/site.js'
-import { lockScroll } from './SmoothScroll.jsx'
+import { lockScroll, scrollTo } from './SmoothScroll.jsx'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const burgerRef = useRef(null)
   const { pathname } = useLocation()
+
+  // Clicking Home/the logo while already on "/" doesn't trigger a route
+  // change, so SmoothScroll's pathname-based reset never fires — this
+  // covers that case by scrolling to top directly on click.
+  const goHome = () => {
+    if (pathname === '/') scrollTo(0)
+    setOpen(false)
+  }
 
   // Only the home page has a full-bleed hero for the bar to float over.
   const overHero = pathname === '/' && !scrolled
@@ -53,14 +61,20 @@ export default function Navbar() {
             <a href={`mailto:${BIZ.email}`} className="flex items-center gap-2 transition-colors hover:text-gold-400">
               <Mail size={14} className="text-gold-500" /> {BIZ.email}
             </a>
+            <a href={`mailto:${BIZ.email2}`} className="flex items-center gap-2 transition-colors hover:text-gold-400">
+              <Mail size={14} className="text-gold-500" /> {BIZ.email2}
+            </a>
           </div>
-          <a
-            href={BIZ.mapsUrl} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 transition-colors hover:text-gold-400"
-          >
-            <MapPin size={14} className="text-gold-500" />
-            A.M. Plaza, Hospital Road, Shivaji Nagar, Bengaluru 560001
-          </a>
+          <div className="flex shrink-0 items-center gap-5">
+            <a
+              href={BIZ.mapsUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 transition-colors hover:text-gold-400"
+            >
+              <MapPin size={14} className="text-gold-500" />
+              A.M. Plaza, Hospital Road, Shivaji Nagar, Bengaluru 560001
+            </a>
+            <img src="/iata-logo.png" alt="IATA Accredited Travel Agent" width={512} height={512} className="h-7 w-7 shrink-0" />
+          </div>
         </div>
       </div>
 
@@ -74,7 +88,7 @@ export default function Navbar() {
       >
         <div className="wrap flex h-[74px] items-center justify-between gap-4">
           {/* Logo */}
-          <Link to="/" className="flex shrink-0 items-center" aria-label={`${BIZ.name} — home`}>
+          <Link to="/" onClick={goHome} className="flex shrink-0 items-center" aria-label={`${BIZ.name} — home`}>
             {/* White cut over the hero photography, full colour on the light bar */}
             <img
               src={overHero ? '/logo-white.png' : '/logo.png'}
@@ -92,6 +106,7 @@ export default function Navbar() {
                 key={n.to}
                 to={n.to}
                 end={n.to === '/'}
+                onClick={n.to === '/' ? goHome : undefined}
                 className={({ isActive }) =>
                   `rounded-full whitespace-nowrap px-3 py-2 font-display text-[0.92rem] font-semibold transition-all duration-250 ${
                     overHero
@@ -114,22 +129,20 @@ export default function Navbar() {
               Get a Quote <ArrowRight size={15} />
             </a>
 
-            {/* Three-line hamburger */}
+            {/* Three-line hamburger — plain icon, no box, just a tap target */}
             <button
               ref={burgerRef}
               onClick={() => setOpen((v) => !v)}
               aria-label={open ? 'Close menu' : 'Open menu'}
               aria-expanded={open}
-              className={`grid h-11 w-11 shrink-0 place-items-center gap-[5px] rounded-xl border transition-colors xl:hidden ${
-                overHero ? 'border-white/30 bg-white/10 backdrop-blur-xl' : 'border-slate-200 bg-white'
-              }`}
+              className="grid h-11 w-11 shrink-0 place-items-center gap-[4px] xl:hidden"
             >
               {[0, 1, 2].map((i) => (
                 <motion.span
                   key={i}
                   animate={
                     open
-                      ? i === 0 ? { rotate: 45, y: 7 } : i === 1 ? { opacity: 0, scaleX: 0 } : { rotate: -45, y: -7 }
+                      ? i === 0 ? { rotate: 45, y: 6.5 } : i === 1 ? { opacity: 0, scaleX: 0 } : { rotate: -45, y: -6.5 }
                       : { rotate: 0, y: 0, opacity: 1, scaleX: 1 }
                   }
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -206,6 +219,7 @@ export default function Navbar() {
                     <NavLink
                       to={n.to}
                       end={n.to === '/'}
+                      onClick={n.to === '/' ? goHome : undefined}
                       className={({ isActive }) =>
                         `flex items-center justify-between rounded-2xl px-5 py-4 font-display text-[1.19rem] font-bold transition-colors ${
                           isActive ? 'bg-gold-500 text-navy-950' : 'text-white/85 hover:bg-white/10'
@@ -231,6 +245,17 @@ export default function Navbar() {
                 >
                   <Mail size={14} /> {BIZ.email}
                 </a>
+                <a
+                  href={`mailto:${BIZ.email2}`}
+                  className="flex items-center justify-center gap-2 text-[0.97rem] text-white/60 hover:text-gold-400"
+                >
+                  <Mail size={14} /> {BIZ.email2}
+                </a>
+                <img
+                  src="/iata-logo.png" alt="IATA Accredited Travel Agent"
+                  width={512} height={512}
+                  className="mx-auto h-10 w-10 pt-2"
+                />
               </div>
             </motion.nav>
     </>

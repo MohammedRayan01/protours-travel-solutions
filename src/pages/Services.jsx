@@ -94,6 +94,8 @@ export default function Services() {
                       {s.id === 'umrah' && <Link to="/umrah" className="btn btn-ghost">Umrah Packages</Link>}
                       {(s.id === 'visa' || s.id === 'passport') && <Link to="/visa" className="btn btn-ghost">Visa Guide</Link>}
                       {s.id === 'tours' && <Link to="/packages" className="btn btn-ghost">Browse Packages</Link>}
+                      {s.id === 'flights' && <Link to="/flights-hotels#flights" className="btn btn-ghost">Flights & Hotels</Link>}
+                      {s.id === 'hotels' && <Link to="/flights-hotels#hotels" className="btn btn-ghost">Flights & Hotels</Link>}
                     </div>
                   </Reveal>
                 </div>
