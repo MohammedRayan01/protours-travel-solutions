@@ -95,7 +95,7 @@ export default function Navbar() {
         className={`sticky top-0 z-50 transition-all duration-500 ${
           overHero
             ? 'bg-transparent'
-            : 'border-b border-white/60 bg-white/96 shadow-[0_10px_40px_-18px_rgb(4_24_44/0.3)] backdrop-blur-2xl'
+            : 'border-b border-slate-200 bg-paper/[0.97] shadow-[0_10px_26px_-22px_rgb(60_40_20/0.5)]'
         }`}
       >
         <div className="wrap flex h-[74px] items-center justify-between gap-4">
@@ -133,24 +133,30 @@ export default function Navbar() {
                   end={n.to === '/'}
                   onClick={n.to === '/' ? goHome : undefined}
                   className={({ isActive }) =>
-                    `group relative isolate block rounded-full whitespace-nowrap px-2 py-2 font-display text-[0.86rem] font-semibold transition-colors duration-250 ${
+                    `group relative isolate block rounded-md whitespace-nowrap px-2 py-2 font-display text-[0.86rem] font-semibold transition-colors duration-250 ${
                       overHero
-                        ? isActive ? 'text-white' : 'text-white/85 hover:bg-white/12 hover:text-white'
-                        : isActive ? 'text-brand-500' : 'text-ink hover:bg-slate-100 hover:text-brand-500'
+                        ? isActive ? 'text-white' : 'text-white/85 hover:text-white'
+                        : isActive ? 'text-navy-950' : 'text-body hover:text-navy-950'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
+                      {/* Active page: a small hand-drawn underline that glides
+                          between links (shared layoutId) instead of a pill. */}
                       {isActive && (
-                        <motion.span
-                          layoutId="nav-active-pill"
+                        <motion.svg
+                          layoutId="nav-active-mark"
                           aria-hidden="true"
+                          focusable="false"
+                          viewBox="0 0 40 8"
+                          preserveAspectRatio="none"
+                          fill="none"
                           transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-                          className={`absolute inset-0 -z-10 rounded-full ${overHero ? 'bg-white/20' : 'bg-brand-500/10'}`}
+                          className={`pointer-events-none absolute right-2 bottom-[1px] left-2 h-[6px] ${overHero ? 'text-gold-400' : 'text-gold-600'}`}
                         >
-                          <span className="absolute bottom-[3px] left-1/2 h-[3px] w-3 -translate-x-1/2 rounded-full bg-gold-500" />
-                        </motion.span>
+                          <path d="M1.5 5.2C8 2.2 14 2 20 4.1s12 2.3 18.5-.9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                        </motion.svg>
                       )}
                       {n.label}
                     </>
@@ -276,7 +282,7 @@ export default function Navbar() {
                 <a href={waLink()} target="_blank" rel="noopener noreferrer" className="btn btn-wa w-full">
                   Chat on WhatsApp
                 </a>
-                <a href={`tel:${BIZ.phone}`} className="btn glass w-full text-white">
+                <a href={`tel:${BIZ.phone}`} className="btn w-full border-white/30 text-white hover:border-white/70">
                   <Phone size={16} /> {BIZ.phoneDisplay}
                 </a>
                 <a

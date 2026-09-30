@@ -1,54 +1,84 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, Phone, Mail, ArrowRight } from 'lucide-react'
+import { Phone, Mail, MapPin, Clock, ArrowRight, ArrowUpRight } from 'lucide-react'
 
-import { BIZ, STATS, waLink } from '../data/site.js'
-import { Reveal, SectionHeading, Counter, PageHero } from '../components/ui.jsx'
-import { Parallax, Magnetic } from '../components/motion.jsx'
+import { BIZ, FACTS, PHOTOS, YEARS, waLink } from '../data/site.js'
+import { Reveal, SectionHeading, PageHero } from '../components/ui.jsx'
+import { Parallax } from '../components/motion.jsx'
 import {
-  ImageReveal, ScrubText, RevealGrid, Spotlight, Orbs, Grain, RotatingBadge, FlightPath,
+  ImageReveal, ScrubText, FlightPath, Polaroid, Stamp, DrawLine, CircleMark,
 } from '../components/fx.jsx'
 import { gsap, useGSAP, reduceMotion, enterTrigger } from '../lib/gsap.js'
 
-/* Indian imagery throughout — this is a Bengaluru business. */
-const IMG = {
+/* Stock stand-ins, used only while the matching PHOTOS slot is empty. */
+const STOCK = {
   hero: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1800&q=74',
   office: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1000&q=72',
-  detail: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=700&q=72',
+  desk: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=700&q=72',
   founder: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1000&q=72',
 }
+
+/**
+ * One photo slot. A caption that claims "our office" or names the founder
+ * only appears when the business's own photo is in place; the stock
+ * stand-in gets an honest alt text and a neutral caption (or none).
+ */
+function slot(key, real, stock) {
+  const own = PHOTOS[key]
+  return own
+    ? { src: own, alt: real.alt, caption: real.caption }
+    : { src: STOCK[key], alt: stock.alt, caption: stock.caption }
+}
+
+const OFFICE = slot(
+  'office',
+  { alt: `The ${BIZ.shortName} office at A.M. Plaza, Hospital Road`, caption: 'Our office on Hospital Road' },
+  { alt: 'Houseboat on the Kerala backwaters', caption: 'Kerala backwaters' },
+)
+const DESK = slot(
+  'desk',
+  { alt: `The ${BIZ.shortName} team at work`, caption: 'At the desk' },
+  { alt: 'Houseboats on Dal Lake, Srinagar', caption: null },
+)
+const FOUNDER = slot(
+  'founder',
+  { alt: `${BIZ.owner}, founder of ${BIZ.name}`, caption: BIZ.owner },
+  { alt: 'Palm-lined beach in Goa', caption: 'Goa' },
+)
+
+const OFFER = [
+  'Domestic and international air tickets on all major airlines',
+  'Visa and passport paperwork, done in-house',
+  'Custom holidays, honeymoons, group tours and corporate meets',
+  'A Hajj & Umrah division with seasonal group departures',
+]
 
 const VALUES = [
   {
     img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=72',
-    alt: 'Agreeing terms with a client',
-    title: 'Honest pricing',
-    desc: 'We show the airline fare, the taxes and our service fee separately. If a cheaper routing exists, we tell you about it even when it earns us less.',
+    alt: 'Two people shaking hands across a desk',
+    title: 'Prices you can read',
+    desc: 'We show the airline fare, the taxes and our service fee separately. If a cheaper routing exists, we tell you about it, even when it earns us less.',
   },
   {
     img: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=72',
-    alt: 'Your dedicated travel consultant',
-    title: 'One point of contact',
-    desc: 'No ticket numbers, no call queues. The consultant who quoted your trip is the same one who fixes it if something changes mid-journey.',
+    alt: 'A consultant on a phone call at her desk',
+    title: 'One person to talk to',
+    desc: 'No ticket numbers and no call queues. Whoever quoted your trip is the one who sorts it out if something changes while you are away.',
   },
   {
     img: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=72',
-    alt: 'Visa paperwork being checked',
-    title: 'Documents done properly',
-    desc: 'Most visa rejections come from paperwork, not profile. We check every file line by line before it reaches the consulate.',
+    alt: 'Paperwork being checked with a pen',
+    title: 'Paperwork checked twice',
+    desc: 'Most visa rejections come from the paperwork, not the traveller. We read every file line by line before it goes to the consulate.',
   },
 ]
 
-const OFFER = [
-  'Domestic and international air ticketing on all major carriers',
-  'Visa and passport documentation handled in-house',
-  'Custom holidays, honeymoons, group tours and corporate meets',
-  'Dedicated Hajj & Umrah division with seasonal group departures',
-]
+const [DAYS, TIMES] = BIZ.hours.split(': ')
 
 /* ------------------------------------------------------------
-   RouteList — the checklist becomes a little route map: a gold
-   line inks down the rail as you scroll and each stop pops in.
+   RouteList — the checklist as a small route map: a line inks
+   down the rail as you scroll and each stop is stamped in.
    ------------------------------------------------------------ */
 function RouteList({ items }) {
   const ref = useRef(null)
@@ -57,41 +87,57 @@ function RouteList({ items }) {
     const el = ref.current
     if (!el || reduceMotion()) return
     const q = gsap.utils.selector(el)
-
     gsap.fromTo(q('[data-rail]'), { scaleY: 0 }, {
-      scaleY: 1,
-      ease: 'none',
-      scrollTrigger: { trigger: el, start: 'top 80%', end: 'bottom 55%', scrub: 0.8 },
+      scaleY: 1, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top 80%', end: 'bottom 60%', scrub: 0.8 },
     })
-    gsap.timeline({ scrollTrigger: enterTrigger(el, { start: 'top 85%' }) })
-      .fromTo(q('[data-stop]'), { scale: 0, rotate: -90 }, {
-        scale: 1, rotate: 0, duration: 0.8, ease: 'back.out(2.2)', stagger: 0.16,
-      })
-      .fromTo(q('[data-copy]'), { autoAlpha: 0, x: 22 }, {
-        autoAlpha: 1, x: 0, duration: 0.9, ease: 'expo.out', stagger: 0.16,
-      }, 0.08)
+    gsap.fromTo(q('[data-stop]'), { scale: 0 }, {
+      scale: 1, duration: 0.5, ease: 'back.out(2.4)', stagger: 0.14,
+      scrollTrigger: enterTrigger(el, { start: 'top 85%' }),
+    })
   }, { scope: ref })
 
   return (
     <ul ref={ref} className="relative mt-8 grid gap-5">
-      {/* rail: faint guide + the gold line that draws over it */}
-      <span aria-hidden="true" className="absolute top-3 bottom-3 left-[9.5px] w-px bg-slate-200" />
-      <span
-        aria-hidden="true" data-rail
-        className="absolute top-3 bottom-3 left-[9px] w-[2px] origin-top rounded-full bg-gradient-to-b from-brand-500 via-gold-500 to-gold-400"
-      />
+      <span aria-hidden="true" className="absolute top-2 bottom-2 left-[6px] w-px border-l border-dashed border-slate-300" />
+      <span aria-hidden="true" data-rail className="absolute top-2 bottom-2 left-[5.5px] w-[2px] origin-top bg-gold-600/70" />
       {items.map((x) => (
         <li key={x} className="relative flex gap-4">
-          <span
-            data-stop
-            className="relative mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-500 text-white shadow-[0_0_0_4px_#fff,0_6px_16px_-4px_rgb(18_115_196/0.55)]"
-          >
-            <Check size={11} strokeWidth={3.4} />
-          </span>
-          <span data-copy className="text-[1.07rem] text-pretty">{x}</span>
+          <span data-stop aria-hidden="true" className="relative mt-[0.55rem] h-[13px] w-[13px] shrink-0 rounded-full border-[2.5px] border-navy-900 bg-paper" />
+          <span className="text-[1.07rem] text-pretty">{x}</span>
         </li>
       ))}
     </ul>
+  )
+}
+
+/* ------------------------------------------------------------
+   IataSeal — the accreditation logo set like a round passport
+   stamp: double ring, a little rotated, lands with a thud.
+   ------------------------------------------------------------ */
+function IataSeal({ className = '', rotate = 9 }) {
+  const ref = useRef(null)
+  useGSAP(() => {
+    const el = ref.current
+    if (!el) return
+    if (reduceMotion()) { gsap.set(el, { rotation: rotate }); return }
+    gsap.fromTo(el, { autoAlpha: 0, scale: 1.6, rotation: rotate - 14 }, {
+      autoAlpha: 1, scale: 1, rotation: rotate, duration: 0.55, ease: 'back.out(2.2)', delay: 0.5,
+      scrollTrigger: enterTrigger(el, { start: 'top 92%' }),
+    })
+  }, { scope: ref })
+
+  return (
+    <div
+      ref={ref}
+      className={`grid h-[8.5rem] w-[8.5rem] place-items-center rounded-full border-[2.5px] border-navy-900 bg-paper p-[5px] shadow-[0_12px_24px_-16px_rgb(60_40_20/0.6)] ${className}`}
+    >
+      <div className="flex h-full w-full flex-col items-center justify-center rounded-full border border-dashed border-navy-900/70 text-navy-900">
+        <span className="font-display text-[0.55rem] font-extrabold tracking-[0.26em] uppercase">Accredited</span>
+        <img src="/iata-logo.png" alt="IATA accredited travel agent" width={512} height={512} className="my-1 h-11 w-11" />
+        <span className="font-display text-[0.55rem] font-extrabold tracking-[0.26em] uppercase">Travel agent</span>
+      </div>
+    </div>
   )
 }
 
@@ -99,264 +145,216 @@ export default function About() {
   return (
     <>
       <PageHero
-        img={IMG.hero}
+        img={STOCK.hero}
         alt="The Taj Mahal at sunrise"
         eyebrow="About us"
-        title="Travel planned by people, not algorithms"
-        sub="Sixteen years, one office on Hospital Road, and a client list that mostly arrived through word of mouth."
+        title="A travel desk on Hospital Road"
+        sub={`We have been booking flights, hotels, visas, holidays and Umrah from Shivaji Nagar for ${YEARS} years. Most of our clients found us through someone they know.`}
       />
 
-      {/* ---- Story ---- */}
-      <section className="section overflow-hidden bg-white">
-        <div className="wrap grid items-center gap-14 lg:grid-cols-2">
-          <div className="relative">
-            <ImageReveal from="left" className="rounded-5xl shadow-[var(--shadow-lift)]">
-              <img
-                src={IMG.office}
-                alt="Kerala backwaters, one of our most-booked Indian itineraries"
-                loading="lazy"
-                className="aspect-[4/3.4] w-full object-cover"
-              />
-            </ImageReveal>
-            <ImageReveal
-              from="bottom" delay={0.35}
-              className="absolute -right-6 -bottom-9 hidden w-44 rounded-4xl border-[6px] border-white shadow-[var(--shadow-lift)] sm:block"
-            >
-              <img src={IMG.detail} alt="" aria-hidden="true" loading="lazy" className="aspect-square w-full object-cover" />
-            </ImageReveal>
-            <Reveal className="absolute -top-6 -left-2 sm:-left-4" delay={0.5}>
-              <div className="rounded-3xl border-4 border-white bg-navy-950 px-6 py-5 text-center shadow-[var(--shadow-lift)]">
-                <div className="font-display text-[1.93rem] leading-none font-extrabold text-gold-400">{BIZ.rating}★</div>
-                <div className="mt-1 text-[0.75rem] tracking-[0.1em] text-white/60 uppercase">Google rating</div>
-              </div>
-            </Reveal>
-            {/* spinning accreditation stamp */}
-            <Reveal className="absolute -bottom-10 left-4 sm:left-8" delay={0.65}>
-              <div className="rounded-full bg-white p-1.5 shadow-[var(--shadow-lift)]">
-                <RotatingBadge text="IATA ACCREDITED TRAVEL AGENT • " size={118} textClass="fill-navy-900/80">
-                  <img src="/iata-logo.png" alt="IATA Accredited Travel Agent" width={512} height={512} className="h-12 w-12" />
-                </RotatingBadge>
-              </div>
-            </Reveal>
-          </div>
-
-          <div className="pt-6 lg:pt-0">
-            <Reveal><span className="eyebrow">Our story</span></Reveal>
-            <Reveal delay={0.08}>
-              <h2 className="h-sec mt-4 text-balance">A full-service travel desk in the heart of Shivaji Nagar</h2>
-            </Reveal>
-            <Reveal delay={0.16}>
-              <p className="mt-6 text-pretty">
-                Pro Tours &amp; Travel Solutions started with a simple idea: a traveller should not have to deal with
-                four different agencies for one trip. One person should handle the ticket, the hotel, the visa file,
-                and the phone call at midnight when a flight gets cancelled.
-              </p>
-            </Reveal>
-            <Reveal delay={0.22}>
-              <p className="mt-4 text-pretty">
-                From our office at 21/1, A.M. Plaza on Hospital Road — a short walk from Infantry Road — we handle
-                corporate travel accounts, family holidays, honeymoon itineraries, group departures and specialised
-                Hajj and Umrah services. Some of our clients have been booking with us since their first passport.
-              </p>
-            </Reveal>
-
+      {/* ---- Who we are: text + pinned photos ---- */}
+      <section className="section overflow-hidden bg-paper">
+        <div className="wrap grid items-start gap-16 lg:grid-cols-[1.05fr_1fr] lg:gap-20">
+          <div className="lg:pt-6">
+            <Reveal><span className="eyebrow">Who we are</span></Reveal>
+            <h2 className="h-sec mt-4 text-balance">One office that handles the whole trip</h2>
+            <p className="mt-6 text-pretty">
+              {BIZ.name} is an IATA-accredited travel agency in Shivaji Nagar, Bengaluru. We started in {BIZ.since}{' '}
+              because booking one trip usually meant dealing with four different people: one for the ticket, one
+              for the hotel, one for the visa and nobody at all when something went wrong.
+            </p>
+            <p className="mt-4 text-pretty">
+              From A.M. Plaza on Hospital Road, a short walk from Infantry Road, we look after corporate travel
+              accounts, family holidays, honeymoons, group departures and Hajj and Umrah. Some of our clients have
+              been booking with us since their first passport.
+            </p>
             <RouteList items={OFFER} />
-
-            <Reveal delay={0.2}>
-              <Magnetic strength={0.22} className="mt-9">
-                <Link to="/contact" className="btn btn-brand">
-                  Visit Our Office <ArrowRight size={16} />
-                </Link>
-              </Magnetic>
-            </Reveal>
           </div>
+
+          {/* photo collage — a big print, a small one tucked under it, and the seal */}
+          <div className="relative mx-auto w-full max-w-[520px] pb-16 sm:pb-24">
+            <Parallax speed={0.1}>
+              <div>
+                <Polaroid {...OFFICE} rotate={-2.5} imgClassName="aspect-[4/3.4]" />
+              </div>
+            </Parallax>
+            <Polaroid
+              {...DESK}
+              rotate={4}
+              imgClassName="aspect-square"
+              className="absolute right-[-4%] bottom-0 w-[46%] sm:right-[-8%]"
+            />
+            <IataSeal className="absolute bottom-6 left-[4%] sm:left-[8%]" />
+          </div>
+        </div>
+
+        {/* plain, checkable facts in a ruled ledger */}
+        <div className="wrap mt-16 md:mt-20">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4 lg:gap-x-10">
+            {FACTS.map((f, i) => (
+              <Reveal key={f.label} delay={i * 0.06} y={14} className="min-w-0 border-t-2 border-navy-900 pt-4">
+                <dt className="font-accent text-[1.45rem] leading-tight font-semibold text-navy-900 italic sm:text-[1.85rem]">{f.big}</dt>
+                <dd className="mt-1 text-[0.98rem] text-body">{f.label}</dd>
+              </Reveal>
+            ))}
+          </dl>
         </div>
       </section>
 
-      {/* ---- Statement: words light up as it scrolls ---- */}
+      {/* ---- The idea: the one scrubbed statement on the page ---- */}
       <section className="relative isolate overflow-hidden bg-navy-950 py-24 md:py-32">
-        <Orbs />
-        <Grain />
         <FlightPath
-          className="absolute inset-x-0 top-1/2 -z-[1] -translate-y-1/2 opacity-40"
+          className="absolute inset-x-0 top-1/2 -z-[1] -translate-y-1/2 opacity-35"
           start="top 90%"
           end="bottom 20%"
         />
         <div className="wrap relative">
-          <Reveal>
-            <span className="eyebrow eyebrow-light">The idea we started with</span>
-          </Reveal>
-          <span aria-hidden="true" className="accent pointer-events-none mt-4 block text-[5.5rem] leading-[0.6] text-gold-500/70">
-            &ldquo;
-          </span>
+          <Reveal><span className="eyebrow eyebrow-light">The idea we started with</span></Reveal>
           <ScrubText
-            className="max-w-5xl font-display text-[clamp(1.7rem,4.2vw,3.35rem)] leading-[1.14] font-bold tracking-tight text-white text-balance"
-            dim={0.14}
+            className="mt-6 max-w-5xl font-display text-[clamp(1.7rem,4.2vw,3.35rem)] leading-[1.16] font-bold tracking-tight text-white text-balance"
+            dim={0.18}
           >
-            A traveller should not have to deal with four different agencies for one trip. One person should handle
-            the ticket, the hotel, the visa file, and the phone call at midnight when a flight gets cancelled.
+            One trip, one person. The ticket, the hotel, the visa file, and the phone call at midnight when a
+            flight gets cancelled.
           </ScrubText>
         </div>
       </section>
 
-      {/* ---- Values ---- */}
-      <section className="section bg-slate-50">
-        <div className="wrap">
-          <SectionHeading center eyebrow="What guides us" title="Three things we refuse to compromise on" />
-          <RevealGrid className="grid gap-6 md:grid-cols-3">
-            {VALUES.map((v, i) => (
-              <Spotlight key={v.title} className="h-full rounded-4xl" color="rgb(18 115 196 / 0.12)">
-                <div className="group flex h-full flex-col overflow-hidden rounded-4xl border border-slate-200 bg-white transition-all duration-500 hover:-translate-y-2 hover:shadow-[var(--shadow-lift)]">
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    <img
-                      src={v.img}
-                      alt={v.alt}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-[1100ms] ease-[var(--ease-out-expo)] group-hover:scale-110"
-                    />
-                    <span className="absolute inset-0 bg-gradient-to-t from-navy-950/55 via-transparent to-transparent" aria-hidden="true" />
-                    <span
-                      aria-hidden="true"
-                      className="absolute bottom-3 left-5 font-display text-[3.2rem] leading-none font-extrabold text-transparent transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:-translate-y-1"
-                      style={{ WebkitTextStroke: '1.5px rgb(255 255 255 / 0.9)' }}
-                    >
-                      0{i + 1}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-7">
-                    <h3 className="text-[1.3rem]">{v.title}</h3>
-                    <span
-                      aria-hidden="true"
-                      className="mt-3 block h-[2px] w-10 origin-left rounded-full bg-gold-500 transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-x-[2.4]"
-                    />
-                    <p className="mt-3 text-[1.04rem] text-pretty">{v.desc}</p>
-                  </div>
+      {/* ---- A note from the founder ---- */}
+      <section className="section paper overflow-hidden bg-sand">
+        <div className="wrap grid items-center gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+          <div className="relative mx-auto w-full max-w-[380px]">
+            <Polaroid {...FOUNDER} rotate={-4} imgClassName="aspect-[4/4.6]" />
+          </div>
+
+          <Reveal y={24}>
+            <article className="relative rounded-md border border-slate-200 bg-paper px-6 py-9 shadow-[0_24px_48px_-32px_rgb(60_40_20/0.55)] sm:px-10 sm:py-11">
+              <span className="eyebrow">A note from the founder</span>
+              <div className="mt-6 grid gap-4 text-[1.1rem] text-pretty">
+                <p className="quote !text-[1.45rem] leading-snug text-navy-900">Dear traveller,</p>
+                <p>
+                  One trip, one person: that is the idea we started with in {BIZ.since}, and it is still how we
+                  work. You tell us once what
+                  you need, and the same desk books it, checks it and stays with it until you are home.
+                </p>
+                <p>
+                  Most of our clients deal with me directly. I go through every Umrah file and every complicated
+                  international itinerary myself before it goes out, because that is where small mistakes turn
+                  into expensive ones.
+                </p>
+                <p>
+                  If you are nearby, come in. We are on the ground floor of A.M. Plaza on Hospital Road. If you are
+                  not, a WhatsApp message reaches the same desk.
+                </p>
+              </div>
+              <div className="mt-8">
+                <div className="relative inline-block">
+                  <span className="note block text-[2rem] leading-none text-navy-900">{BIZ.owner}</span>
+                  <DrawLine className="absolute -bottom-3 left-0 h-3 w-full" color="#8a5a00" delay={0.5} />
                 </div>
-              </Spotlight>
-            ))}
-          </RevealGrid>
-        </div>
-      </section>
+                <p className="mt-5 font-display text-[0.98rem] font-bold text-body">Founder &amp; Managing Consultant</p>
+              </div>
 
-      {/* ---- Founder ---- */}
-      <section className="section overflow-hidden bg-white">
-        <div className="wrap grid items-center gap-14 lg:grid-cols-2">
-          <div>
-            <Reveal><span className="eyebrow">Leadership</span></Reveal>
-            <Reveal delay={0.08}>
-              <h2 className="h-sec mt-4 text-balance">{BIZ.owner}</h2>
-            </Reveal>
-            <Reveal delay={0.14}>
-              <p className="mt-3 font-display text-[1.1rem] font-bold text-brand-500">
-                Founder &amp; Managing Consultant
-              </p>
-            </Reveal>
-            <Reveal delay={0.2}>
-              <p className="mt-6 text-pretty">
-                Sajid has spent his career on the operations side of travel — fare construction, visa documentation,
-                and the unglamorous work of rerouting a stranded family at 2 AM. He personally reviews every Umrah
-                file and every complex international itinerary before it goes out.
-              </p>
-            </Reveal>
-            <Reveal delay={0.26}>
-              <p className="mt-4 text-pretty">
-                Most of our clients deal with him directly. If you walk into the office on Hospital Road, he is
-                usually the one at the desk.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.34}>
-              <div className="mt-9 grid gap-3">
+              <ul className="mt-8 grid gap-2 border-t border-slate-200 pt-6 text-[1.02rem] sm:grid-cols-2 sm:gap-x-6">
                 {[
                   { href: `tel:${BIZ.phone}`, icon: Phone, label: BIZ.phoneDisplay },
                   { href: `mailto:${BIZ.email2}`, icon: Mail, label: BIZ.email2 },
                   { href: `mailto:${BIZ.email}`, icon: Mail, label: BIZ.email },
                 ].map(({ href, icon: Icon, label }) => (
-                  <a key={href} href={href} className="group flex min-w-0 items-center gap-3.5 text-[1.07rem] hover:text-brand-500">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500/10 text-brand-500 transition-all duration-500 ease-[var(--ease-out-expo)] group-hover:rotate-[-8deg] group-hover:bg-brand-500 group-hover:text-white">
-                      <Icon size={17} />
-                    </span>
-                    <span className="link-grow min-w-0 break-words">{label}</span>
-                  </a>
+                  <li key={href}>
+                    <a href={href} className="flex min-h-[44px] min-w-0 items-center gap-3 text-navy-900 hover:text-brand-500">
+                      <Icon size={16} aria-hidden="true" className="shrink-0 text-gold-600" />
+                      <span className="link-grow min-w-0 break-words">{label}</span>
+                    </a>
+                  </li>
                 ))}
-              </div>
-            </Reveal>
-          </div>
-
-          <div className="relative">
-            {/* gold frame drifting behind the photo */}
-            <Parallax speed={0.22} className="pointer-events-none absolute inset-0 hidden sm:block" >
-              <div aria-hidden="true" className="h-full w-full translate-x-5 translate-y-5 rounded-5xl border-2 border-gold-500/60" />
-            </Parallax>
-            <ImageReveal from="right" className="relative rounded-5xl shadow-[var(--shadow-lift)]">
-              <img
-                src={IMG.founder}
-                alt="Goa coastline — a long-running favourite with our clients"
-                loading="lazy"
-                className="aspect-[4/3.4] w-full object-cover"
-              />
-            </ImageReveal>
-          </div>
+              </ul>
+            </article>
+          </Reveal>
         </div>
       </section>
 
-      {/* ---- Numbers ---- */}
-      <section className="relative isolate overflow-hidden bg-navy-950 py-20 md:py-24">
-        <img
-          src={IMG.hero}
-          alt="" aria-hidden="true" loading="lazy"
-          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-20"
-        />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-navy-950/95 to-navy-900/88" />
-        <Orbs className="!-z-[5] opacity-70" />
-        <Grain className="-z-[4]" />
-        <div className="wrap relative z-10">
-          <RevealGrid className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4" stagger={0.12}>
-            {STATS.map((s) => (
-              <Spotlight key={s.label} className="h-full rounded-4xl">
-                <div className="glass group relative h-full overflow-hidden rounded-4xl px-4 py-9 text-center sm:px-6">
-                  <span aria-hidden="true" className="pointer-events-none absolute -top-10 left-1/2 h-24 w-24 -translate-x-1/2 rounded-full bg-gold-500/20 blur-2xl transition-transform duration-700 group-hover:scale-150" />
-                  <div className="relative font-display text-[clamp(1.9rem,4vw,2.9rem)] leading-none font-extrabold text-gold-400">
-                    <Counter value={s.value} suffix={s.suffix} />
-                  </div>
-                  <span aria-hidden="true" className="mx-auto mt-4 block h-px w-12 bg-gradient-to-r from-transparent via-gold-400 to-transparent" />
-                  <div className="mt-3 text-[0.94rem] text-white/65">{s.label}</div>
-                </div>
-              </Spotlight>
-            ))}
-          </RevealGrid>
-        </div>
-      </section>
-
-      {/* ---- CTA ---- */}
-      <section className="section bg-white">
+      {/* ---- How we work ---- */}
+      <section className="section bg-paper">
         <div className="wrap">
-          <Reveal>
-            <div className="relative isolate overflow-hidden rounded-5xl bg-navy-950 px-6 py-16 text-center sm:px-8 md:px-16">
-              <Orbs />
-              <Grain />
-              <FlightPath
-                className="absolute inset-x-0 bottom-0 -z-[1] opacity-50"
-                d="M 20 250 C 220 120, 420 260, 620 150 S 980 30, 1180 110"
-                start="top 90%"
-                end="bottom 40%"
-              />
-              <h2 className="h-sec !text-white text-balance">Come say hello</h2>
-              <p className="mx-auto mt-5 max-w-xl text-[1.14rem] text-white/70 text-pretty">
-                Walk into our office on Hospital Road, or just send a WhatsApp message. Either works.
-              </p>
-              <div className="mt-10 flex flex-wrap justify-center gap-4">
-                <Magnetic strength={0.25}>
-                  <Link to="/contact" className="btn btn-gold">Contact Us</Link>
-                </Magnetic>
-                <Magnetic strength={0.25}>
-                  <a href={waLink()} target="_blank" rel="noopener noreferrer" className="btn btn-glass">
-                    Message on WhatsApp
-                  </a>
-                </Magnetic>
+          <SectionHeading eyebrow="How we work" title="Three things we don't cut corners on" />
+          <ol className="border-t border-slate-300">
+            {VALUES.map((v, i) => (
+              <li key={v.title} className="grid items-center gap-6 border-b border-slate-300 py-8 md:grid-cols-[260px_1fr] md:gap-10 lg:grid-cols-[320px_1fr]">
+                <ImageReveal from={i % 2 ? 'right' : 'left'} className="rounded-xl">
+                  <img src={v.img} alt={v.alt} loading="lazy" className="aspect-[16/10] w-full object-cover" />
+                </ImageReveal>
+                <Reveal y={18}>
+                  <span className="note text-[1.2rem] text-gold-600">No. {i + 1}</span>
+                  <h3 className="mt-1 text-[1.45rem]">{v.title}</h3>
+                  <p className="mt-3 max-w-2xl text-[1.06rem] text-pretty">{v.desc}</p>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ---- Visit us ---- */}
+      <section className="section paper overflow-hidden bg-sand">
+        <div className="wrap grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <Reveal><span className="eyebrow">Visit us</span></Reveal>
+            <h2 className="h-sec mt-4 text-balance">Come in and say hello</h2>
+            <p className="mt-5 max-w-xl text-pretty">
+              Walk in during working hours, or send a WhatsApp message first if you'd like us to have your
+              options ready. Either is fine.
+            </p>
+
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              <div className="flex gap-3.5">
+                <MapPin size={20} aria-hidden="true" className="mt-1 shrink-0 text-clay" />
+                <address className="text-[1.04rem] not-italic">
+                  <span className="block font-display font-bold text-ink">{BIZ.address.line1}</span>
+                  <span className="block">
+                    Hospital Road, <CircleMark color="#b4532a">near Infantry Road</CircleMark>
+                  </span>
+                  <span className="block">{BIZ.address.line3}</span>
+                </address>
+              </div>
+              <div className="flex gap-3.5">
+                <Clock size={20} aria-hidden="true" className="mt-1 shrink-0 text-clay" />
+                <p className="text-[1.04rem]">
+                  <span className="block font-display font-bold text-ink">{DAYS}</span>
+                  <span className="block">{TIMES}</span>
+                </p>
               </div>
             </div>
-          </Reveal>
+
+            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <a href={BIZ.mapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-brand">
+                Get directions <ArrowUpRight size={17} aria-hidden="true" />
+              </a>
+              <a
+                href={waLink()} target="_blank" rel="noopener noreferrer"
+                className="link-grow font-display text-[1.04rem] font-bold text-palm"
+              >
+                or message us on WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <div className="relative mx-auto grid w-full max-w-[420px] place-items-center py-6">
+            <Stamp
+              top={`Bengaluru ${BIZ.address.line3.slice(-6)}`}
+              main="Shivaji Nagar"
+              bottom={`Est. ${BIZ.since}`}
+              tone="clay"
+              rotate={-7}
+              className="scale-125 sm:scale-150"
+            />
+            <Link
+              to="/contact"
+              className="mt-14 inline-flex items-center gap-2 font-display text-[1rem] font-bold text-navy-900 hover:text-brand-500"
+            >
+              All the ways to reach us <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
         </div>
       </section>
     </>

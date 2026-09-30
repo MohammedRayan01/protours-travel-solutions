@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 
@@ -43,12 +43,40 @@ const fade = {
   transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] },
 }
 
+/* Per-route <title> + description. It's an SPA, so without this every
+   page shares one title in search results and browser tabs. */
+const META = {
+  '/': ['Pro Tours & Travel Solutions | Travel agency in Shivaji Nagar, Bengaluru', 'A Bengaluru travel agency since 2009, and an IATA-accredited agent — flights, hotels, visas, passports, tour packages, cruises and Hajj & Umrah. Walk in on Hospital Road or WhatsApp us.'],
+  '/services': ['Travel services — flights, hotels, visas & more | Pro Tours', 'Flight and hotel bookings, tailor-made and group tours, visa and passport help, cruises and Umrah — handled by one desk in Shivaji Nagar, Bengaluru.'],
+  '/packages': ['Tour packages from Bengaluru — Dubai, Bali, Maldives, Europe | Pro Tours', 'Economy, Deluxe and Premium holiday packages from Bengaluru, with inclusions and exclusions listed clearly. Get today\'s quote on WhatsApp.'],
+  '/flights-hotels': ['Flight & hotel booking in Bengaluru | Pro Tours', 'Domestic and international air tickets and hotel bookings with fare rules explained and confirmed vouchers before you fly.'],
+  '/umrah': ['Umrah packages from Bengaluru | Pro Tours Hajj & Umrah Division', 'Umrah visa, flights and hotels near the Haram with walking distances quoted in metres, group co-ordinators and Ziyarat tours.'],
+  '/visa': ['Visa requirements for Indian passport holders | Pro Tours', 'Search visa rules for 100+ destinations and get your file checked line by line before it goes in. Passport fresh, renewal and tatkal help too.'],
+  '/contact': ['Contact & office address | Pro Tours & Travel Solutions', 'A.M. Plaza, Hospital Road, Shivaji Nagar, Bengaluru 560001. Call, WhatsApp or walk in, Monday–Saturday 10 AM–8 PM.'],
+  '/about': ['About us | Pro Tours & Travel Solutions, Bengaluru', 'A travel desk on Hospital Road, Bengaluru, booking trips since 2009. IATA-accredited agent.'],
+  '/terms': ['Terms & Conditions | Pro Tours', 'Terms and conditions for bookings made with Pro Tours & Travel Solutions.'],
+  '/privacy': ['Privacy Policy | Pro Tours', 'How Pro Tours & Travel Solutions collects, uses and protects your personal information.'],
+  '/refund-policy': ['Cancellation & Refund Policy | Pro Tours', 'Cancellation charges and refund timelines for flights, hotels, packages, visas and Umrah.'],
+}
+
+function useRouteMeta(pathname) {
+  useEffect(() => {
+    const [title, desc] = META[pathname] || META['/']
+    document.title = title
+    document.querySelector('meta[name="description"]')?.setAttribute('content', desc)
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc)
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', `https://www.protoursandtravelsolutions.com${pathname === '/' ? '/' : pathname}`)
+  }, [pathname])
+}
+
 function Page({ children }) {
   return <motion.main id="main" tabIndex={-1} {...fade}>{children}</motion.main>
 }
 
 export default function App() {
   const location = useLocation()
+  useRouteMeta(location.pathname)
 
   return (
     // MotionConfig reducedMotion="user" is Framer Motion's own switch: every

@@ -15,8 +15,8 @@ export default function Terms() {
 
       <LegalSection title="2. Bookings and pricing">
         <p>
-          Prices shown on this website are indicative and per person on twin sharing (for packages) unless
-          stated otherwise. Airfares, hotel rates, visa fees and package prices are set by airlines, hotels,
+          We don't publish prices on this website; every booking is quoted to you individually. Package
+          quotes are per person on twin sharing unless stated otherwise. Airfares, hotel rates, visa fees and package prices are set by airlines, hotels,
           visa authorities and our suppliers, and can change without notice until a booking is fully paid and
           confirmed. We will always confirm the final price with you in writing (WhatsApp or email) before
           you pay.

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   gsap, ScrollTrigger, SplitText, useGSAP, EASE_EXPO, reduceMotion, enterTrigger,
 } from '../lib/gsap.js'
@@ -147,53 +147,15 @@ export function FlightPath({
    Spotlight — a soft glow that follows the mouse across a card.
    Writes CSS variables directly, so there are no re-renders.
    ============================================================ */
-export function Spotlight({ children, className = '', color = 'rgb(232 163 23 / 0.16)', size = 460 }) {
-  const ref = useRef(null)
-
-  const onMove = useCallback((e) => {
-    const el = ref.current
-    if (!el || e.pointerType !== 'mouse') return
-    const r = el.getBoundingClientRect()
-    el.style.setProperty('--mx', `${e.clientX - r.left}px`)
-    el.style.setProperty('--my', `${e.clientY - r.top}px`)
-  }, [])
-
-  return (
-    <div ref={ref} onPointerMove={onMove} className={`group/spot relative ${className}`}>
-      {children}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover/spot:opacity-100"
-        style={{
-          background: `radial-gradient(${size}px circle at var(--mx, 50%) var(--my, 50%), ${color}, transparent 62%)`,
-        }}
-      />
-    </div>
-  )
+/* Spotlight / Orbs / Grain — RETIRED. Cursor glows, drifting gradient
+   blooms and moving film grain are the most recognisable "AI template"
+   tells, so they now render nothing (Spotlight keeps its wrapper so
+   layouts don't shift). Remove remaining usages; don't add new ones. */
+export function Spotlight({ children, className = '' }) {
+  return <div className={`relative ${className}`}>{children}</div>
 }
-
-/* ============================================================
-   Orbs — slow-drifting colour blooms behind dark sections.
-   ============================================================ */
-export function Orbs({ className = '', tone = 'dark' }) {
-  const a = tone === 'dark' ? 'bg-brand-500/25' : 'bg-brand-400/18'
-  const b = tone === 'dark' ? 'bg-gold-500/18' : 'bg-gold-400/20'
-  const c = tone === 'dark' ? 'bg-brand-300/12' : 'bg-brand-300/14'
-  return (
-    <div aria-hidden="true" className={`pointer-events-none absolute inset-0 -z-10 overflow-hidden ${className}`}>
-      <span className={`orb orb-a absolute -top-32 -left-24 h-[34rem] w-[34rem] rounded-full blur-[120px] ${a}`} />
-      <span className={`orb orb-b absolute -right-24 -bottom-40 h-[30rem] w-[30rem] rounded-full blur-[120px] ${b}`} />
-      <span className={`orb orb-c absolute top-1/3 left-1/2 h-[22rem] w-[22rem] rounded-full blur-[110px] ${c}`} />
-    </div>
-  )
-}
-
-/* ============================================================
-   Grain — film-grain texture that makes flat navy feel printed.
-   ============================================================ */
-export function Grain({ className = '' }) {
-  return <span aria-hidden="true" className={`grain pointer-events-none absolute inset-0 ${className}`} />
-}
+export function Orbs() { return null }
+export function Grain() { return null }
 
 /* ============================================================
    WordRotator — cycles words through a masked slot. Every word
@@ -238,23 +200,10 @@ export function WordRotator({ words, interval = 2.2, className = '' }) {
    Scramble — text decodes itself from random glyphs as it enters.
    Length is held constant, so the line never reflows.
    ============================================================ */
-export function Scramble({ text, className = '', delay = 0, as: Tag = 'span' }) {
-  const ref = useRef(null)
-
-  useGSAP(() => {
-    const el = ref.current
-    if (!el || reduceMotion()) return
-    gsap.set(el, { autoAlpha: 0 })
-    gsap.timeline({ delay, scrollTrigger: enterTrigger(el, { start: 'top 90%' }) })
-      .set(el, { autoAlpha: 1 })
-      .to(el, {
-        duration: 1.1,
-        ease: 'none',
-        scrambleText: { text, chars: 'upperCase', speed: 0.6, revealDelay: 0.25, tweenLength: false },
-      })
-  }, { scope: ref, dependencies: [text] })
-
-  return <Tag ref={ref} className={className}>{text}</Tag>
+/* Scramble — RETIRED (decoding "hacker" text is a tech tell). Renders
+   the text plainly; kept only so any leftover import doesn't break. */
+export function Scramble({ text, className = '', as: Tag = 'span' }) {
+  return <Tag className={className}>{text}</Tag>
 }
 
 /* ============================================================
@@ -360,6 +309,140 @@ export function DrawLine({ className = '', color = '#e8a317', delay = 0.3 }) {
 }
 
 /* ============================================================
+   HAND-MADE LAYER — marks that look drawn, stamped and pinned by a
+   person, to replace the glossy "generated" effects. Each inks in
+   once as it enters; reduced-motion shows the finished mark.
+   None of these go inside a SplitHeading / SplitText element.
+   ============================================================ */
+
+/** Draws the <path>s inside `root` once, on enter. */
+function useInkIn(root, { duration = 1.1, delay = 0.15, start = 'top 88%' } = {}) {
+  useGSAP(() => {
+    const el = root.current
+    if (!el) return
+    const paths = el.querySelectorAll('path[data-ink]')
+    if (!paths.length) return
+    if (reduceMotion()) { gsap.set(paths, { drawSVG: '100%' }); return }
+    gsap.fromTo(paths, { drawSVG: '0%' }, {
+      drawSVG: '100%', duration, delay, ease: 'power2.inOut', stagger: 0.18,
+      scrollTrigger: enterTrigger(el, { start }),
+    })
+  }, { scope: root })
+}
+
+/**
+ * CircleMark — a loose, hand-drawn loop around a word or phrase, the
+ * way someone circles something on a printout. Wrap inline text.
+ */
+export function CircleMark({ children, color = '#e8a317', className = '' }) {
+  const ref = useRef(null)
+  useInkIn(ref, { duration: 1.2, delay: 0.35 })
+  return (
+    <span ref={ref} className={`relative inline-block whitespace-nowrap ${className}`}>
+      {children}
+      <svg
+        viewBox="0 0 200 70" preserveAspectRatio="none" aria-hidden="true" fill="none"
+        className="pointer-events-none absolute -inset-x-[9%] -inset-y-[22%] h-[144%] w-[118%] overflow-visible"
+      >
+        <path
+          data-ink
+          d="M150 9C104 1 36 5 14 25c-19 17 4 37 60 40 55 3 111-6 118-26 6-18-38-31-99-29"
+          stroke={color} strokeWidth="3" strokeLinecap="round"
+        />
+      </svg>
+    </span>
+  )
+}
+
+/** ArrowDoodle — a curly hand-drawn arrow pointing at something. */
+export function ArrowDoodle({ className = '', color = 'currentColor', flip = false }) {
+  const ref = useRef(null)
+  useInkIn(ref, { duration: 1 })
+  return (
+    <svg
+      ref={ref} viewBox="0 0 120 80" aria-hidden="true" fill="none"
+      className={`pointer-events-none ${flip ? '-scale-x-100' : ''} ${className}`}
+    >
+      <path data-ink d="M6 14c22 34 58 46 86 30 12-7 14-22 3-24-12-2-15 16-4 28 7 8 16 11 24 11" stroke={color} strokeWidth="3" strokeLinecap="round" />
+      <path data-ink d="M103 50l12 9-13 6" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/**
+ * Stamp — a passport-style rubber stamp. Lands with a small thud as
+ * it scrolls in, then sits slightly rotated, a little uneven.
+ */
+export function Stamp({ top, main, bottom, className = '', tone = 'clay', rotate = -8 }) {
+  const ref = useRef(null)
+  const colour = {
+    clay: 'text-clay border-clay',
+    navy: 'text-navy-900 border-navy-900',
+    gold: 'text-gold-400 border-gold-400',
+    palm: 'text-palm border-palm',
+    paper: 'text-white/85 border-white/70',
+  }[tone]
+
+  useGSAP(() => {
+    const el = ref.current
+    if (!el) return
+    // Rotation lives in GSAP's transform only (a CSS `rotate` would stack on top).
+    if (reduceMotion()) { gsap.set(el, { autoAlpha: 0.9, scale: 1, rotation: rotate }); return }
+    // 1.3, not bigger: stamps often sit near a page edge, and a larger
+    // starting scale pokes past the viewport and widens the page mid-thud.
+    gsap.fromTo(el, { autoAlpha: 0, scale: 1.3, rotation: rotate - 10 }, {
+      autoAlpha: 0.9, scale: 1, rotation: rotate, duration: 0.55, ease: 'back.out(2.2)',
+      scrollTrigger: enterTrigger(el, { start: 'top 90%' }),
+    })
+  }, { scope: ref, dependencies: [rotate] })
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden="true"
+      className={`pointer-events-none inline-flex select-none flex-col items-center rounded-lg border-[2.5px] px-4 py-2 text-center opacity-90 mix-blend-multiply ${colour} ${className}`}
+    >
+      <span className="rounded-md border border-current px-3 py-1.5">
+        {top && <span className="block font-display text-[0.62rem] font-extrabold tracking-[0.28em] uppercase">{top}</span>}
+        <span className="block font-display text-[1.15rem] leading-tight font-black tracking-[0.06em] uppercase">{main}</span>
+        {bottom && <span className="block font-display text-[0.62rem] font-extrabold tracking-[0.28em] uppercase">{bottom}</span>}
+      </span>
+    </div>
+  )
+}
+
+/**
+ * Polaroid — a photo pinned to the page with a strip of tape and a
+ * handwritten caption. Settles into place as it enters. Built as the
+ * drop-in slot for the business's own photos (office, team, trips).
+ */
+export function Polaroid({ src, alt, caption, rotate = -3, className = '', imgClassName = 'aspect-[4/3.3]', tape = true }) {
+  const ref = useRef(null)
+  useGSAP(() => {
+    const el = ref.current
+    if (!el) return
+    if (reduceMotion()) { gsap.set(el, { rotation: rotate }); return }
+    gsap.fromTo(el, { autoAlpha: 0, y: -26, rotation: rotate + 7 }, {
+      autoAlpha: 1, y: 0, rotation: rotate, duration: 1.1, ease: EASE_EXPO,
+      scrollTrigger: enterTrigger(el, { start: 'top 88%' }),
+    })
+  }, { scope: ref, dependencies: [rotate] })
+
+  return (
+    <figure
+      ref={ref}
+      className={`relative bg-white p-3 pb-2 shadow-[0_22px_40px_-22px_rgb(60_40_20/0.55),0_2px_6px_-2px_rgb(60_40_20/0.25)] ${className}`}
+    >
+      {tape && (
+        <span aria-hidden="true" className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-[-4deg] bg-sand/85 shadow-sm" />
+      )}
+      <img src={src} alt={alt} loading="lazy" className={`w-full object-cover ${imgClassName}`} />
+      {caption && <figcaption className="note mt-2 px-1 text-center text-[1.15rem] text-navy-900/80">{caption}</figcaption>}
+    </figure>
+  )
+}
+
+/* ============================================================
    Preloader — a brief branded curtain on the first visit of a
    session. Hard-capped and fail-safe: it can never trap the page.
    ============================================================ */
@@ -386,17 +469,18 @@ export function Preloader() {
     if (!show || !root.current) return
     const q = gsap.utils.selector(root)
     const finish = () => { markIntroDone(); setGone(true) }
-    // Absolute ceiling: whatever happens, the curtain is gone by 3.2s.
-    const bail = setTimeout(finish, 3200)
+    // Absolute ceiling: whatever happens, the curtain is gone by 2.2s.
+    // Kept short on purpose — every extra second before content costs visitors.
+    const bail = setTimeout(finish, 2200)
 
     const tl = gsap.timeline({ defaults: { ease: EASE_EXPO }, onComplete: () => { clearTimeout(bail); finish() } })
-    tl.fromTo(q('[data-pl-logo]'), { autoAlpha: 0, y: 24, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.8 })
-      .fromTo(q('[data-pl-line]'), { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: 'power3.inOut' }, '-=0.35')
-      .fromTo(q('[data-pl-plane]'), { xPercent: -50, left: '0%' }, { left: '100%', duration: 0.9, ease: 'power3.inOut' }, '<')
-      .fromTo(q('[data-pl-tag]'), { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.6 }, '-=0.5')
+    tl.fromTo(q('[data-pl-logo]'), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.5 })
+      .fromTo(q('[data-pl-line]'), { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: 'power3.inOut' }, '-=0.25')
+      .fromTo(q('[data-pl-plane]'), { xPercent: -50, left: '0%' }, { left: '100%', duration: 0.6, ease: 'power3.inOut' }, '<')
+      .fromTo(q('[data-pl-tag]'), { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 0.4 }, '-=0.35')
       .add(() => markIntroDone())
-      .to(q('[data-pl-inner]'), { autoAlpha: 0, y: -30, duration: 0.5, ease: 'power2.in' }, '+=0.15')
-      .to(q('[data-pl-panel]'), { yPercent: -100, duration: 0.95, ease: 'expo.inOut', stagger: 0.07 }, '-=0.2')
+      .to(q('[data-pl-inner]'), { autoAlpha: 0, y: -20, duration: 0.3, ease: 'power2.in' }, '+=0.05')
+      .to(q('[data-pl-panel]'), { yPercent: -100, duration: 0.7, ease: 'expo.inOut', stagger: 0.05 }, '-=0.12')
 
     return () => clearTimeout(bail)
   }, { scope: root, dependencies: [show] })

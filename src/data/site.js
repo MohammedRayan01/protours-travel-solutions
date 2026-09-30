@@ -24,9 +24,27 @@ export const BIZ = {
   addressOneLine:
     '21/1, G-2 Plain Street, A.M. Plaza, Ground Floor, Hospital Road, Near Infantry Road, Shivaji Nagar, Bengaluru, Karnataka 560001',
   hours: 'Monday – Saturday: 10:00 AM – 8:00 PM',
-  rating: 4.5,
-  reviewCount: 128,
   since: 2009,
+  // Unconfirmed figures (a star rating, review count, traveller totals,
+  // visa success %) were removed on the owner's instruction — only show
+  // numbers the business has confirmed.
+}
+
+/** Whole years trading — computed, so it never goes stale. */
+export const YEARS = new Date().getFullYear() - BIZ.since
+
+/**
+ * The business's own photos. Drop files into /public/photos/ and set
+ * the path here — every page that shows these slots picks them up.
+ * While a slot is null, pages fall back to a suitable stock image.
+ */
+export const PHOTOS = {
+  office: null,   // e.g. '/photos/office-front.jpg' — the A.M. Plaza shopfront
+  desk: null,     // the team at their desks
+  founder: null,  // Abdul Mannan Sajid
+  trip1: null,    // a customer trip (with their consent)
+  trip2: null,
+  umrah: null,    // a group in Makkah/Madinah (with consent)
 }
 
 /** Build a wa.me deep link with a pre-filled message. */
@@ -470,12 +488,17 @@ export const REVIEWS = [
   },
 ]
 
-/* ---- Headline numbers ---- */
+/* ---- Confirmed facts — the only "numbers" the site may show ---- */
 export const STATS = [
-  { value: 16, suffix: '+', label: 'Years of experience' },
-  { value: 10000, suffix: '+', label: 'Travellers served' },
-  { value: 60, suffix: '+', label: 'Destinations covered' },
-  { value: 98, suffix: '%', label: 'Visa success rate' },
+  { value: YEARS, suffix: '+', label: 'Years booking trips from Bengaluru' },
+]
+
+/** Plain, checkable proof points to use instead of invented stats. */
+export const FACTS = [
+  { big: `Since ${BIZ.since}`, label: 'Booking trips from Bengaluru' },
+  { big: 'IATA', label: 'Accredited travel agent' },
+  { big: 'Hospital Road', label: 'Walk-in office, Shivaji Nagar' },
+  { big: 'Hajj & Umrah', label: 'A dedicated division' },
 ]
 
 /* ---- FAQ ---- */

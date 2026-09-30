@@ -2,26 +2,49 @@
 
 /* ============================================================
    DESIGN TOKENS  —  Pro Tours & Travel Solutions
-   Palette drawn from the company logo: deep navy + brand blue,
-   with a warm gold accent for premium emphasis.
+   Navy + gold from the logo, set on warm "paper" instead of
+   clinical white. Blue reads as trust across Indian audiences;
+   gold as warmth and prosperity; green (Umrah, WhatsApp) as
+   calm and sacred. Contrast ratios below are WCAG vs paper.
    ============================================================ */
 @theme {
-  --color-navy-950: #04182c;
+  --color-navy-950: #04182c; /* headings/ink — 16.8:1 */
   --color-navy-900: #062647;
   --color-navy-800: #0a3560;
   --color-navy-700: #0f4a80;
 
-  --color-brand-600: #0f63ad;
-  --color-brand-500: #1273c4;
-  --color-brand-400: #3f9ae0;
-  --color-brand-300: #7bbdf0;
+  /* Deeper than the logo blue so small text and buttons pass AA on
+     every surface; the logo image itself keeps its own colour. */
+  --color-brand-600: #0b4f86;
+  --color-brand-500: #0f5e9e; /* 6.3:1 */
+  --color-brand-400: #3f86c4;
+  --color-brand-300: #8bb8de;
 
-  --color-gold-600: #c2860c;
-  --color-gold-500: #e8a317;
+  --color-gold-600: #8a5a00;  /* gold that is safe as text — 5.6:1 */
+  --color-gold-500: #e8a317;  /* decorative / on navy only */
   --color-gold-400: #f5bc48;
 
-  --color-ink: #101c29;
-  --color-body: #43556a;
+  --color-paper: #fbf7f0;     /* page background */
+  --color-sand: #f3eadb;      /* alternate sections / surfaces */
+  --color-clay: #b4532a;      /* warm accent — 4.7:1 */
+  --color-palm: #0b6e4f;      /* WhatsApp + Umrah accent — white on it 6.3:1 */
+
+  /* The whole grey scale is warmed, so every existing slate-* class
+     (borders, muted text, section fills) shifts off cold blue-grey. */
+  --color-slate-50: #f3eadb;
+  --color-slate-100: #ede2d0;
+  --color-slate-200: #e2d4be;
+  --color-slate-300: #cdbca4;
+  --color-slate-400: #a89a89;
+  --color-slate-500: #6e6258;  /* muted text — 5.6:1 */
+  --color-slate-600: #5a5048;
+
+  /* "White" becomes paper, so text on navy and photos is ivory, not
+     screen-white, and white cards sit naturally on sand sections. */
+  --color-white: #fbf7f0;
+
+  --color-ink: #04182c;
+  --color-body: #5a5048;       /* warm taupe body copy — 7.4:1 */
 
   /* Cabinet Grotesk carries the whole interface — body and headings alike.
      Cormorant Garamond is the accent serif, used italic for emphasis. */
@@ -30,12 +53,16 @@
   --font-accent: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --font-serif: var(--font-accent);
 
-  --radius-4xl: 2rem;
-  --radius-5xl: 2.75rem;
+  /* Tighter, more grounded corners — the old uniform 32px+ "bubble"
+     cards were one of the loudest template tells. */
+  --radius-3xl: 1.1rem;
+  --radius-4xl: 1.35rem;
+  --radius-5xl: 1.75rem;
 
-  --shadow-glow: 0 20px 60px -15px rgb(18 115 196 / 0.45);
-  --shadow-gold: 0 18px 44px -12px rgb(232 163 23 / 0.5);
-  --shadow-lift: 0 28px 70px -20px rgb(4 24 44 / 0.35);
+  /* Soft, warm, low shadows instead of coloured glows. */
+  --shadow-glow: 0 10px 28px -14px rgb(4 24 44 / 0.35);
+  --shadow-gold: 0 10px 26px -14px rgb(138 90 0 / 0.45);
+  --shadow-lift: 0 18px 40px -24px rgb(60 40 20 / 0.35);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -149,28 +176,25 @@
    Declared with @utility (not @layer components) so that
    `@apply glass` works inside our own component classes.
    ---------------------------------------------------------- */
+/* Retuned: these used to be heavy frosted "liquid glass" (a loud
+   AI-template tell). They're now quiet tinted panels — a deep navy
+   wash with a hairline edge, like ink on a photograph, no bloom. */
 @utility glass {
-  background: rgb(255 255 255 / 0.09);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid rgb(255 255 255 / 0.18);
-  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.22),
-              0 22px 60px -22px rgb(0 0 0 / 0.6);
+  background: rgb(4 24 44 / 0.52);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgb(251 247 240 / 0.14);
 }
 @utility glass-strong {
-  background: rgb(255 255 255 / 0.14);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: 1px solid rgb(255 255 255 / 0.26);
-  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.3),
-              0 28px 70px -24px rgb(0 0 0 / 0.65);
+  background: rgb(4 24 44 / 0.68);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgb(251 247 240 / 0.18);
 }
 @utility glass-light {
-  background: rgb(255 255 255 / 0.72);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgb(255 255 255 / 0.9);
-  box-shadow: 0 22px 60px -26px rgb(4 24 44 / 0.4);
+  background: rgb(251 247 240 / 0.94);
+  border: 1px solid var(--color-slate-200);
+  box-shadow: var(--shadow-lift);
 }
 
 @layer components {
@@ -180,23 +204,39 @@
   .section { @apply py-12 md:py-20; }
 
   /* ---- Buttons ------------------------------------------- */
+  /* Buttons: a softer rectangle instead of the generic pill, and a
+     press that dips rather than a float-and-glow. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5
+    @apply inline-flex items-center justify-center gap-2.5 rounded-xl px-7 py-3.5
            font-display text-[1.08rem] font-bold whitespace-nowrap
-           transition-all duration-300 cursor-pointer border border-transparent;
+           transition-[transform,background-color,color,border-color,box-shadow] duration-300 cursor-pointer border border-transparent
+           active:translate-y-px active:scale-[0.985];
   }
-  .btn-gold  { @apply bg-gold-500 text-navy-950 shadow-[var(--shadow-gold)] hover:bg-gold-400 hover:-translate-y-0.5; }
-  .btn-brand { @apply bg-brand-500 text-white shadow-[var(--shadow-glow)] hover:bg-brand-600 hover:-translate-y-0.5; }
-  .btn-glass { @apply glass text-white hover:bg-white/20 hover:-translate-y-0.5; }
-  .btn-ghost { @apply border-slate-200 bg-white text-[var(--color-ink)] hover:border-brand-500 hover:text-brand-500 hover:-translate-y-0.5; }
-  .btn-wa    { @apply bg-[#25d366] text-[#04270f] shadow-[0_18px_44px_-12px_rgb(37_211_102/0.55)] hover:bg-[#1eb955] hover:-translate-y-0.5; }
+  .btn-gold  { @apply bg-gold-500 text-navy-950 shadow-[var(--shadow-gold)] hover:bg-gold-400; }
+  .btn-brand { @apply bg-brand-500 text-white shadow-[var(--shadow-glow)] hover:bg-brand-600; }
+  .btn-glass { @apply border-white/35 bg-navy-950/35 text-white hover:border-white/70 hover:bg-navy-950/55; }
+  .btn-ghost { @apply border-slate-300 bg-white text-[var(--color-ink)] hover:border-navy-950; }
+  /* Deep palm green: white text on it passes AA (the stock WhatsApp
+     #25D366 with white text is only 1.98:1). */
+  .btn-wa    { @apply bg-palm text-white shadow-[0_10px_26px_-14px_rgb(11_110_79/0.6)] hover:bg-[#095c42]; }
 
   /* ---- Text ---------------------------------------------- */
+  /* Section labels read like a handwritten margin note — serif italic,
+     sentence case — instead of the spaced-out uppercase tag that sits
+     above every section of every template site. */
   .eyebrow {
-    @apply inline-flex items-center gap-2.5 font-display text-[0.86rem] font-bold
-           uppercase tracking-[0.2em] text-brand-500;
+    @apply inline-flex items-center gap-2.5 font-accent text-[1.28rem] font-semibold italic
+           leading-none tracking-normal text-gold-600;
   }
-  .eyebrow::before { content: ""; @apply h-0.5 w-7 rounded-full bg-gold-500; }
+  .eyebrow::before {
+    content: "";
+    width: 1.6rem;
+    height: 0.55rem;
+    flex-shrink: 0;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 12'%3E%3Cpath d='M2 8c6-5 10-5 14-1s9 4 12 0 7-5 10-2' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 12'%3E%3Cpath d='M2 8c6-5 10-5 14-1s9 4 12 0 7-5 10-2' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
   .eyebrow-light { @apply text-gold-400; }
 
   /* The lower clamp bound has to fit a 360px screen, not just look good on
@@ -311,20 +351,6 @@
 .animate-spin-slow { animation: spin-slow 22s linear infinite; }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 
-/* Light sweeps across the primary buttons on hover. */
-.btn-gold, .btn-brand { position: relative; overflow: hidden; isolation: isolate; }
-.btn-gold::before, .btn-brand::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 32%, rgb(255 255 255 / 0.55) 50%, transparent 68%);
-  transform: translateX(-130%);
-  transition: transform 0.9s var(--ease-out-expo);
-}
-.btn-gold:hover::before, .btn-brand:hover::before { transform: translateX(130%); }
-
 /* Underline that grows from the left on hover — for text links. */
 .link-grow { position: relative; }
 .link-grow::after {
@@ -342,27 +368,31 @@
 }
 .link-grow:hover::after, .link-grow[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
 
-/* Shimmering gold for accent words on dark grounds. */
-.text-gold-shine {
-  background: linear-gradient(100deg, #e8a317 20%, #fde6a8 45%, #f5bc48 55%, #e8a317 80%);
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: gold-shine 6s ease-in-out infinite;
-}
-@keyframes gold-shine {
-  0%, 100% { background-position: 100% 0; }
-  50% { background-position: 0% 0; }
-}
+/* Gold accent words on dark grounds — plain ink now; the looping
+   shimmer read as a gimmick. Kept as a class so markup stays valid. */
+.text-gold-shine { color: var(--color-gold-400); }
 
 /* Gold hairline with a travelling highlight, at the foot of page heroes. */
 .hero-hairline {
-  background: linear-gradient(90deg, transparent, rgb(232 163 23 / 0.35) 20%, #fde6a8 50%, rgb(232 163 23 / 0.35) 80%, transparent);
-  background-size: 200% 100%;
-  animation: hairline 5s linear infinite;
+  background: linear-gradient(90deg, transparent, rgb(232 163 23 / 0.45) 25%, rgb(232 163 23 / 0.45) 75%, transparent);
 }
-@keyframes hairline { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* Paper — a static, barely-there fibre texture for sand sections.
+   Static on purpose: moving grain read as a filter; still grain reads
+   as printed stock. */
+.paper { position: relative; isolation: isolate; }
+.paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.33 0 0 0 0 0.22 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+
+/* Handwritten-feel caption, for photo slots and margin notes. */
+.note { font-family: var(--font-accent); font-style: italic; font-weight: 600; letter-spacing: 0; }
 
 /* Respect the user's motion preference */
 @media (prefers-reduced-motion: reduce) {

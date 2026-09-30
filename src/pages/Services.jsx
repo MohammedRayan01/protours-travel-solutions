@@ -1,49 +1,176 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react'
+import { ArrowDownRight, ArrowRight, MessageCircle } from 'lucide-react'
 
 import { BIZ, SERVICES, waLink } from '../data/site.js'
-import { Reveal, SectionHeading, PageHero, Parallax, Stagger, Magnetic } from '../components/ui.jsx'
-import { ImageReveal, Marquee, FlightPath, Spotlight, Orbs, Grain, RevealGrid, RotatingBadge } from '../components/fx.jsx'
+import { Reveal, SectionHeading, PageHero, Parallax, Stagger, SplitHeading } from '../components/ui.jsx'
+import { ImageReveal, FlightPath, Polaroid, CircleMark } from '../components/fx.jsx'
 import { useHashScroll } from '../components/SmoothScroll.jsx'
-import { gsap, useGSAP, reduceMotion } from '../lib/gsap.js'
+import { gsap, useGSAP, reduceMotion, enterTrigger } from '../lib/gsap.js'
+
+/* Margin notes — the kind of thing someone scribbles beside a list.
+   Deliberately not claims: just the question each service starts with. */
+const NOTES = {
+  flights: 'aisle or window?',
+  hotels: 'dates might move? ask about free cancellation',
+  tailor: 'your pace, your dates',
+  tours: 'same route, three tiers',
+  visa: 'the checklist comes first',
+  passport: 'tatkal, when time is short',
+  cruise: 'balcony or interior?',
+  umrah: 'distance in metres',
+}
+
+/* Where each service has a page of its own. */
+const RELATED = {
+  umrah: { to: '/umrah', label: 'Umrah packages' },
+  visa: { to: '/visa', label: 'Visa guide' },
+  passport: { to: '/visa', label: 'Visa & passport guide' },
+  tours: { to: '/packages', label: 'Browse packages' },
+  flights: { to: '/flights-hotels#flights', label: 'Flights & hotels' },
+  hotels: { to: '/flights-hotels#hotels', label: 'Flights & hotels' },
+}
 
 const EXTRAS = [
-  { img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=72', alt: 'Signing a travel insurance document', title: 'Travel Insurance', desc: 'Schengen-compliant medical cover, trip cancellation, baggage loss and senior-citizen plans, issued alongside your ticket.' },
-  { img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=72', alt: 'Chauffeur at the wheel', title: 'Transfers & Car Rental', desc: 'Airport pickups, chauffeur-driven cars and coach hire for groups — in India and at your destination.' },
-  { img: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=72', alt: 'Corporate travel planning meeting', title: 'Corporate Travel Desk', desc: 'Credit terms, GST invoicing, policy-compliant fares, monthly MIS reports and a named consultant for your company.' },
+  { img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=72', alt: 'Signing a travel insurance document', title: 'Travel insurance', desc: 'Schengen-compliant medical cover, trip cancellation, baggage loss and senior-citizen plans, issued alongside your ticket.' },
+  { img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=72', alt: 'Chauffeur at the wheel of a car', title: 'Transfers & car rental', desc: 'Airport pickups, chauffeur-driven cars and coach hire for groups, in India and at your destination.' },
+  { img: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=72', alt: 'Colleagues planning around a table', title: 'Corporate travel desk', desc: 'Credit terms, GST invoicing, policy-compliant fares, monthly MIS reports and a named consultant for your company.' },
 ]
 
-/* The dark CTA band opens up from an inset "window" to full width as it
-   scrolls in — clip-path only, so layout never moves. */
+/* The dark CTA band opens from an inset "window" to full width as it
+   scrolls in. clip-path only, so layout never moves. */
 function ExpandBand({ children, className = '' }) {
   const ref = useRef(null)
   useGSAP(() => {
     const el = ref.current
     if (!el || reduceMotion()) return
     gsap.fromTo(el,
-      { clipPath: 'inset(6% 7% 6% 7% round 2.75rem)' },
+      { clipPath: 'inset(5% 6% 5% 6% round 1.75rem)' },
       {
-        clipPath: 'inset(0% 0% 0% 0% round 2.75rem)',
+        clipPath: 'inset(0% 0% 0% 0% round 1.75rem)',
         ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top 96%', end: 'top 45%', scrub: 0.8 },
+        scrollTrigger: { trigger: el, start: 'top 96%', end: 'top 50%', scrub: 0.8 },
       })
   }, { scope: ref })
   return <div ref={ref} className={className}>{children}</div>
 }
 
-/* The gold rule under each service number grows from the left as it enters. */
-function GrowRule({ className = '' }) {
+/* The service number, written large in the margin, with a short ink
+   stroke that draws under it as the block arrives. */
+function MarginNumber({ num }) {
   const ref = useRef(null)
   useGSAP(() => {
     const el = ref.current
-    if (!el || reduceMotion()) return
-    gsap.fromTo(el, { scaleX: 0 }, {
-      scaleX: 1, duration: 1.3, ease: 'expo.inOut',
-      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
-    })
+    const p = el?.querySelector('path')
+    const n = el?.querySelector('[data-num]')
+    if (!p || !n) return
+    if (reduceMotion()) { gsap.set(p, { drawSVG: '100%' }); return }
+    const tl = gsap.timeline({ scrollTrigger: enterTrigger(el, { start: 'top 85%' }) })
+    tl.fromTo(n, { yPercent: 60, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.9, ease: 'expo.out' })
+      .fromTo(p, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.8, ease: 'power2.inOut' }, '-=0.5')
   }, { scope: ref })
-  return <span ref={ref} aria-hidden="true" className={`block h-0.5 origin-left rounded-full bg-gradient-to-r from-gold-500 to-brand-400 ${className}`} />
+  return (
+    <div ref={ref} className="overflow-hidden">
+      <span data-num className="block font-accent text-[3.4rem] leading-none font-semibold text-gold-600 italic md:text-[4.4rem]">
+        {num}
+      </span>
+      <svg viewBox="0 0 90 10" aria-hidden="true" fill="none" className="mt-1 h-2.5 w-20">
+        <path d="M2 6c14-4 26-4 40-1s30 3 46-2" stroke="#b4532a" strokeWidth="2.4" strokeLinecap="round" />
+      </svg>
+    </div>
+  )
+}
+
+/* A small hand-drawn tick, static — these are list bullets, not effects. */
+function Tick() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" className="mt-1.5 h-4 w-4 shrink-0">
+      <path d="M3 11c2 1.5 3.5 3 4.5 5C10 10 13 6 17.5 3" stroke="#0f5e9e" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ServiceBlock({ s, i }) {
+  const flip = i % 2 === 1
+  const num = String(i + 1).padStart(2, '0')
+  const rel = RELATED[s.id]
+  const tall = i % 3 === 1
+
+  return (
+    <section
+      id={s.id}
+      className={`section scroll-mt-24 overflow-x-clip ${i % 2 === 0 ? 'bg-white' : 'paper bg-sand'}`}
+    >
+      <div className="wrap grid items-start gap-8 lg:grid-cols-12 lg:gap-12">
+        {/* Margin column: number + note */}
+        <div className="flex items-end gap-5 lg:col-span-2 lg:flex-col lg:items-start lg:gap-3">
+          <MarginNumber num={num} />
+          <Reveal delay={0.2}>
+            <p className="note max-w-[12rem] pb-2 text-[1.12rem] leading-snug text-navy-900/75 lg:pb-0">{NOTES[s.id]}</p>
+          </Reveal>
+        </div>
+
+        {/* Copy */}
+        <div className={`lg:col-span-5 ${flip ? 'lg:order-3' : ''}`}>
+          <p className="font-display text-[0.78rem] font-bold tracking-[0.2em] text-slate-500 uppercase">{s.short}</p>
+          <SplitHeading className="h-sec mt-3 text-balance">
+            {s.title}
+          </SplitHeading>
+          <Reveal delay={0.1}>
+            <p className="mt-5 text-[1.12rem] text-pretty">{s.desc}</p>
+          </Reveal>
+
+          <Stagger className="mt-7 grid gap-3 border-t border-slate-200 pt-6" stagger={0.07} y={16}>
+            {s.points.map((p) => (
+              <div key={p} className="flex gap-3">
+                <Tick />
+                <span className="text-[1.05rem] text-pretty">{p}</span>
+              </div>
+            ))}
+          </Stagger>
+
+          <Reveal delay={0.2}>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <a
+                href={waLink(`Hello Pro Tours & Travel Solutions, I would like to ask about ${s.title}.`)}
+                target="_blank" rel="noopener noreferrer"
+                className="btn btn-wa"
+              >
+                <MessageCircle size={17} aria-hidden="true" /> Ask on WhatsApp
+              </a>
+              {rel && (
+                <Link to={rel.to} className="group/rel inline-flex items-center gap-1.5 font-display font-bold text-brand-500">
+                  <span className="link-grow">{rel.label}</span>
+                  <ArrowRight size={15} aria-hidden="true" className="transition-transform duration-300 group-hover/rel:translate-x-1" />
+                </Link>
+              )}
+            </div>
+          </Reveal>
+        </div>
+
+        {/* Photos: a curtain reveal with a slow drift inside, plus a pinned print */}
+        <div className={`relative lg:col-span-5 ${flip ? 'lg:order-2' : ''}`}>
+          <ImageReveal from={flip ? 'left' : 'right'} className={`relative rounded-3xl ${tall ? 'aspect-[4/4.4]' : 'aspect-[4/3.2]'}`}>
+            <Parallax speed={0.12} className="absolute inset-0">
+              <img
+                src={s.img}
+                alt={s.title}
+                loading="lazy"
+                className="absolute inset-x-0 -top-[8%] h-[116%] w-full object-cover"
+              />
+            </Parallax>
+          </ImageReveal>
+          <div className={`absolute -bottom-8 hidden w-40 sm:block md:w-44 ${flip ? '-left-3' : '-right-3'}`}>
+            <Parallax speed={-0.25}>
+              <div>
+                <Polaroid src={s.img2} alt="" caption={null} rotate={flip ? -5 : 4} imgClassName="aspect-square" />
+              </div>
+            </Parallax>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
 }
 
 export default function Services() {
@@ -56,206 +183,104 @@ export default function Services() {
         img="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1800&q=74"
         alt="Aircraft wing above the clouds"
         eyebrow="Our services"
-        title="Eight services. One travel desk."
-        sub="Everything a journey needs — booked, documented and supported by the same team from first enquiry to final landing."
+        title="Eight services, one travel desk"
+        sub="Tickets, hotels, visas, passports, cruises, Umrah and tour packages. The same people look after your booking from the first message to the flight home."
       />
 
-      {/* ---- Service index ticker ---- */}
-      <nav aria-label="Jump to a service" className="relative isolate overflow-hidden border-b border-white/10 bg-navy-950 py-5">
-        <Grain />
-        <Marquee speed={42} trackClassName="py-1">
-          {SERVICES.map((s, i) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className="group flex shrink-0 items-center gap-4 px-6 font-display text-[1.02rem] font-bold whitespace-nowrap text-white/75 transition-colors hover:text-gold-400 md:px-8 md:text-[1.12rem]"
-            >
-              <span className="font-display text-[0.78rem] tracking-[0.2em] text-gold-500">{String(i + 1).padStart(2, '0')}</span>
-              <span className="link-grow">{s.title}</span>
-              <Sparkles aria-hidden="true" size={15} className="text-gold-500/70 transition-transform duration-500 group-hover:rotate-90" />
-            </a>
-          ))}
-        </Marquee>
+      {/* ---- Index: a contents page, not a ticker ---- */}
+      <nav aria-label="Jump to a service" className="section bg-white">
+        <div className="wrap grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+          <Reveal>
+            <span className="eyebrow">What we do</span>
+            <h2 className="h-sec mt-4 text-balance">
+              The whole trip, from{' '}
+              <CircleMark>one desk</CircleMark>
+            </h2>
+            <p className="mt-6 max-w-md text-[1.12rem] text-pretty">
+              We have been booking trips from Shivaji Nagar since {BIZ.since}. Tickets, visa, hotel and insurance can all
+              sit with the same people here, so nothing falls between two agencies.
+            </p>
+            <p className="note mt-5 text-[1.15rem] text-navy-900/70">Pick a line to jump straight to it.</p>
+          </Reveal>
+
+          <Stagger className="border-b border-slate-200" stagger={0.05} y={14}>
+            {SERVICES.map((s, i) => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className="group grid grid-cols-[2.6rem_1fr_auto] items-center gap-3 border-t border-slate-200 py-4 sm:gap-5"
+              >
+                <span className="note text-[1.2rem] text-gold-600">{String(i + 1).padStart(2, '0')}</span>
+                <span className="min-w-0">
+                  <span className="block font-display text-[1.14rem] font-bold text-ink transition-colors group-hover:text-brand-500">{s.title}</span>
+                  <span className="block truncate text-[0.93rem] text-slate-500">{s.short}</span>
+                </span>
+                <ArrowDownRight
+                  size={18}
+                  aria-hidden="true"
+                  className="text-slate-400 transition-[transform,color] duration-300 group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:text-brand-500"
+                />
+              </a>
+            ))}
+          </Stagger>
+        </div>
       </nav>
 
-      {/* ---- Alternating detail blocks ---- */}
-      {SERVICES.map((s, i) => {
-        const flip = i % 2 === 1
-        const num = String(i + 1).padStart(2, '0')
-        return (
-          <section
-            key={s.id}
-            id={s.id}
-            className={`section relative isolate scroll-mt-24 overflow-hidden ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}
-          >
-            <div className="wrap">
-              <div className="grid items-center gap-14 lg:grid-cols-2">
-                {/* Twin images */}
-                <div className={`relative ${flip ? 'lg:order-2' : ''}`}>
-                  <ImageReveal from={flip ? 'right' : 'left'} className="rounded-5xl shadow-[var(--shadow-lift)]">
-                    <img
-                      src={s.img}
-                      alt={s.title}
-                      loading="lazy"
-                      className="aspect-[4/3.2] w-full object-cover"
-                    />
-                  </ImageReveal>
-                  {/* Secondary photo floats and drifts against the scroll */}
-                  <Parallax
-                    speed={-0.5}
-                    className={`pointer-events-none absolute -bottom-9 hidden w-44 sm:block ${flip ? '-left-6' : '-right-6'}`}
-                  >
-                    <div>
-                      <img
-                        src={s.img2}
-                        alt=""
-                        aria-hidden="true"
-                        loading="lazy"
-                        style={{ animationDelay: `${i * -1.3}s` }}
-                        className={`animate-float aspect-square w-full rounded-4xl border-[6px] border-white object-cover shadow-[var(--shadow-lift)] ${flip ? '-rotate-3' : 'rotate-3'}`}
-                      />
-                    </div>
-                  </Parallax>
-                </div>
+      {SERVICES.map((s, i) => <ServiceBlock key={s.id} s={s} i={i} />)}
 
-                {/* Copy */}
-                <div className={`relative ${flip ? 'lg:order-1' : ''}`}>
-                  {/* Giant outlined numeral drifting behind the copy */}
-                  <Parallax
-                    speed={0.35}
-                    className={`pointer-events-none absolute -top-8 -z-10 select-none md:-top-12 ${flip ? 'left-0 lg:left-auto lg:right-0' : 'right-0'}`}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="block font-display text-[clamp(6.5rem,17vw,12rem)] leading-none font-extrabold tracking-[-0.05em] text-transparent [-webkit-text-stroke:1.5px_rgb(18_115_196/0.16)]"
-                    >
-                      {num}
-                    </span>
-                  </Parallax>
-
-                  <Reveal>
-                    <span className="eyebrow">
-                      Service {num}
-                    </span>
-                  </Reveal>
-                  <Reveal delay={0.08}>
-                    <h2 className="h-sec mt-4 text-balance">{s.title}</h2>
-                  </Reveal>
-                  <GrowRule className="mt-6 w-24" />
-                  <Reveal delay={0.14}>
-                    <p className="mt-5 text-[1.14rem] text-pretty">{s.desc}</p>
-                  </Reveal>
-
-                  <Stagger className="mt-8 grid gap-3.5" stagger={0.08} y={22}>
-                    {s.points.map((p) => (
-                      <div key={p} className="flex gap-3.5">
-                        <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-500/12 text-brand-500">
-                          <Check size={12} strokeWidth={3.2} />
-                        </span>
-                        <span className="text-[1.07rem] text-pretty">{p}</span>
-                      </div>
-                    ))}
-                  </Stagger>
-
-                  <Reveal delay={0.28}>
-                    <div className="mt-9 flex flex-wrap gap-4">
-                      <a
-                        href={waLink(`Hello Pro Tours & Travel Solutions, I would like to enquire about ${s.title}.`)}
-                        target="_blank" rel="noopener noreferrer"
-                        className="group/btn btn btn-brand"
-                      >
-                        Enquire Now <ArrowRight size={16} className="transition-transform duration-500 group-hover/btn:translate-x-1" />
-                      </a>
-                      {s.id === 'umrah' && <Link to="/umrah" className="btn btn-ghost">Umrah Packages</Link>}
-                      {(s.id === 'visa' || s.id === 'passport') && <Link to="/visa" className="btn btn-ghost">Visa Guide</Link>}
-                      {s.id === 'tours' && <Link to="/packages" className="btn btn-ghost">Browse Packages</Link>}
-                      {s.id === 'flights' && <Link to="/flights-hotels#flights" className="btn btn-ghost">Flights & Hotels</Link>}
-                      {s.id === 'hotels' && <Link to="/flights-hotels#hotels" className="btn btn-ghost">Flights & Hotels</Link>}
-                    </div>
-                  </Reveal>
-                </div>
-              </div>
-            </div>
-          </section>
-        )
-      })}
-
-      {/* ---- Extras ---- */}
-      <section className="section relative isolate overflow-hidden bg-white">
-        <Orbs tone="light" className="opacity-60" />
+      {/* ---- Extras: a short list, not another card grid ---- */}
+      <section className="section bg-white">
         <div className="wrap">
-          <SectionHeading center eyebrow="Also available" title="The rest of what we handle" />
-          <RevealGrid className="grid gap-6 md:grid-cols-3">
+          <SectionHeading eyebrow="Also on the desk" title="The smaller things we sort out too" />
+          <div className="grid gap-10 md:grid-cols-3 md:gap-8">
             {EXTRAS.map((e, i) => (
-              <Spotlight key={e.title} className="h-full rounded-4xl" color="rgb(232 163 23 / 0.14)">
-                <div className="group flex h-full flex-col overflow-hidden rounded-4xl border border-slate-200 bg-white transition-[transform,box-shadow] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-2 hover:shadow-[var(--shadow-lift)]">
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    <img
-                      src={e.img}
-                      alt={e.alt}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-[1300ms] ease-[var(--ease-out-expo)] group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy-950/55 via-transparent to-transparent" />
-                    <span className="absolute bottom-4 left-5 font-display text-[0.8rem] font-bold tracking-[0.22em] text-white/85 uppercase">
-                      Extra {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-4 right-4 grid h-10 w-10 translate-y-2 scale-75 place-items-center rounded-full bg-gold-500 text-navy-950 opacity-0 transition-[transform,opacity] duration-500 ease-[var(--ease-out-expo)] group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100"
-                    >
-                      <ArrowUpRight size={18} strokeWidth={2.4} />
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-7">
-                    <h3 className="text-[1.3rem]">{e.title}</h3>
-                    <p className="mt-2.5 text-[1.04rem] text-pretty">{e.desc}</p>
-                  </div>
-                </div>
-              </Spotlight>
+              <article key={e.title}>
+                <ImageReveal from="bottom" delay={i * 0.1} className="aspect-[16/10] rounded-2xl">
+                  <img src={e.img} alt={e.alt} loading="lazy" className="h-full w-full object-cover" />
+                </ImageReveal>
+                <Reveal delay={0.1 + i * 0.08}>
+                  <h3 className="mt-5 text-[1.28rem]">{e.title}</h3>
+                  <p className="mt-2 text-[1.04rem] text-pretty">{e.desc}</p>
+                </Reveal>
+              </article>
             ))}
-          </RevealGrid>
+          </div>
         </div>
       </section>
 
       {/* ---- CTA ---- */}
-      <section className="bg-slate-50 py-20">
+      <section className="paper bg-sand py-16 md:py-20">
         <div className="wrap">
           <ExpandBand>
-            <div className="relative isolate overflow-hidden rounded-5xl bg-navy-950 px-6 py-16 text-center sm:px-8 md:px-16 md:py-20">
-              <Orbs />
-              <Grain />
+            <div className="relative isolate overflow-hidden rounded-5xl bg-navy-950 px-6 py-14 sm:px-10 md:px-16 md:py-20">
               <FlightPath
-                className="absolute inset-x-0 bottom-0 -z-[1] mx-auto max-w-5xl translate-y-[18%] opacity-50"
+                className="absolute inset-x-0 bottom-0 -z-[1] mx-auto max-w-5xl translate-y-[18%] opacity-40"
                 d="M 20 230 C 240 40, 470 30, 640 140 S 980 250, 1180 50"
                 viewBox="0 0 1200 280"
                 start="top 90%"
                 end="bottom 40%"
               />
-              <div aria-hidden="true" className="absolute top-8 right-8 hidden lg:block">
-                <RotatingBadge
-                  text="One desk · Eight services · "
-                  size={120}
-                  textClass="fill-gold-400/80"
-                >
-                  <Sparkles size={22} className="text-gold-400" />
-                </RotatingBadge>
+              <div className="max-w-2xl">
+                <Reveal>
+                  <span className="eyebrow eyebrow-light">Not sure where to start?</span>
+                  <h2 className="h-sec mt-4 !text-white text-balance">Describe the trip. We’ll tell you what it needs.</h2>
+                </Reveal>
+                <Reveal delay={0.1}>
+                  <p className="mt-5 text-[1.12rem] text-white/75 text-pretty">
+                    A few lines on WhatsApp is enough: where, when, and who is going. We reply with what’s involved and a quote.
+                  </p>
+                </Reveal>
+                <Reveal delay={0.18}>
+                  <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
+                    <a href={waLink()} target="_blank" rel="noopener noreferrer" className="btn btn-gold">
+                      <MessageCircle size={18} aria-hidden="true" /> Message us on WhatsApp
+                    </a>
+                    <a href={`tel:${BIZ.phone}`} className="font-display font-bold text-white/85 underline decoration-white/30 underline-offset-4 hover:decoration-white">
+                      or call {BIZ.phoneDisplay}
+                    </a>
+                  </div>
+                </Reveal>
               </div>
-
-              <Reveal>
-                <h2 className="h-sec relative !text-white text-balance">Not sure which service you need?</h2>
-              </Reveal>
-              <Reveal delay={0.1}>
-                <p className="relative mx-auto mt-5 max-w-xl text-[1.14rem] text-white/70 text-pretty">
-                  Describe the trip in a WhatsApp message. We will tell you exactly what it takes — and what it costs.
-                </p>
-              </Reveal>
-              <Reveal delay={0.2}>
-                <div className="relative mt-10 flex flex-wrap justify-center gap-4">
-                  <Magnetic><Link to="/contact" className="btn btn-gold">Send an Enquiry</Link></Magnetic>
-                  <Magnetic><a href={`tel:${BIZ.phone}`} className="btn btn-glass">Call {BIZ.phoneDisplay}</a></Magnetic>
-                </div>
-              </Reveal>
             </div>
           </ExpandBand>
         </div>

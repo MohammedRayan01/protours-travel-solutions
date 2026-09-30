@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { Star } from 'lucide-react'
 import { gsap, useGSAP, reduceMotion } from '../lib/gsap.js'
 import { Reveal, CountUp, SplitHeading } from './motion.jsx'
-import { Scramble, Grain, Orbs } from './fx.jsx'
 
 /* Scroll-driven animation lives in motion.jsx (GSAP + ScrollTrigger).
    Re-exported here so every existing import keeps working. */
@@ -24,7 +23,7 @@ export function SectionHeading({ eyebrow, title, sub, center = false, light = fa
       {eyebrow && (
         <Reveal>
           <span className={`eyebrow ${light ? 'eyebrow-light' : ''}`}>
-            <Scramble text={eyebrow} />
+            {eyebrow}
           </span>
         </Reveal>
       )}
@@ -95,8 +94,6 @@ export function PageHero({ img, alt, eyebrow, title, sub, children, tall = false
       {/* Submerge the photo under a deep gradient so text always reads */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950/72 via-navy-950/42 to-navy-950/30" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950/50 to-transparent" />
-      <Orbs className="!z-[-5] opacity-80" />
-      <Grain className="-z-[4]" />
       {/* Gold hairline that sweeps across the base of every page hero */}
       <span aria-hidden="true" className="hero-hairline pointer-events-none absolute inset-x-0 bottom-0 z-10 h-px" />
 
@@ -104,7 +101,7 @@ export function PageHero({ img, alt, eyebrow, title, sub, children, tall = false
         <div className="max-w-3xl">
           {eyebrow && (
             <Reveal>
-              <span className="eyebrow eyebrow-light"><Scramble text={eyebrow} /></span>
+              <span className="eyebrow eyebrow-light">{eyebrow}</span>
             </Reveal>
           )}
           <SplitHeading

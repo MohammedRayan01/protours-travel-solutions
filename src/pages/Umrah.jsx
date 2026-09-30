@@ -1,24 +1,25 @@
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Moon, Star, Crown, Sparkles, ArrowRight, MapPin } from 'lucide-react'
+import { Check, Moon, ArrowRight, Phone } from 'lucide-react'
 
-import { BIZ, waLink } from '../data/site.js'
+import { BIZ, PHOTOS, waLink } from '../data/site.js'
 import { Reveal, SectionHeading } from '../components/ui.jsx'
-import { SplitHeading, Stagger } from '../components/motion.jsx'
+import { SplitHeading } from '../components/motion.jsx'
 import {
-  ImageReveal, Marquee, FlightPath, Spotlight, ScrubText, RevealGrid, RotatingBadge, introDone,
+  Marquee, FlightPath, ScrubText, RevealGrid, Polaroid, Stamp, introDone,
 } from '../components/fx.jsx'
 import { gsap, SplitText, useGSAP, EASE_EXPO, reduceMotion, enterTrigger } from '../lib/gsap.js'
 
-/* Makkah / Madinah imagery — the page sits fully submerged in it. */
+/* Makkah / Madinah imagery. The hero, the packages and the FAQ sit on
+   it (fixed behind the page); the paper sections slide over it. */
 const BG = 'https://images.unsplash.com/photo-1580418827493-f2b22c0a76cb?auto=format&fit=crop&w=2000&q=76'
 const BG2 = 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=1400&q=74'
 
 const TIERS = [
   {
     name: 'Economy',
-    icon: Star,
-    duration: '10 Nights — 5 Makkah / 5 Madinah',
+    num: 'i.',
+    duration: '10 nights: 5 Makkah, 5 Madinah',
     featured: false,
     inc: [
       'Umrah visa included',
@@ -31,8 +32,8 @@ const TIERS = [
   },
   {
     name: 'Deluxe',
-    icon: Sparkles,
-    duration: '12 Nights — 6 Makkah / 6 Madinah',
+    num: 'ii.',
+    duration: '12 nights: 6 Makkah, 6 Madinah',
     featured: true,
     inc: [
       'Umrah visa included',
@@ -45,8 +46,8 @@ const TIERS = [
   },
   {
     name: 'Premium',
-    icon: Crown,
-    duration: '14 Nights — 7 Makkah / 7 Madinah',
+    num: 'iii.',
+    duration: '14 nights: 7 Makkah, 7 Madinah',
     featured: false,
     inc: [
       'Umrah visa included',
@@ -60,39 +61,86 @@ const TIERS = [
 ]
 
 const STEPS = [
-  ['Choose dates & tier', 'Tell us your travel window, how many people, and the hotel category you have in mind.'],
-  ['Submit documents', 'Passport with 6+ months validity, photographs, vaccination record. We handle the rest.'],
-  ['Visa & confirmations', 'Umrah visa, e-tickets and hotel vouchers reach you well before departure.'],
-  ['Travel & support', 'Ground co-ordinator on arrival, plus a Bengaluru number on WhatsApp the whole time.'],
+  ['Choose dates and a tier', 'Tell us your travel window, how many of you are going, and the hotel category you have in mind.'],
+  ['Send your documents', 'Passport with six months or more of validity, photographs and vaccination record. We handle the rest.'],
+  ['Visa and confirmations', 'Umrah visa, e-tickets and hotel vouchers reach you well before departure.'],
+  ['Travel, with support', 'A ground co-ordinator on arrival, and a Bengaluru number on WhatsApp the whole time.'],
+]
+
+/* Taken from the document guidance in the FAQ below; nothing new. */
+const KEEP_READY = [
+  'Passport, valid for six months or more',
+  'Recent photographs, white background',
+  'Vaccination record, as required that season',
+  'Your travel window, and who is travelling',
+  'Room sharing: double, triple or quad',
+]
+
+const HANDLED = [
+  'Umrah visa processing, with document guidance',
+  'Direct and one-stop flights from Bengaluru',
+  'Walking distances to the Haram, in metres',
+  'Ziyarat in Makkah and Madinah with a knowledgeable guide',
+  'Group departures in Ramadan and school holidays',
 ]
 
 const UMRAH_FAQS = [
-  { q: 'What documents do I need for an Umrah visa?', a: 'A passport valid for at least six months, recent white-background photographs, proof of vaccination as required that season, and basic personal details. Women under 45 travelling without a mahram should speak to us first — rules change and we will tell you the current position.' },
-  { q: 'How far are the hotels from the Haram?', a: 'Economy hotels are typically 600–800 m, Deluxe within 300 m, and Premium are Haram-view properties. We give you the hotel name and the actual walking distance before you pay — never a vague "close to Haram".' },
-  { q: 'Can you arrange a package for just my family?', a: 'Yes. Private family Umrah is common — your own dates, your own hotel choice, private transfers, and no group schedule to follow.' },
-  { q: 'Do you handle Hajj as well?', a: 'Yes, subject to quota and the Hajj Committee process for that year. Hajj arrangements need to start many months ahead — contact us early so we can advise on the correct route for your case.' },
+  { q: 'What documents do I need for an Umrah visa?', a: 'A passport valid for at least six months, recent white-background photographs, proof of vaccination as required that season, and basic personal details. Women under 45 travelling without a mahram should speak to us first. The rules change, and we will tell you the current position.' },
+  { q: 'How far are the hotels from the Haram?', a: 'Economy hotels are typically 600–800 m, Deluxe within 300 m, and Premium are Haram-view properties. You get the hotel name and the actual walking distance before you pay, never a vague "close to Haram".' },
+  { q: 'Can you arrange a package for just my family?', a: 'Yes. Private family Umrah is common: your own dates, your own hotel choice, private transfers, and no group schedule to follow.' },
+  { q: 'Do you handle Hajj as well?', a: 'Yes, subject to quota and the Hajj Committee process for that year. Hajj arrangements need to start many months ahead, so contact us early and we will advise on the correct route for your case.' },
   { q: 'Is the quote per person or per family?', a: 'Per person, based on the room sharing shown in each tier. Double or triple occupancy changes the quote, and children sharing with parents are quoted separately. We break this down clearly for you.' },
 ]
 
-/* Sacred sites of Makkah & Madinah — a calm ticker, names only. */
+/* Sacred sites of Makkah & Madinah, a calm ticker, names only. */
 const PLACES = [
   'Masjid al-Haram', 'Al-Masjid an-Nabawi', 'Masjid Quba', 'Jabal al-Nour', 'Mount Uhud',
   'Masjid al-Qiblatayn', 'Jannat al-Baqi', 'Mina', 'Arafat', 'Muzdalifah', 'Jabal Thawr',
 ]
 
-/* Resolves when the intro curtain lifts — or after a ceiling, whatever happens. */
+/* Resolves when the intro curtain lifts, or after a ceiling. */
 const heroReady = () =>
   Promise.all([
     Promise.race([introDone, new Promise((r) => setTimeout(r, 3400))]),
     document.fonts?.ready ?? Promise.resolve(),
   ])
 
+/* ------------------------------------------------------------
+   A slightly uneven, overshooting circle, the way a pen goes
+   round a spot on a map. Deterministic, so SSR/hydration and
+   re-renders always produce the same line.
+   ------------------------------------------------------------ */
+function wobblyCircle(cx, cy, r, seed = 1, turns = 1.07, n = 14) {
+  let s = seed * 7919
+  const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280 }
+  const a0 = rnd() * Math.PI * 2
+  const pts = []
+  for (let i = 0; i <= n; i++) {
+    const a = a0 + (i / n) * Math.PI * 2 * turns
+    const rr = r * (1 + (rnd() - 0.5) * 0.07)
+    pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr])
+  }
+  const f = (p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`
+  let d = `M${f(pts[0])}`
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i]
+    const p1 = pts[i]
+    const p2 = pts[i + 1]
+    const p3 = pts[i + 2] || p2
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6]
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]
+    d += ` C${f(c1)} ${f(c2)} ${f(p2)}`
+  }
+  return d
+}
+
 /* ============================================================
-   Rosette — Islamic geometric line-art (overlapping rotated
-   squares = a sixteen-point star inside a double ring) that
-   inks itself in with DrawSVG, then turns very slowly.
+   Rosette: Islamic geometric line-art (overlapping rotated
+   squares, a sixteen-point star inside a double ring) that inks
+   itself in once. Quiet by default: thin, faint, and it only
+   turns when `spin` is given.
    ============================================================ */
-function Rosette({ className = '', stroke = 'rgb(232 163 23 / 0.6)', spin = 140, hero = false, width = 1 }) {
+function Rosette({ className = '', stroke = 'rgb(232 163 23 / 0.38)', spin = 0, hero = false, width = 0.8 }) {
   const ref = useRef(null)
 
   useGSAP((ctx, contextSafe) => {
@@ -100,25 +148,21 @@ function Rosette({ className = '', stroke = 'rgb(232 163 23 / 0.6)', spin = 140,
     if (!svg || reduceMotion()) return
     const lines = svg.querySelectorAll('[data-ink]')
     gsap.set(lines, { drawSVG: '0%' })
-    const draw = () =>
-      gsap.to(lines, { drawSVG: '100%', duration: 2.2, ease: 'power2.inOut', stagger: 0.09 })
+    const draw = { drawSVG: '100%', duration: 2.6, ease: 'power2.inOut', stagger: 0.12 }
 
     if (hero) {
       let dead = false
-      const go = contextSafe(() => { if (!dead) draw().delay(0.35) })
+      const go = contextSafe(() => { if (!dead) gsap.to(lines, { ...draw, delay: 0.4 }) })
       heroReady().then(go)
       return () => { dead = true }
     }
-    gsap.to(lines, {
-      drawSVG: '100%', duration: 2.2, ease: 'power2.inOut', stagger: 0.09,
-      scrollTrigger: enterTrigger(svg, { start: 'top 88%' }),
-    })
+    gsap.to(lines, { ...draw, scrollTrigger: enterTrigger(svg, { start: 'top 88%' }) })
   }, { scope: ref })
 
   const sq = [0, 22.5, 45, 67.5]
   return (
     <div aria-hidden="true" className={`pointer-events-none ${className}`}>
-      <div className="animate-spin-slow h-full w-full" style={{ animationDuration: `${spin}s` }}>
+      <div className={`h-full w-full ${spin ? 'animate-spin-slow' : ''}`} style={spin ? { animationDuration: `${spin}s` } : undefined}>
         <svg ref={ref} viewBox="0 0 200 200" fill="none" stroke={stroke} strokeWidth={width} className="h-full w-full overflow-visible">
           <circle data-ink cx="100" cy="100" r="97" />
           <circle data-ink cx="100" cy="100" r="90" strokeDasharray="1.5 4" />
@@ -146,9 +190,9 @@ function StarGlyph({ className = '' }) {
 }
 
 /* ============================================================
-   Hero — masked headline that rises after the intro curtain,
-   a drawn rosette with a spinning division stamp, and content
-   that drifts gently away as you scroll on.
+   Hero: the headline rises line by line after the intro, the
+   rosette inks in beside it, and the copy lifts gently away as
+   the page scrolls on.
    ============================================================ */
 function UmrahHero() {
   const root = useRef(null)
@@ -159,11 +203,11 @@ function UmrahHero() {
     const q = gsap.utils.selector(root)
     const h1 = q('h1')[0]
     const fades = q('[data-hero-fade]')
-    const badge = q('[data-hero-badge]')
+    const mark = q('[data-hero-mark]')
 
-    gsap.set(fades, { autoAlpha: 0, y: 28 })
+    gsap.set(fades, { autoAlpha: 0, y: 22 })
     gsap.set(h1, { autoAlpha: 0 })
-    gsap.set(badge, { autoAlpha: 0, scale: 0.55, rotate: -60 })
+    gsap.set(mark, { autoAlpha: 0, y: 10 })
 
     let dead = false
     let split
@@ -175,13 +219,12 @@ function UmrahHero() {
         .set(h1, { autoAlpha: 1 }, 0.1)
         .from(split.words, { yPercent: 118, duration: 1.4, stagger: 0.08 }, 0.1)
         .to(fades.slice(1), { autoAlpha: 1, y: 0, duration: 1.1, stagger: 0.13 }, 0.55)
-        .to(badge, { autoAlpha: 1, scale: 1, rotate: 0, duration: 1.6 }, 0.7)
+        .to(mark, { autoAlpha: 1, y: 0, duration: 1.4 }, 1.4)
     })
     heroReady().then(go)
 
-    // Calm exit: the copy lifts and softens as the page scrolls on.
     gsap.to(content.current, {
-      yPercent: -14, opacity: 0.25, ease: 'none',
+      yPercent: -12, opacity: 0.3, ease: 'none',
       scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom top', scrub: true },
     })
 
@@ -189,43 +232,39 @@ function UmrahHero() {
   }, { scope: root })
 
   return (
-    <section ref={root} className="relative isolate flex min-h-[70svh] items-center overflow-hidden md:min-h-[86svh]">
+    <section ref={root} className="relative isolate flex min-h-[70svh] items-center overflow-hidden md:min-h-[84svh]">
       {/* Mobile: the rosette sits faintly behind the headline */}
-      <Rosette hero className="absolute -top-10 -right-28 -z-10 h-[340px] w-[340px] opacity-40 lg:hidden" />
+      <Rosette hero className="absolute -top-10 -right-28 -z-10 h-[320px] w-[320px] opacity-60 lg:hidden" />
 
       <div className="wrap grid items-center gap-12 py-20 md:py-28 lg:grid-cols-[1fr_auto]">
         <div ref={content} className="max-w-3xl">
-          <span data-hero-fade className="glass inline-flex items-center gap-2.5 rounded-full px-5 py-2 text-[0.9rem] font-semibold text-white/90">
-            <Moon size={15} className="text-gold-400" /> Hajj &amp; Umrah Division
-          </span>
-          <h1 className="h-hero mt-7 !text-white text-balance">
+          <span data-hero-fade className="eyebrow eyebrow-light">Hajj &amp; Umrah division</span>
+          <h1 className="h-hero mt-6 !text-white text-balance">
             Umrah, arranged <span className="accent text-gold-400">properly</span>
           </h1>
-          <p data-hero-fade className="mt-7 max-w-2xl text-[1.23rem] text-white/75 text-pretty">
-            Visa, tickets and hotels near the Haram — handled by a team that has been sending groups from
+          <p data-hero-fade className="mt-7 max-w-2xl text-[1.23rem] text-white/80 text-pretty">
+            Visa, tickets and hotels near the Haram, handled by a team that has been sending groups from
             Bengaluru for years. We quote walking distances in metres, not adjectives.
           </p>
-          <div data-hero-fade className="mt-10 flex flex-wrap gap-4">
+          <div data-hero-fade className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
             <a
-              href={waLink('Hello Pro Tours & Travel Solutions, I would like to enquire about your Umrah packages.')}
-              target="_blank" rel="noopener noreferrer" className="btn btn-gold"
+              href={waLink('Assalamu alaikum, I would like to enquire about Umrah packages from Bengaluru. Our travel window is:')}
+              target="_blank" rel="noopener noreferrer" className="btn btn-wa"
             >
-              Get Umrah Quote <ArrowRight size={17} />
+              Ask for an Umrah quote <ArrowRight size={17} />
             </a>
-            <a href={`tel:${BIZ.phone}`} className="btn btn-glass">Call {BIZ.phoneDisplay}</a>
+            <a href={`tel:${BIZ.phone}`} className="link-grow inline-flex items-center gap-2 font-display text-[1.02rem] font-bold text-white/90">
+              <Phone size={15} className="text-gold-400" /> or call {BIZ.phoneDisplay}
+            </a>
           </div>
         </div>
 
-        {/* Desktop: drawn rosette with the spinning division stamp at its heart */}
-        <div className="relative hidden h-[440px] w-[440px] place-items-center lg:grid" aria-hidden="true">
-          <Rosette hero className="absolute inset-0" />
-          <div className="absolute inset-[22%] rounded-full bg-gold-500/10 blur-3xl" />
-          <div data-hero-badge>
-            <RotatingBadge text="Hajj & Umrah Division • Bengaluru • " size={170} textClass="fill-white/85">
-              <span className="glass-strong grid h-16 w-16 place-items-center rounded-full text-gold-400">
-                <Moon size={26} />
-              </span>
-            </RotatingBadge>
+        {/* Desktop: the drawn rosette, turning very slowly */}
+        <div className="relative hidden h-[420px] w-[420px] place-items-center lg:grid" aria-hidden="true">
+          <Rosette hero spin={260} className="absolute inset-0" />
+          <div data-hero-mark className="relative grid place-items-center text-center">
+            <Moon size={26} strokeWidth={1.5} className="text-gold-400" />
+            <span className="note mt-2 text-[1.35rem] leading-tight text-white/85">Makkah<br />&amp; Madinah</span>
           </div>
         </div>
       </div>
@@ -234,9 +273,94 @@ function UmrahHero() {
 }
 
 /* ============================================================
-   Steps — four stages joined by a gold line that draws itself
-   as you scroll; each number lights up as the line reaches it.
-   Horizontal on desktop, vertical on mobile. Never pinned.
+   Walking-distance map note: a hand-sketched, not-to-scale plan
+   of the rings around the Haram, drawn in pen as it scrolls in,
+   with footsteps walking from a hotel to the mosque.
+   ============================================================ */
+const MAP = { cx: 170, cy: 176 }
+const RINGS = [
+  { r: 44, seed: 3, label: 'Haram-view', tier: 'Premium', y: 118 },
+  { r: 92, seed: 5, label: 'within 300 m', tier: 'Deluxe', y: 180 },
+  { r: 146, seed: 8, label: '600–800 m', tier: 'Economy', y: 242 },
+].map((g) => {
+  const a = (-18 + g.r * 0.12) * (Math.PI / 180)
+  return { ...g, d: wobblyCircle(MAP.cx, MAP.cy, g.r, g.seed), lx: MAP.cx + Math.cos(a) * g.r, ly: MAP.cy + Math.sin(a) * g.r }
+})
+const HOTEL = { x: MAP.cx + Math.cos(0.78) * 92, y: MAP.cy + Math.sin(0.78) * 92 }
+const STEPS_DOTS = Array.from({ length: 7 }, (_, i) => {
+  const t = (i + 1) / 8
+  return {
+    x: HOTEL.x + (MAP.cx + 10 - HOTEL.x) * t + Math.sin(t * 9) * 3,
+    y: HOTEL.y + (MAP.cy + 12 - HOTEL.y) * t,
+  }
+})
+
+function DistanceMap() {
+  const ref = useRef(null)
+
+  useGSAP(() => {
+    const svg = ref.current
+    if (!svg) return
+    const q = gsap.utils.selector(svg)
+    const ink = q('[data-ink]')
+    const words = q('[data-word]')
+    const dots = q('[data-step-dot]')
+    if (reduceMotion()) { gsap.set(ink, { drawSVG: '100%' }); return }
+
+    gsap.set(ink, { drawSVG: '0%' })
+    gsap.set(words, { autoAlpha: 0 })
+    gsap.set(dots, { autoAlpha: 0, scale: 0.2, transformOrigin: '50% 50%' })
+    gsap.timeline({ scrollTrigger: enterTrigger(svg, { start: 'top 78%' }) })
+      .to(ink, { drawSVG: '100%', duration: 1.3, ease: 'power2.inOut', stagger: 0.22 })
+      .to(words, { autoAlpha: 1, duration: 0.6, stagger: 0.12 }, '-=1.4')
+      .to(dots, { autoAlpha: 1, scale: 1, duration: 0.3, ease: 'back.out(3)', stagger: 0.16 }, '-=0.4')
+  }, { scope: ref })
+
+  const ink = '#062647'
+  return (
+    <svg
+      ref={ref}
+      viewBox="0 0 520 340"
+      role="img"
+      aria-label="Sketch, not to scale: Premium hotels are Haram-view, Deluxe within 300 metres, Economy 600 to 800 metres from Masjid al-Haram."
+      className="h-auto w-full overflow-visible"
+      fill="none"
+    >
+      {/* north mark */}
+      <path data-ink d="M34 64 L34 28 M26 38 L34 26 L42 38" stroke={ink} strokeOpacity="0.55" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <text data-word x="29" y="80" className="note" fontSize="16" fill={ink} fillOpacity="0.6">N</text>
+
+      {RINGS.map((g) => (
+        <g key={g.r}>
+          <path data-ink d={g.d} stroke="#0b6e4f" strokeOpacity={0.85 - g.r / 400} strokeWidth="1.8" strokeLinecap="round" />
+          {/* leader line from ring to its label */}
+          <path data-ink d={`M${g.lx.toFixed(1)} ${g.ly.toFixed(1)} Q ${(g.lx + 330) / 2} ${g.y - 20} 338 ${g.y - 6}`} stroke={ink} strokeOpacity="0.4" strokeWidth="1.2" strokeLinecap="round" />
+          <text data-word x="346" y={g.y} className="note" fontSize="24" fill={ink}>{g.label}</text>
+          <text data-word x="346" y={g.y + 21} fontSize="14" fontWeight="700" letterSpacing="2" fill="#0b6e4f" className="font-display uppercase">{g.tier}</text>
+        </g>
+      ))}
+
+      {/* the Haram, a small square in the middle */}
+      <rect x={MAP.cx - 7} y={MAP.cy - 7} width="14" height="14" fill={ink} transform={`rotate(-4 ${MAP.cx} ${MAP.cy})`} />
+      <text data-word x={MAP.cx} y={MAP.cy - 16} textAnchor="middle" className="note" fontSize="18" fill={ink}>al-Haram</text>
+
+      {/* a hotel, and the walk from its door */}
+      <rect x={HOTEL.x - 6} y={HOTEL.y - 6} width="12" height="12" fill="#fbf7f0" stroke="#b4532a" strokeWidth="2" />
+      {STEPS_DOTS.map((p, i) => (
+        <circle data-step-dot key={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="2.4" fill="#b4532a" />
+      ))}
+      <path data-ink d={`M${(HOTEL.x + 8).toFixed(1)} ${(HOTEL.y + 6).toFixed(1)} Q 300 ${HOTEL.y + 50} 340 ${HOTEL.y + 50}`} stroke="#b4532a" strokeOpacity="0.6" strokeWidth="1.2" strokeLinecap="round" />
+      <text data-word x="346" y={HOTEL.y + 50} className="note" fontSize="17" fill="#b4532a">
+        <tspan x="346">your hotel,</tspan>
+        <tspan x="346" dy="19">named before you pay</tspan>
+      </text>
+    </svg>
+  )
+}
+
+/* ============================================================
+   Steps: a vertical line draws down once, and each number is
+   stamped on as the line reaches it. Plays once, never pinned.
    ============================================================ */
 function Steps() {
   const root = useRef(null)
@@ -244,299 +368,334 @@ function Steps() {
   useGSAP(() => {
     if (reduceMotion()) return
     const q = gsap.utils.selector(root)
-    const badges = q('[data-step-badge]')
-    const segs = q('[data-step-seg]')
-    const glows = q('[data-step-glow]')
-
-    const mm = gsap.matchMedia()
-    const build = (axis) => {
-      gsap.set(segs, { [axis]: 0 })
-      gsap.set(badges, { scale: 0.6, autoAlpha: 0.35, rotate: -45 })
-      gsap.set(glows, { autoAlpha: 0 })
-      const tl = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: { trigger: root.current, start: 'top 78%', end: 'bottom 62%', scrub: 1 },
-      })
-      badges.forEach((b, i) => {
-        tl.to(b, { scale: 1, autoAlpha: 1, rotate: 0, duration: 0.5, ease: 'back.out(2)' })
-          .to(glows[i], { autoAlpha: 1, duration: 0.4 }, '<')
-        if (segs[i]) tl.to(segs[i], { [axis]: 1, duration: 1 })
-      })
-    }
-    mm.add('(min-width: 1024px)', () => build('scaleX'))
-    mm.add('(max-width: 1023.98px)', () => build('scaleY'))
-    return () => mm.revert()
+    const line = q('[data-line]')
+    const dots = q('[data-dot]')
+    const items = q('[data-step]')
+    gsap.set(line, { scaleY: 0 })
+    gsap.set(dots, { scale: 0.5, autoAlpha: 0 })
+    gsap.set(items, { autoAlpha: 0, x: 14 })
+    const tl = gsap.timeline({ scrollTrigger: enterTrigger(root.current, { start: 'top 75%' }) })
+    tl.to(line, { scaleY: 1, duration: 0.6 * STEPS.length, ease: 'power1.inOut' }, 0)
+    dots.forEach((d, i) => {
+      tl.to(d, { scale: 1, autoAlpha: 1, duration: 0.45, ease: 'back.out(2.6)' }, i * 0.55)
+        .to(items[i], { autoAlpha: 1, x: 0, duration: 0.9, ease: EASE_EXPO }, i * 0.55 + 0.05)
+    })
   }, { scope: root })
 
   return (
-    <div ref={root}>
-      <Stagger className="grid gap-6 lg:grid-cols-4" y={30}>
-        {STEPS.map(([t, d], i) => (
-          <div key={t} className="relative flex gap-5 lg:block">
-            {/* connector to the next step */}
-            {i < STEPS.length - 1 && (
-              <span aria-hidden="true" className="absolute top-[3.25rem] -bottom-6 left-6 w-px -translate-x-1/2 bg-white/15 lg:top-6 lg:bottom-auto lg:left-[calc(50%+1.75rem)] lg:h-px lg:w-[calc(100%-2rem)] lg:translate-x-0">
-                <span data-step-seg className="block h-full w-full origin-top bg-gradient-to-b from-gold-400 to-gold-500 lg:origin-left lg:bg-gradient-to-r" />
-              </span>
-            )}
-            <span className="relative grid h-12 w-12 shrink-0 place-items-center lg:mx-auto">
-              <span data-step-glow aria-hidden="true" className="absolute -inset-2 rounded-3xl bg-gold-500/35 blur-lg" />
-              <span data-step-badge className="relative grid h-12 w-12 place-items-center rounded-2xl bg-gold-500 font-display text-[1.26rem] font-extrabold text-navy-950 shadow-[0_10px_30px_-8px_rgb(232_163_23/0.7)]">
-                {i + 1}
-              </span>
-            </span>
-            <div className="glass min-w-0 flex-1 rounded-4xl p-7 lg:mt-7">
-              <h4 className="font-display text-[1.14rem] font-bold !text-white">{t}</h4>
-              <p className="mt-2.5 text-[1rem] text-white/65 text-pretty">{d}</p>
-            </div>
+    <ol ref={root} className="relative grid gap-9">
+      <span aria-hidden="true" className="absolute top-5 bottom-5 left-5 w-px -translate-x-1/2 bg-slate-200">
+        <span data-line className="block h-full w-full origin-top bg-palm" />
+      </span>
+      {STEPS.map(([t, d], i) => (
+        <li key={t} className="relative flex gap-5">
+          <span data-dot className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border-[1.5px] border-palm bg-paper font-accent text-[1.35rem] font-semibold text-palm italic">
+            {i + 1}
+          </span>
+          <div data-step className="min-w-0 pt-1">
+            <h3 className="font-display text-[1.16rem] font-bold">{t}</h3>
+            <p className="mt-1.5 text-[1.02rem] text-pretty">{d}</p>
           </div>
-        ))}
-      </Stagger>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+/* ============================================================
+   Checklist: a handwritten list on lined paper, taped to the
+   page. Boxes are pencilled in; the ticks ink in one by one.
+   ============================================================ */
+function Checklist({ title, items, className = '' }) {
+  const ref = useRef(null)
+
+  useGSAP(() => {
+    const el = ref.current
+    if (!el) return
+    const ticks = el.querySelectorAll('path[data-tick]')
+    if (reduceMotion()) { gsap.set(ticks, { drawSVG: '100%' }); return }
+    gsap.fromTo(ticks, { drawSVG: '0%' }, {
+      drawSVG: '100%', duration: 0.45, ease: 'power2.out', stagger: 0.38, delay: 0.3,
+      scrollTrigger: enterTrigger(el, { start: 'top 72%' }),
+    })
+  }, { scope: ref })
+
+  return (
+    <div ref={ref} className={`relative ${className}`}>
+      <span aria-hidden="true" className="absolute -top-3 left-10 z-10 h-6 w-20 rotate-[-6deg] bg-gold-400/45" />
+      <div
+        className="relative rotate-[1.2deg] overflow-hidden bg-white px-6 pt-7 pb-8 shadow-[0_22px_40px_-24px_rgb(60_40_20/0.5),0_2px_6px_-2px_rgb(60_40_20/0.18)] sm:pr-8 sm:pl-14"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0, transparent 2.5rem, rgb(15 94 158 / 0.13) 2.5rem, rgb(15 94 158 / 0.13) calc(2.5rem + 1px))',
+          backgroundPosition: '0 1.75rem',
+        }}
+      >
+        {/* red margin rule */}
+        <span aria-hidden="true" className="absolute inset-y-0 left-10 hidden w-px bg-clay/40 sm:block" />
+        <p className="note text-[1.5rem] leading-[2.5rem] text-navy-900">{title}</p>
+        <ul className="mt-0">
+          {items.map((x) => (
+            <li key={x} className="flex items-start gap-3">
+              <svg viewBox="0 0 28 28" aria-hidden="true" className="mt-[0.375rem] h-7 w-7 shrink-0 overflow-visible" fill="none">
+                <path d="M5 7.6c5-.8 11-.9 16-.3.6 5 .5 10 .1 14.6-5 .6-10.6.5-15.7 0-.5-4.6-.6-9.6-.4-14.3z" stroke="#062647" strokeOpacity="0.45" strokeWidth="1.4" strokeLinejoin="round" />
+                <path data-tick d="M8 14.5c1.8 1.3 3 2.8 4.3 4.8C14.8 13 18.4 8 25 2.8" stroke="#0b6e4f" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="note text-[1.14rem] leading-[2.5rem] text-navy-900 sm:text-[1.3rem]">{x}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }
 
 export default function Umrah() {
   const [open, setOpen] = useState(0)
+  const ownPhoto = Boolean(PHOTOS.umrah)
 
   return (
-    /* The entire page is submerged in Makkah imagery, fixed behind the content. */
+    /* The hero, packages and FAQ sit on Makkah imagery fixed behind the page. */
     <div className="relative isolate min-h-screen overflow-x-hidden">
-      {/* Fixed background layer */}
       <div className="fixed inset-0 -z-30">
         <img src={BG} alt="" aria-hidden="true" className="h-full w-full object-cover" />
       </div>
-      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-navy-950/62 via-navy-950/48 to-navy-950/68" />
-      <div className="pointer-events-none fixed -top-32 -left-32 -z-10 h-[520px] w-[520px] rounded-full bg-brand-500/18 blur-[140px]" />
-      <div className="pointer-events-none fixed right-0 bottom-0 -z-10 h-[520px] w-[520px] rounded-full bg-gold-500/14 blur-[140px]" />
+      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-navy-950/66 via-navy-950/55 to-navy-950/72" />
 
       {/* ---------- Hero ---------- */}
       <UmrahHero />
 
-      {/* ---------- Ziyarat ticker ---------- */}
-      <div className="border-y border-white/10 bg-navy-950/35 py-5 backdrop-blur-md">
-        <Marquee speed={70} className="[mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
+      {/* ---------- Ziyarat ticker (the page's only marquee) ---------- */}
+      <div className="border-y border-white/10 bg-navy-950/85 py-5">
+        <Marquee speed={80} className="[mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
           {PLACES.map((p) => (
             <span key={p} className="flex shrink-0 items-center gap-6 px-6">
-              <span className="font-display text-[0.95rem] font-bold tracking-[0.22em] whitespace-nowrap text-white/75 uppercase">{p}</span>
-              <StarGlyph className="h-3 w-3 text-gold-400/80" />
+              <span className="note text-[1.25rem] whitespace-nowrap text-white/80">{p}</span>
+              <StarGlyph className="h-2.5 w-2.5 text-gold-500/70" />
             </span>
           ))}
         </Marquee>
       </div>
 
-      {/* ---------- Why us ---------- */}
-      <section className="section">
-        <div className="wrap grid items-center gap-14 lg:grid-cols-2">
-          <Reveal>
-            <div className="relative">
-              <Rosette spin={180} className="absolute -top-12 -left-12 hidden h-44 w-44 opacity-70 md:block" />
-              <div className="glass-strong relative rounded-5xl p-3">
-                <ImageReveal className="rounded-4xl" from="bottom">
-                  <img src={BG2} alt="Al-Masjid an-Nabawi, Madinah" loading="lazy" className="aspect-[4/3.2] w-full rounded-4xl object-cover" />
-                </ImageReveal>
-                <span className="glass-strong animate-float absolute bottom-7 left-7 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.86rem] font-semibold text-white">
-                  <MapPin size={14} className="text-gold-400" /> Madinah
-                </span>
-              </div>
+      {/* ---------- Our Umrah desk (paper) ---------- */}
+      <section className="section paper bg-paper">
+        <div className="wrap grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
+          <div className="relative mx-auto w-full max-w-md pt-4 lg:max-w-none">
+            <Polaroid
+              src={PHOTOS.umrah || BG2}
+              alt={ownPhoto ? 'A Pro Tours Umrah group in Madinah' : 'Al-Masjid an-Nabawi, Madinah'}
+              caption={ownPhoto ? 'One of our groups, Madinah' : 'Masjid an-Nabawi, Madinah'}
+              rotate={-2.5}
+              imgClassName="aspect-[4/3.4]"
+            />
+            <div className="absolute -right-1 -bottom-20 sm:-right-4">
+              <Stamp top="Umrah visa" main="In-house" bottom="Bengaluru" tone="palm" rotate={-9} />
             </div>
-          </Reveal>
+          </div>
 
           <div>
-            <SectionHeading light eyebrow="Our Umrah desk" title="For pilgrims, the details are not a luxury" className="!mb-6 md:!mb-7" />
-            <ScrubText className="font-display text-[1.28rem] leading-[1.55] font-medium text-white text-pretty md:text-[1.42rem]" dim={0.2}>
+            <SectionHeading eyebrow="Our Umrah desk" title="For pilgrims, the details are not a luxury" className="!mb-6 md:!mb-7" />
+            <ScrubText className="font-display text-[1.24rem] leading-[1.55] font-medium text-ink text-pretty md:text-[1.38rem]" dim={0.22}>
               How far the hotel really is from Bab-us-Salam. Whether the transfer waits or leaves. Whether someone
               who speaks your language is reachable at 3 AM in Madinah. These are the things that decide whether an
               Umrah feels peaceful or stressful.
             </ScrubText>
-            <Stagger className="mt-9 grid gap-3.5" y={22} stagger={0.08}>
-              {[
-                'Umrah visa processing with full document guidance',
-                'Direct and one-stop flights from Bengaluru',
-                'Verified walking distances to the Haram — in metres',
-                'Ziyarat in Makkah and Madinah with a knowledgeable guide',
-                'Group departures in Ramadan and school holidays',
-              ].map((x) => (
-                <div key={x} className="flex gap-3.5">
-                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gold-500/20 text-gold-400">
-                    <Check size={13} strokeWidth={3.2} />
-                  </span>
-                  <span className="text-[1.08rem] text-white/80 text-pretty">{x}</span>
-                </div>
-              ))}
-            </Stagger>
+            <Reveal>
+              <ul className="mt-9 grid gap-3 border-t border-slate-200 pt-7">
+                {HANDLED.map((x) => (
+                  <li key={x} className="flex gap-3.5">
+                    <Check size={17} strokeWidth={2.6} className="mt-1 shrink-0 text-palm" />
+                    <span className="text-[1.06rem] text-pretty">{x}</span>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* ---------- Tiers ---------- */}
-      <section className="section">
+      {/* ---------- Tiers (on the imagery) ---------- */}
+      <section className="section py-16 md:py-24">
         <div className="wrap">
-          <SectionHeading
-            center light
-            eyebrow="Choose your tier"
-            title="Umrah packages from Bengaluru"
-            sub="Per person, based on the sharing shown. Includes visa, return airfare, hotels and transfers. Ask us for today's exact quote."
-            className="md:!mb-16"
-          />
+          <div className="mb-12 grid gap-6 md:mb-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+            <SectionHeading light eyebrow="Three ways to go" title="Umrah packages from Bengaluru" className="!mb-0 md:!mb-0" />
+            <Reveal delay={0.1}>
+              <p className="max-w-md text-[1.08rem] text-white/75 text-pretty lg:ml-auto">
+                Quoted per person, on the room sharing shown. Every tier includes the visa, return airfare, hotels and
+                transfers. Ask us for today&apos;s exact quote.
+              </p>
+            </Reveal>
+          </div>
 
-          <RevealGrid className="grid gap-11 lg:grid-cols-3 lg:gap-7" stagger={0.12}>
+          <RevealGrid className="grid gap-6 lg:grid-cols-3 lg:gap-7" stagger={0.12} y={50}>
             {TIERS.map((t) => (
-              <Spotlight
+              <article
                 key={t.name}
-                className="isolate h-full rounded-5xl transition-[translate] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2"
-                color={t.featured ? 'rgb(232 163 23 / 0.2)' : 'rgb(255 255 255 / 0.1)'}
+                className={`relative flex h-full flex-col rounded-3xl p-8 ${
+                  t.featured
+                    ? 'bg-paper text-body shadow-[0_30px_60px_-30px_rgb(0_0_0/0.6)] lg:-my-4 lg:py-12'
+                    : 'border border-white/12 bg-navy-950/88 text-white/75'
+                }`}
               >
                 {t.featured && (
-                  <span aria-hidden="true" className="pointer-events-none absolute -inset-3 -z-10 rounded-[2.75rem] bg-gold-500/20 blur-2xl animate-pulse [animation-duration:5s]" />
+                  <span className="note absolute top-5 right-6 text-[1.1rem] text-gold-600">a good middle ground</span>
                 )}
-                <div
-                  className={`relative flex h-full flex-col rounded-5xl p-8 ${
-                    t.featured ? 'glass-strong ring-2 ring-gold-500/60' : 'glass'
-                  }`}
+                <span className={`font-accent text-[2rem] leading-none font-semibold italic ${t.featured ? 'text-palm' : 'text-gold-400'}`}>{t.num}</span>
+                <h3 className={`mt-3 text-[1.6rem] ${t.featured ? '' : '!text-white'}`}>{t.name}</h3>
+                <span className={`mt-1 block text-[0.98rem] font-semibold ${t.featured ? 'text-palm' : 'text-brand-300'}`}>{t.duration}</span>
+
+                <ul className={`mt-6 grid flex-1 gap-2.5 border-t pt-6 ${t.featured ? 'border-slate-200' : 'border-white/12'}`}>
+                  {t.inc.map((x) => (
+                    <li key={x} className="flex gap-3 text-[1.01rem]">
+                      <Check size={15} strokeWidth={2.8} className={`mt-1.5 shrink-0 ${t.featured ? 'text-palm' : 'text-gold-400'}`} />
+                      <span className="text-pretty">{x}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <a
+                  href={waLink(`Assalamu alaikum, I am interested in the Umrah ${t.name} package (${t.duration}). Please share current rates and availability. Our travel window is:`)}
+                  target="_blank" rel="noopener noreferrer"
+                  className={`btn mt-8 w-full ${t.featured ? 'btn-wa' : 'btn-glass'}`}
+                  aria-label={`Enquire about the ${t.name} Umrah package on WhatsApp`}
                 >
-                  {/* gentle light sweep on hover */}
-                  <span aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
-                    <span className="absolute inset-y-0 -left-1/2 w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/14 to-transparent opacity-0 transition-[translate,opacity] duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/spot:translate-x-[320%] group-hover/spot:opacity-100" />
-                  </span>
-
-                  {t.featured && (
-                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gold-500 px-4 py-1.5 font-display text-[0.73rem] font-extrabold tracking-[0.12em] text-navy-950 uppercase">
-                      Most chosen
-                    </span>
-                  )}
-
-                  <span className={`mb-6 grid h-14 w-14 place-items-center rounded-2xl transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/spot:scale-110 group-hover/spot:-rotate-6 ${t.featured ? 'bg-gold-500 text-navy-950' : 'bg-white/12 text-gold-400'}`}>
-                    <t.icon size={25} strokeWidth={1.9} />
-                  </span>
-
-                  <h3 className="!text-white text-[1.54rem]">{t.name}</h3>
-                  <span className="mt-1.5 block text-[0.94rem] font-semibold text-brand-300">{t.duration}</span>
-
-                  <ul className="mt-7 grid flex-1 gap-3">
-                    {t.inc.map((x) => (
-                      <li key={x} className="flex gap-3 text-[1.01rem] text-white/75">
-                        <Check size={15} strokeWidth={3} className="mt-1 shrink-0 text-gold-400" />
-                        <span className="text-pretty">{x}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <a
-                    href={waLink(`Hello Pro Tours & Travel Solutions, I am interested in the Umrah ${t.name} package (${t.duration}). Please share current rates and availability.`)}
-                    target="_blank" rel="noopener noreferrer"
-                    className={`btn relative z-20 mt-8 w-full ${t.featured ? 'btn-gold' : 'btn-glass'}`}
-                  >
-                    Enquire
-                  </a>
-                </div>
-              </Spotlight>
+                  Enquire about {t.name}
+                </a>
+              </article>
             ))}
           </RevealGrid>
         </div>
       </section>
 
-      {/* ---------- Process ---------- */}
-      <section className="section">
-        <div className="wrap">
-          <SectionHeading center light eyebrow="Your journey" title="How an Umrah booking works with us" className="md:!mb-16" />
-          <Steps />
+      {/* ---------- Walking distances (sand, map note) ---------- */}
+      <section className="section paper bg-sand">
+        <div className="wrap grid items-center gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div>
+            <SectionHeading eyebrow="Walking distance" title="How far you walk, five times a day" className="!mb-6 md:!mb-6" />
+            <Reveal delay={0.1}>
+              <p className="text-pretty">
+                Economy hotels are typically 600–800 m from the Haram, Deluxe within 300 m, and Premium are Haram-view
+                properties. You get the hotel&apos;s name and the actual walking distance before you pay.
+              </p>
+              <p className="note mt-5 text-[1.2rem] text-gold-600">Never a vague &ldquo;close to Haram&rdquo;.</p>
+            </Reveal>
+          </div>
+
+          <div className="relative rounded-2xl border border-slate-300/70 bg-paper p-5 shadow-[var(--shadow-lift)] sm:p-8">
+            <span className="note absolute top-3 right-5 text-[1rem] text-slate-500">Makkah, not to scale</span>
+            <DistanceMap />
+          </div>
         </div>
       </section>
 
-      {/* ---------- FAQ ---------- */}
-      <section className="section">
-        <div className="wrap grid items-start gap-14 lg:grid-cols-[0.85fr_1.15fr]">
+      {/* ---------- Process + checklist (paper) ---------- */}
+      <section className="section paper bg-paper">
+        <div className="wrap">
+          <SectionHeading eyebrow="How it works" title="From first message to the Haram" className="md:!mb-14" />
+          <div className="grid items-start gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+            <Steps />
+            <Checklist title="Keep these ready:" items={KEEP_READY} className="mx-auto w-full max-w-lg lg:mt-2" />
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- FAQ (on the imagery) ---------- */}
+      <section className="section py-16 md:py-24">
+        <div className="wrap grid items-start gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
           <div className="relative isolate">
-            <Rosette spin={200} stroke="rgb(255 255 255 / 0.22)" className="absolute -top-16 -right-4 -z-10 h-56 w-56 md:-right-10 md:h-72 md:w-72" />
+            <Rosette stroke="rgb(251 247 240 / 0.2)" className="absolute -top-16 -right-4 -z-10 h-56 w-56 md:-right-10 md:h-72 md:w-72" />
             <SectionHeading
               light
               eyebrow="Common questions"
               title="Umrah FAQs"
-              sub="Anything not covered here — just ask. First-time pilgrims are welcome to call and take their time."
+              sub="If your question is not here, just ask. First-time pilgrims are welcome to call and take their time."
               className="!mb-0 md:!mb-0"
             />
-            <Reveal delay={0.24}>
+            <Reveal delay={0.2}>
               <a
-                href={waLink('Hello, I have a question about Umrah.')}
+                href={waLink('Assalamu alaikum, I have a question about Umrah:')}
                 target="_blank" rel="noopener noreferrer" className="btn btn-wa mt-8"
               >
-                Ask a Question
+                Ask us on WhatsApp
               </a>
             </Reveal>
           </div>
 
-          <Stagger className="space-y-3" y={26} stagger={0.07}>
+          <Reveal className="space-y-3">
             {UMRAH_FAQS.map((f, i) => (
-              <div key={i} className={`relative overflow-hidden rounded-3xl transition-colors duration-500 ${open === i ? 'glass-strong' : 'glass'}`}>
+              <div key={i} className={`relative overflow-hidden rounded-2xl border transition-colors duration-500 ${open === i ? 'border-white/20 bg-navy-950/92' : 'border-white/10 bg-navy-950/78'}`}>
                 <motion.span
                   aria-hidden="true"
                   initial={false}
                   animate={{ scaleY: open === i ? 1 : 0 }}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute inset-y-0 left-0 w-[3px] origin-top bg-gradient-to-b from-gold-400 to-gold-500"
+                  className="absolute inset-y-0 left-0 w-[3px] origin-top bg-gold-500"
                 />
                 <button
                   onClick={() => setOpen(open === i ? -1 : i)}
                   aria-expanded={open === i}
-                  className="flex w-full items-center justify-between gap-5 px-6 py-5 text-left font-display text-[1.11rem] font-bold text-white"
+                  aria-controls={`umrah-faq-${i}`}
+                  className="flex w-full items-center justify-between gap-5 px-6 py-5 text-left font-display text-[1.1rem] font-bold text-white"
                 >
                   {f.q}
                   <motion.span
                     animate={{ rotate: open === i ? 45 : 0 }}
                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gold-500/20 text-gold-400"
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-gold-500/50 text-gold-400"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
                       <path d="M12 5v14M5 12h14" />
                     </svg>
                   </motion.span>
                 </button>
                 <motion.div
+                  id={`umrah-faq-${i}`}
                   initial={false}
                   animate={{ height: open === i ? 'auto' : 0, opacity: open === i ? 1 : 0 }}
                   transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden"
                 >
-                  <p className="px-6 pb-6 text-[1.04rem] text-white/70 text-pretty">{f.a}</p>
+                  <p className="px-6 pb-6 text-[1.03rem] text-white/75 text-pretty">{f.a}</p>
                 </motion.div>
               </div>
             ))}
-          </Stagger>
+          </Reveal>
         </div>
       </section>
 
       {/* ---------- CTA ---------- */}
-      <section className="pb-28">
+      <section className="pb-24 md:pb-28">
         <div className="wrap">
           <Reveal>
-            <Spotlight className="rounded-5xl" color="rgb(232 163 23 / 0.14)" size={620}>
-              <div className="glass-strong relative isolate overflow-hidden rounded-5xl px-8 py-16 text-center md:px-16">
-                <Rosette spin={160} stroke="rgb(232 163 23 / 0.35)" className="absolute -bottom-24 -left-24 -z-10 h-72 w-72" />
-                <Rosette spin={220} stroke="rgb(255 255 255 / 0.18)" className="absolute -top-28 -right-20 -z-10 h-80 w-80" />
-                <FlightPath
-                  className="mx-auto -mt-4 mb-8 max-w-xl opacity-90"
-                  d="M 20 120 C 160 20, 360 10, 480 70 S 640 110, 680 40"
-                  viewBox="0 0 700 140"
-                  start="top 90%"
-                  end="bottom 45%"
-                />
-                <SplitHeading className="h-sec !text-white text-balance">Planning your Umrah?</SplitHeading>
-                <p className="mx-auto mt-5 max-w-xl text-[1.14rem] text-white/70 text-pretty">
-                  Send us your travel window. We will come back with hotel names, walking distances and a clear
-                  quotation.
-                </p>
-                <div className="relative z-20 mt-10 flex flex-wrap justify-center gap-4">
+            <div className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-navy-950 px-7 py-14 md:px-16 md:py-16">
+              <Rosette stroke="rgb(232 163 23 / 0.22)" className="absolute -right-24 -bottom-24 -z-10 h-80 w-80" />
+              <FlightPath
+                className="mb-8 max-w-lg opacity-80"
+                d="M 20 120 C 160 20, 360 10, 480 70 S 640 110, 680 40"
+                viewBox="0 0 700 140"
+                start="top 90%"
+                end="bottom 45%"
+              />
+              <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+                <div>
+                  <SplitHeading className="h-sec !text-white text-balance">Planning your Umrah?</SplitHeading>
+                  <p className="mt-5 max-w-xl text-[1.12rem] text-white/75 text-pretty">
+                    Send us your travel window. We will come back with hotel names, walking distances and a clear
+                    quotation.
+                  </p>
+                </div>
+                <div className="flex flex-col items-start gap-4 lg:items-end">
                   <a
-                    href={waLink('Hello Pro Tours & Travel Solutions, please send me current Umrah package rates.')}
-                    target="_blank" rel="noopener noreferrer" className="btn btn-gold"
+                    href={waLink('Assalamu alaikum, please send me current Umrah package rates. Our travel window is:')}
+                    target="_blank" rel="noopener noreferrer" className="btn btn-wa"
                   >
-                    Get Umrah Quote
+                    Send your travel window <ArrowRight size={17} />
                   </a>
-                  <a href={`tel:${BIZ.phone}`} className="btn btn-glass">Call {BIZ.phoneDisplay}</a>
+                  <a href={`tel:${BIZ.phone}`} className="link-grow font-display text-[1rem] font-bold text-white/80">
+                    or call {BIZ.phoneDisplay}
+                  </a>
                 </div>
               </div>
-            </Spotlight>
+            </div>
           </Reveal>
         </div>
       </section>
