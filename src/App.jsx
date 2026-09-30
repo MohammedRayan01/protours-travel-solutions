@@ -6,6 +6,7 @@ import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import FloatingActions from './components/FloatingActions.jsx'
 import SmoothScroll from './components/SmoothScroll.jsx'
+import { Preloader } from './components/fx.jsx'
 
 // Home ships in the main bundle; every other route is code-split so the
 // first paint stays small.
@@ -65,6 +66,7 @@ export default function App() {
       >
         Skip to content
       </a>
+      <Preloader />
       <Navbar />
       <AnimatePresence mode="wait">
         <Suspense fallback={<RouteFallback />}>

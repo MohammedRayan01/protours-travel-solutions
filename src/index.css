@@ -284,6 +284,86 @@
   }
 }
 
+/* ============================================================
+   FX LAYER — see src/components/fx.jsx
+   ============================================================ */
+/* Marquee ticker: two identical tracks slide one full width. */
+.marquee-track { animation: marquee var(--marquee-duration, 40s) linear infinite; }
+.marquee-reverse { animation-direction: reverse; }
+@keyframes marquee { to { transform: translate3d(-100%, 0, 0); } }
+
+/* Colour blooms drift on long, offset loops so they never sync up. */
+.orb { will-change: transform; }
+.orb-a { animation: orb-a 22s ease-in-out infinite alternate; }
+.orb-b { animation: orb-b 27s ease-in-out infinite alternate; }
+.orb-c { animation: orb-c 31s ease-in-out infinite alternate; }
+@keyframes orb-a { to { transform: translate3d(18%, 22%, 0) scale(1.15); } }
+@keyframes orb-b { to { transform: translate3d(-22%, -16%, 0) scale(0.9); } }
+@keyframes orb-c { to { transform: translate3d(-40%, 30%, 0) scale(1.25); } }
+
+/* Film grain — an inline SVG noise tile, blended over dark surfaces. */
+.grain {
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.animate-spin-slow { animation: spin-slow 22s linear infinite; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* Light sweeps across the primary buttons on hover. */
+.btn-gold, .btn-brand { position: relative; overflow: hidden; isolation: isolate; }
+.btn-gold::before, .btn-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, rgb(255 255 255 / 0.55) 50%, transparent 68%);
+  transform: translateX(-130%);
+  transition: transform 0.9s var(--ease-out-expo);
+}
+.btn-gold:hover::before, .btn-brand:hover::before { transform: translateX(130%); }
+
+/* Underline that grows from the left on hover — for text links. */
+.link-grow { position: relative; }
+.link-grow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+.link-grow:hover::after, .link-grow[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+
+/* Shimmering gold for accent words on dark grounds. */
+.text-gold-shine {
+  background: linear-gradient(100deg, #e8a317 20%, #fde6a8 45%, #f5bc48 55%, #e8a317 80%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-shine 6s ease-in-out infinite;
+}
+@keyframes gold-shine {
+  0%, 100% { background-position: 100% 0; }
+  50% { background-position: 0% 0; }
+}
+
+/* Gold hairline with a travelling highlight, at the foot of page heroes. */
+.hero-hairline {
+  background: linear-gradient(90deg, transparent, rgb(232 163 23 / 0.35) 20%, #fde6a8 50%, rgb(232 163 23 / 0.35) 80%, transparent);
+  background-size: 200% 100%;
+  animation: hairline 5s linear infinite;
+}
+@keyframes hairline { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
 /* Respect the user's motion preference */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

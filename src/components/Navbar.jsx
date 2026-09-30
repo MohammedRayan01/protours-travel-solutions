@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin, ArrowRight } from 'lucide-react'
 import { BIZ, NAV, waLink } from '../data/site.js'
 import { lockScroll, scrollTo } from './SmoothScroll.jsx'
+import { introDone } from './fx.jsx'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -21,6 +22,17 @@ export default function Navbar() {
 
   // Only the home page has a full-bleed hero for the bar to float over.
   const overHero = pathname === '/' && !scrolled
+
+  // Desktop link entrance waits for the first-visit intro curtain (with a
+  // hard fallback so the links can never stay hidden).
+  const [introReady, setIntroReady] = useState(false)
+  useEffect(() => {
+    let alive = true
+    const done = () => alive && setIntroReady(true)
+    introDone.then(done)
+    const t = setTimeout(done, 3400)
+    return () => { alive = false; clearTimeout(t) }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -95,30 +107,58 @@ export default function Navbar() {
               alt={BIZ.name}
               width={1200}
               height={209}
-              className="h-10 w-auto sm:h-12"
+              className="h-10 w-auto sm:h-12 xl:h-10"
             />
           </Link>
 
-          {/* Desktop links */}
-          <nav className="hidden items-center xl:flex" aria-label="Main">
+          {/* Desktop links — the active pill glides between links (shared
+              layoutId), and the row staggers in once the intro curtain lifts. */}
+          <motion.nav
+            className="hidden items-center xl:flex"
+            aria-label="Main"
+            initial="hidden"
+            animate={introReady ? 'show' : 'hidden'}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } } }}
+          >
             {NAV.map((n) => (
-              <NavLink
+              <motion.div
                 key={n.to}
-                to={n.to}
-                end={n.to === '/'}
-                onClick={n.to === '/' ? goHome : undefined}
-                className={({ isActive }) =>
-                  `rounded-full whitespace-nowrap px-3 py-2 font-display text-[0.92rem] font-semibold transition-all duration-250 ${
-                    overHero
-                      ? isActive ? 'bg-white/20 text-white' : 'text-white/85 hover:bg-white/12 hover:text-white'
-                      : isActive ? 'bg-brand-500/10 text-brand-500' : 'text-ink hover:bg-slate-100 hover:text-brand-500'
-                  }`
-                }
+                variants={{
+                  hidden: { opacity: 0, y: -10 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+                }}
               >
-                {n.label}
-              </NavLink>
+                <NavLink
+                  to={n.to}
+                  end={n.to === '/'}
+                  onClick={n.to === '/' ? goHome : undefined}
+                  className={({ isActive }) =>
+                    `group relative isolate block rounded-full whitespace-nowrap px-2 py-2 font-display text-[0.86rem] font-semibold transition-colors duration-250 ${
+                      overHero
+                        ? isActive ? 'text-white' : 'text-white/85 hover:bg-white/12 hover:text-white'
+                        : isActive ? 'text-brand-500' : 'text-ink hover:bg-slate-100 hover:text-brand-500'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.span
+                          layoutId="nav-active-pill"
+                          aria-hidden="true"
+                          transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+                          className={`absolute inset-0 -z-10 rounded-full ${overHero ? 'bg-white/20' : 'bg-brand-500/10'}`}
+                        >
+                          <span className="absolute bottom-[3px] left-1/2 h-[3px] w-3 -translate-x-1/2 rounded-full bg-gold-500" />
+                        </motion.span>
+                      )}
+                      {n.label}
+                    </>
+                  )}
+                </NavLink>
+              </motion.div>
             ))}
-          </nav>
+          </motion.nav>
 
           {/* Right side */}
           <div className="flex items-center gap-2.5">
