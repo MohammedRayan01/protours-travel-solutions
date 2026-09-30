@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion'
 import { Check, Crown, Star, Sparkles, Plane, Ship, Car, MessageCircle } from 'lucide-react'
 
-import { PACKAGES, TIERS, waLink } from '../data/site.js'
+import { BIZ, PACKAGES, TIERS, waLink } from '../data/site.js'
 import { Reveal, SectionHeading, PageHero, Parallax } from '../components/ui.jsx'
 import { Stamp, Polaroid, CircleMark, ArrowDoodle } from '../components/fx.jsx'
 import { gsap, useGSAP, reduceMotion, enterTrigger, ScrollTrigger } from '../lib/gsap.js'
+import { photo } from '../lib/img.js'
 
 const FILTERS = [
   { k: 'all', label: 'Everything' },
@@ -32,6 +34,41 @@ const INCLUDED = [
   ['Visa guidance', 'Checklist, forms and appointment support for the destination.'],
   ['On-trip WhatsApp support', 'A number that answers while you are actually travelling.'],
 ]
+
+/* What each package photo actually shows (keyed by Unsplash photo id). */
+const ALT = {
+  '1518684079': 'Aerial view of the Burj Al Arab on the Dubai coast',
+  '1590523741831': 'Palm trees leaning over a white-sand beach in the Maldives',
+  '1537996194471': 'Ulun Danu Beratan water temple on Lake Bratan, Bali',
+  '1525625293386': 'Marina Bay Sands and the ArtScience Museum, Singapore',
+  '1476514525535': 'Wooden rowing boat on an alpine lake beneath the mountains in Europe',
+  '1528181304800': 'Gilded Buddhist temple spires against a blue sky in Thailand',
+  '1602216056096': 'Houseboat on the palm-lined Alleppey backwaters, Kerala',
+  '1595815771614': 'Houseboats moored on Dal Lake below snowy mountains, Srinagar',
+  '1524492412937': 'The Taj Mahal in Agra, seen along its reflecting pool',
+  '1512343879784': 'Palm-lined beach and turquoise sea in Goa',
+  '1599640842225': 'Cruise ship moored beside a white-sand beach',
+  '1580541631950': 'Cruise ship off an island jetty in clear blue water',
+  '1580418827493': 'The clock towers above Masjid al-Haram in Makkah',
+}
+
+/* Card images: 1 column on phones, 2 from md, 3 from lg — computed once. */
+const CARD_IMG = Object.fromEntries(
+  PACKAGES.map((p) => [
+    p.id,
+    {
+      ...photo(p.img, { sizes: '(min-width: 1024px) 31vw, (min-width: 768px) 46vw, 100vw', widths: [480, 768, 1080] }),
+      alt: ALT[p.img.match(/photo-(\d+)/)?.[1]] ?? `${p.name}, ${p.region}`,
+    },
+  ])
+)
+
+/* Where to read about the paperwork for each trip. India trips need no visa. */
+function visaLink(p) {
+  if (p.cats.includes('umrah')) return { to: '/umrah', text: 'Umrah packages from Bengaluru', ctx: '' }
+  if (p.cats.includes('india')) return null
+  return { to: '/visa', text: 'Visa checklist', ctx: ` for ${p.region}` }
+}
 
 const SPRING = { type: 'spring', stiffness: 380, damping: 34, mass: 0.9 }
 const EASE = [0.16, 1, 0.3, 1]
@@ -91,6 +128,8 @@ function PackageCard({ p, tier, index }) {
   const bestFor = p.cats.map((c) => BEST_FOR[c]).filter(Boolean)
   const delay = (index % 3) * 0.08
   const msg = `Hello Pro Tours & Travel Solutions, please share today's quote for ${p.name} — ${tier} tier (${p.nights}).\nTravel dates: \nNumber of travellers: `
+  const img = CARD_IMG[p.id]
+  const visa = visaLink(p)
 
   return (
     <motion.article
@@ -103,9 +142,11 @@ function PackageCard({ p, tier, index }) {
     >
       <div className="relative aspect-[16/10] overflow-hidden">
         <img
-          src={p.img}
-          alt={`${p.name}, ${p.region}`}
+          {...img}
+          width={1080}
+          height={675}
           loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover transition-transform duration-[1200ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.04]"
         />
         <span className="absolute bottom-3 left-3 rounded-md bg-navy-950/85 px-2.5 py-1 font-display text-[0.8rem] font-bold tracking-wide text-white">
@@ -183,6 +224,18 @@ function PackageCard({ p, tier, index }) {
               <dd className="text-[0.88rem] leading-relaxed text-slate-500 text-pretty">{p.exc.join('; ')}.</dd>
             </>
           )}
+          {visa && (
+            <>
+              <dt className="pt-0.5 font-display text-[0.7rem] font-bold tracking-[0.18em] text-slate-500 uppercase">
+                {visa.ctx ? 'Visa' : 'More'}
+              </dt>
+              <dd>
+                <Link to={visa.to} className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">
+                  {visa.text}<span className="sr-only">{visa.ctx}</span>
+                </Link>
+              </dd>
+            </>
+          )}
         </dl>
       </div>
 
@@ -233,12 +286,12 @@ export default function Packages() {
         img="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=74"
         alt="Tropical beach at sunset"
         eyebrow="Tour packages"
-        title="Holiday packages, each in three comfort levels"
+        title="Tour packages from Bengaluru, each in three comfort levels"
         sub="Same itinerary, your choice of hotels and inclusions. Pick one below and send it to us on WhatsApp for today’s quote."
       />
 
       {/* ---- Tier selector ---- */}
-      <section className="bg-white pt-14 pb-10 md:pt-20">
+      <section aria-label="Economy, Deluxe or Premium" className="bg-white pt-14 pb-10 md:pt-20">
         <div className="wrap grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end lg:gap-14">
           <SectionHeading
             className="!mb-0"
@@ -255,6 +308,7 @@ export default function Packages() {
                 return (
                   <button
                     key={t}
+                    type="button"
                     onClick={() => setTier(t)}
                     aria-pressed={active}
                     className={`relative isolate rounded-xl border-[1.5px] p-3.5 text-left transition-[border-color] duration-300 sm:p-5 ${
@@ -306,8 +360,9 @@ export default function Packages() {
       </section>
 
       {/* ---- Filters + ticket grid ---- */}
-      <section className="section paper overflow-x-clip bg-sand pt-12">
+      <section aria-labelledby="list-title" className="section paper overflow-x-clip bg-sand pt-12">
         <div className="wrap">
+          <h2 id="list-title" className="sr-only">Holiday and Umrah packages from Bengaluru</h2>
           <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <LayoutGroup id="filters">
               <div role="group" aria-label="Filter packages" className="flex flex-wrap gap-2">
@@ -316,6 +371,7 @@ export default function Packages() {
                   return (
                     <button
                       key={f.k}
+                      type="button"
                       onClick={() => setFilter(f.k)}
                       aria-pressed={on}
                       className={`relative isolate rounded-lg border-[1.5px] px-4 py-2 font-display text-[0.95rem] font-bold transition-colors duration-300 ${
@@ -386,7 +442,7 @@ export default function Packages() {
       </section>
 
       {/* ---- Always included ---- */}
-      <section className="section overflow-x-clip bg-white">
+      <section aria-label="What’s always included" className="section overflow-x-clip bg-white">
         <div className="wrap grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
           <div className="relative">
             <SectionHeading
@@ -434,17 +490,32 @@ export default function Packages() {
       </section>
 
       {/* ---- Somewhere else ---- */}
-      <section className="section paper bg-sand">
+      <section aria-labelledby="custom-title" className="section paper bg-sand">
         <div className="wrap">
           <div className="grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-end">
             <Reveal>
-              <h2 className="h-sec text-balance">
+              <h2 id="custom-title" className="h-sec text-balance">
                 Somewhere{' '}
                 <CircleMark color="#b4532a">not on this list?</CircleMark>
               </h2>
               <p className="mt-6 max-w-xl text-[1.12rem] text-pretty">
                 The packages above are a starting point, not the full list. Tell us where, when
-                and who is travelling, and we’ll plan the trip around that.
+                and who is travelling, and we’ll plan the trip around that. See how{' '}
+                <Link to="/services#tailor" className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">
+                  tailor-made trips
+                </Link>{' '}
+                work, or{' '}
+                <Link to="/visa" className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">
+                  check visa requirements
+                </Link>{' '}
+                first.
+              </p>
+              <p className="mt-4 max-w-xl text-[1rem] text-slate-600 text-pretty">
+                Every package here is planned and booked by {BIZ.name}, an IATA-accredited travel agency at
+                A.M. Plaza, Hospital Road, Shivaji Nagar, Bengaluru, trading since {BIZ.since}.{' '}
+                <Link to="/contact" className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">
+                  Visit or call our office
+                </Link>.
               </p>
             </Reveal>
             <Reveal delay={0.12} className="relative md:pb-2">

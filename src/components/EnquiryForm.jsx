@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { waLink, SERVICES } from '../data/site.js'
 
 const SERVICE_OPTIONS = [...SERVICES.map((s) => s.title), 'Corporate Travel', 'Travel Insurance']
@@ -32,7 +32,14 @@ const STYLE = {
   },
 }
 
-const today = () => new Date().toISOString().slice(0, 10)
+/* Local calendar date as YYYY-MM-DD. Read in an effect, never during
+   render: a pre-rendered page would otherwise bake in the build date and
+   mismatch on hydration. */
+const today = () => {
+  const d = new Date()
+  const p = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
 
 /**
  * Enquiry form. Serialises its fields into a formatted WhatsApp message
@@ -46,6 +53,8 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
   const uid = useId()
   const id = (name) => `${uid}-${name}`
   const [sent, setSent] = useState(false)
+  const [minDate, setMinDate] = useState(undefined)
+  useEffect(() => { setMinDate(today()) }, [])
 
   const submit = (e) => {
     e.preventDefault()
@@ -67,13 +76,13 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
       <form onSubmit={submit} className="grid gap-4 md:grid-cols-[1.1fr_1fr_1fr_auto] md:items-end">
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('service')}>What do you need?</label>
-          <select id={id('service')} name="Service" className={s.field} defaultValue={defaultService}>
+          <select id={id('service')} name="Service" autoComplete="off" className={s.field} defaultValue={defaultService}>
             {SERVICE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
           </select>
         </div>
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('dest')}>Where to?</label>
-          <input id={id('dest')} name="Destination" className={s.field} placeholder="Dubai, Makkah, Bali…" />
+          <input id={id('dest')} name="Destination" autoComplete="off" className={s.field} placeholder="Dubai, Makkah, Bali…" />
         </div>
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('mob')}>Your mobile number</label>
@@ -85,6 +94,7 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
         <button type="submit" className="btn btn-wa h-[52px] w-full !px-6 md:w-auto">
           <WaIcon /> {sent ? 'Opening WhatsApp…' : 'Get a free quote'}
         </button>
+        <p role="status" aria-live="polite" className="sr-only">{sent ? 'Opening WhatsApp with your enquiry.' : ''}</p>
       </form>
     )
   }
@@ -94,7 +104,10 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('name')}>Your name</label>
-          <input id={id('name')} name="Name" required autoComplete="name" className={s.field} placeholder="Full name" />
+          <input
+            id={id('name')} name="Name" type="text" required autoComplete="name" autoCapitalize="words"
+            className={s.field} placeholder="Full name"
+          />
         </div>
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('mob')}>Mobile / WhatsApp</label>
@@ -108,13 +121,13 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('service')}>What do you need?</label>
-          <select id={id('service')} name="Service" className={s.field} defaultValue={defaultService}>
+          <select id={id('service')} name="Service" autoComplete="off" className={s.field} defaultValue={defaultService}>
             {SERVICE_OPTIONS.map((o) => <option key={o}>{o}</option>)}
           </select>
         </div>
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('trav')}>Who's travelling?</label>
-          <select id={id('trav')} name="Travellers" className={s.field}>
+          <select id={id('trav')} name="Travellers" autoComplete="off" className={s.field}>
             <option>1 adult</option><option>2 adults</option>
             <option>Family (3–5)</option><option>Group (6+)</option>
           </select>
@@ -126,13 +139,13 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
           <label className={s.label} htmlFor={id('dest')}>
             Destination <span className={s.hint}>(if you know it)</span>
           </label>
-          <input id={id('dest')} name="Destination" className={s.field} placeholder="e.g. Dubai, Makkah, Kerala" />
+          <input id={id('dest')} name="Destination" type="text" autoComplete="off" className={s.field} placeholder="e.g. Dubai, Makkah, Kerala" />
         </div>
         <div className="min-w-0">
           <label className={s.label} htmlFor={id('date')}>
             Travel date <span className={s.hint}>(roughly is fine)</span>
           </label>
-          <input id={id('date')} name="Travel Date" type="date" min={today()} className={s.field} />
+          <input id={id('date')} name="Travel Date" type="date" min={minDate} autoComplete="off" className={s.field} />
         </div>
       </div>
 
@@ -141,7 +154,7 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
           Anything else? <span className={s.hint}>(optional)</span>
         </label>
         <textarea
-          id={id('msg')} name="Message" rows={4} className={`${s.field} resize-y`}
+          id={id('msg')} name="Message" rows={4} autoComplete="off" className={`${s.field} resize-y`}
           placeholder="Budget, hotel preference, meal needs, who's coming…"
         />
       </div>
@@ -149,6 +162,8 @@ export default function EnquiryForm({ variant = 'light', layout = 'full', defaul
       <button type="submit" className="btn btn-wa mt-1 w-full">
         <WaIcon /> {sent ? 'Opening WhatsApp…' : 'Send on WhatsApp'}
       </button>
+
+      <p role="status" aria-live="polite" className="sr-only">{sent ? 'Opening WhatsApp with your enquiry.' : ''}</p>
 
       <p className={`text-center text-[0.92rem] text-pretty ${s.foot}`}>
         This opens WhatsApp with your details filled in, so you can check them before sending.

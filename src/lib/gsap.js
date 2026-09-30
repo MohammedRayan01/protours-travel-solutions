@@ -6,10 +6,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
 import { useGSAP } from '@gsap/react'
 
-gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, MotionPathPlugin, ScrambleTextPlugin, useGSAP)
+gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, MotionPathPlugin, useGSAP)
 
 /** Shared easing so every animation on the site feels related. */
 export const EASE = 'power3.out'
@@ -36,4 +35,4 @@ export const finePointer = () =>
   typeof window !== 'undefined' &&
   window.matchMedia('(hover: hover) and (pointer: fine)').matches
 
-export { gsap, ScrollTrigger, SplitText, DrawSVGPlugin, MotionPathPlugin, ScrambleTextPlugin, useGSAP }
+export { gsap, ScrollTrigger, SplitText, DrawSVGPlugin, MotionPathPlugin, useGSAP }

@@ -134,6 +134,7 @@ export default function Footer() {
             <Link to="/terms" className={LINK}>Terms &amp; Conditions</Link>
             <Link to="/privacy" className={LINK}>Privacy Policy</Link>
             <Link to="/refund-policy" className={LINK}>Cancellation &amp; Refund Policy</Link>
+            <Link to="/disclaimer" className={LINK}>Disclaimer</Link>
           </div>
           <div className="text-white/65 lg:text-right">
             <span className="flex items-center gap-1.5 lg:justify-end">
@@ -146,6 +147,22 @@ export default function Footer() {
         <div className="mt-8 flex flex-col gap-2 text-[0.9rem] text-white/55 sm:flex-row sm:justify-between">
           <span>© {year} {BIZ.name}. All rights reserved.</span>
           <span>Bengaluru, Karnataka · India</span>
+        </div>
+
+        {/* Studio credit. rel="nofollow" on purpose: Google's spam policies
+            name site-wide footer/template credit links as a link scheme and
+            recommend nofollow for "made by" credits. It still sends referral
+            traffic and brand visibility without putting either site at risk. */}
+        <div className="mt-6 border-t border-white/10 pt-5 text-center text-[0.86rem] text-white/50">
+          Created and developed by{' '}
+          <a
+            href="https://naazailabs.com"
+            target="_blank"
+            rel="nofollow noopener"
+            className="font-semibold text-white/80 underline decoration-gold-500/60 underline-offset-4 transition-colors hover:text-gold-400"
+          >
+            naazailabs.com
+          </a>
         </div>
       </div>
     </footer>

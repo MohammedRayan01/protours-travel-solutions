@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -9,66 +9,64 @@
       // ahead of the app bundle, so there's no visible jump.
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      // Marks that scripting is available (see .js rules in index.css).
+      document.documentElement.classList.add('js')
     </script>
-    <title>Pro Tours &amp; Travel Solutions | Travel agency in Shivaji Nagar, Bengaluru</title>
-    <meta name="description" content="A Bengaluru travel agency since 2009, and an IATA-accredited agent — flights, hotels, visas, passports, tour packages, cruises and Hajj &amp; Umrah. Walk in on Hospital Road or WhatsApp us." />
-    <meta name="theme-color" content="#04182c" />
+    <!-- Pre-rendered pages arrive with their real HTML for crawlers; the
+         live app then mounts over it. Holding that HTML invisible for the
+         moment in between avoids a flash of un-animated content. If the
+         app never boots, the fail-safe at the end of <body> reveals it. -->
+    <style>html.js #root[data-ssr]{opacity:0}</style>
+
+    <!--seo:start-->
+    <title>Pro Tours &amp; Travel Solutions | Travel Agency in Bengaluru</title>
+    <meta name="description" content="A Bengaluru travel agency since 2009 and IATA-accredited agent: flights, hotels, visas, passports, tour packages, cruises and Hajj &amp; Umrah. Hospital Road, Shivaji Nagar." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="https://www.protoursandtravelsolutions.com/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Pro Tours &amp; Travel Solutions" />
-    <meta property="og:url" content="https://www.protoursandtravelsolutions.com/" />
-    <meta property="og:image" content="https://www.protoursandtravelsolutions.com/logo.png" />
     <meta property="og:locale" content="en_IN" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
-    <meta property="og:title" content="Pro Tours &amp; Travel Solutions | Travel agency in Shivaji Nagar, Bengaluru" />
-    <meta property="og:description" content="A Bengaluru travel agency since 2009, and an IATA-accredited agent — flights, hotels, visas, passports, tour packages, cruises and Hajj &amp; Umrah." />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <!-- Structured data so Google can show the business as a local
-         TravelAgency (address, hours, phone). No rating is included on
-         purpose: only confirmed figures may be published. -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "TravelAgency",
-      "name": "Pro Tours & Travel Solutions",
-      "url": "https://www.protoursandtravelsolutions.com/",
-      "logo": "https://www.protoursandtravelsolutions.com/logo.png",
-      "image": "https://www.protoursandtravelsolutions.com/logo.png",
-      "telephone": "+91-99005-17604",
-      "email": "protours@protours.co.in",
-      "foundingDate": "2009",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "21/1, G-2 Plain Street, A.M. Plaza, Ground Floor, Hospital Road, Near Infantry Road",
-        "addressLocality": "Shivaji Nagar, Bengaluru",
-        "addressRegion": "Karnataka",
-        "postalCode": "560001",
-        "addressCountry": "IN"
-      },
-      "openingHoursSpecification": [{
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-        "opens": "10:00",
-        "closes": "20:00"
-      }],
-      "sameAs": ["https://www.instagram.com/protoursandtravelsolutions/"]
-    }
-    </script>
+    <meta property="og:url" content="https://www.protoursandtravelsolutions.com/" />
+    <meta property="og:title" content="Pro Tours &amp; Travel Solutions | Travel Agency in Bengaluru" />
+    <meta property="og:description" content="A Bengaluru travel agency since 2009 and IATA-accredited agent: flights, hotels, visas, passports, tour packages, cruises and Hajj &amp; Umrah." />
+    <meta property="og:image" content="https://www.protoursandtravelsolutions.com/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pro Tours &amp; Travel Solutions | Travel Agency in Bengaluru" />
+    <meta name="twitter:description" content="A Bengaluru travel agency since 2009 and IATA-accredited agent." />
+    <meta name="twitter:image" content="https://www.protoursandtravelsolutions.com/og-image.jpg" />
+    <!--seo:end-->
+
+    <meta name="theme-color" content="#04182c" />
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="geo.region" content="IN-KA" />
+    <meta name="geo.placename" content="Shivaji Nagar, Bengaluru" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <!-- Typography: Cabinet Grotesk for UI + headings, Cormorant Garamond as the
          editorial accent serif (used italic for emphasis phrases and quotes). -->
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
     <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
     <link href="https://api.fontshare.com/v2/css?f%5B%5D=cabinet-grotesk@400,500,600,700,800,900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <!-- Marks that scripting is available. Elements that the hero timeline
-         animates in are only hidden under `.js`, so if the bundle fails to
-         load the content still renders instead of staying blank. -->
-    <script>document.documentElement.classList.add('js')</script>
     <div id="root"></div>
+    <noscript>
+      <p style="padding:1rem;font-family:system-ui">
+        Pro Tours &amp; Travel Solutions, A.M. Plaza, Hospital Road, Shivaji Nagar, Bengaluru 560001 ·
+        <a href="tel:+919900517604">+91 99005 17604</a> · <a href="mailto:protours@protours.co.in">protours@protours.co.in</a>
+      </p>
+    </noscript>
+    <script>
+      // Fail-safe: never leave pre-rendered content hidden if the app is slow to boot.
+      setTimeout(function () { var r = document.getElementById('root'); if (r) r.removeAttribute('data-ssr') }, 4000)
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

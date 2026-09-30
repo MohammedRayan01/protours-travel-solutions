@@ -3,10 +3,11 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Pro Tours & Travel Solutions - premium travel agency website",
+  "description": "Pro Tours & Travel Solutions — travel agency website, Shivaji Nagar, Bengaluru",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-server.jsx && node scripts/prerender.mjs",
+    "build:spa": "vite build",
     "preview": "vite preview --host"
   },
   "dependencies": {

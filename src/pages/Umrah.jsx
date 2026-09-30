@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Check, Moon, ArrowRight, Phone } from 'lucide-react'
 
@@ -9,11 +10,15 @@ import {
   Marquee, FlightPath, ScrubText, RevealGrid, Polaroid, Stamp, introDone,
 } from '../components/fx.jsx'
 import { gsap, SplitText, useGSAP, EASE_EXPO, reduceMotion, enterTrigger } from '../lib/gsap.js'
+import { photo } from '../lib/img.js'
+import { UMRAH_FAQS } from '../data/umrah.js'
 
 /* Makkah / Madinah imagery. The hero, the packages and the FAQ sit on
    it (fixed behind the page); the paper sections slide over it. */
 const BG = 'https://images.unsplash.com/photo-1580418827493-f2b22c0a76cb?auto=format&fit=crop&w=2000&q=76'
 const BG2 = 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=1400&q=74'
+/* The fixed backdrop always fills the viewport, so 100vw is the honest size. */
+const BG_IMG = photo(BG, { sizes: '100vw', widths: [640, 1080, 1440, 1920, 2400], quality: 76 })
 
 const TIERS = [
   {
@@ -84,13 +89,6 @@ const HANDLED = [
   'Group departures in Ramadan and school holidays',
 ]
 
-const UMRAH_FAQS = [
-  { q: 'What documents do I need for an Umrah visa?', a: 'A passport valid for at least six months, recent white-background photographs, proof of vaccination as required that season, and basic personal details. Women under 45 travelling without a mahram should speak to us first. The rules change, and we will tell you the current position.' },
-  { q: 'How far are the hotels from the Haram?', a: 'Economy hotels are typically 600–800 m, Deluxe within 300 m, and Premium are Haram-view properties. You get the hotel name and the actual walking distance before you pay, never a vague "close to Haram".' },
-  { q: 'Can you arrange a package for just my family?', a: 'Yes. Private family Umrah is common: your own dates, your own hotel choice, private transfers, and no group schedule to follow.' },
-  { q: 'Do you handle Hajj as well?', a: 'Yes, subject to quota and the Hajj Committee process for that year. Hajj arrangements need to start many months ahead, so contact us early and we will advise on the correct route for your case.' },
-  { q: 'Is the quote per person or per family?', a: 'Per person, based on the room sharing shown in each tier. Double or triple occupancy changes the quote, and children sharing with parents are quoted separately. We break this down clearly for you.' },
-]
 
 /* Sacred sites of Makkah & Madinah, a calm ticker, names only. */
 const PLACES = [
@@ -98,7 +96,8 @@ const PLACES = [
   'Masjid al-Qiblatayn', 'Jannat al-Baqi', 'Mina', 'Arafat', 'Muzdalifah', 'Jabal Thawr',
 ]
 
-/* Resolves when the intro curtain lifts, or after a ceiling. */
+/* Resolves when the intro curtain lifts, or after a ceiling. Only ever
+   called from inside useGSAP, so `document` is never touched on the server. */
 const heroReady = () =>
   Promise.all([
     Promise.race([introDone, new Promise((r) => setTimeout(r, 3400))]),
@@ -232,29 +231,29 @@ function UmrahHero() {
   }, { scope: root })
 
   return (
-    <section ref={root} className="relative isolate flex min-h-[70svh] items-center overflow-hidden md:min-h-[84svh]">
+    <section ref={root} aria-labelledby="umrah-hero-title" className="relative isolate flex min-h-[70svh] items-center overflow-hidden md:min-h-[84svh]">
       {/* Mobile: the rosette sits faintly behind the headline */}
       <Rosette hero className="absolute -top-10 -right-28 -z-10 h-[320px] w-[320px] opacity-60 lg:hidden" />
 
       <div className="wrap grid items-center gap-12 py-20 md:py-28 lg:grid-cols-[1fr_auto]">
         <div ref={content} className="max-w-3xl">
-          <span data-hero-fade className="eyebrow eyebrow-light">Hajj &amp; Umrah division</span>
-          <h1 className="h-hero mt-6 !text-white text-balance">
+          <span data-hero-fade className="eyebrow eyebrow-light">Hajj &amp; Umrah from Bengaluru</span>
+          <h1 id="umrah-hero-title" className="h-hero mt-6 !text-white text-balance">
             Umrah, arranged <span className="accent text-gold-400">properly</span>
           </h1>
           <p data-hero-fade className="mt-7 max-w-2xl text-[1.23rem] text-white/80 text-pretty">
-            Visa, tickets and hotels near the Haram, handled by a team that has been sending groups from
-            Bengaluru for years. We quote walking distances in metres, not adjectives.
+            Umrah visa, tickets and hotels near the Haram, handled by a team that has been sending groups from
+            Shivaji Nagar, Bengaluru, for years. We quote walking distances in metres, not adjectives.
           </p>
           <div data-hero-fade className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
             <a
               href={waLink('Assalamu alaikum, I would like to enquire about Umrah packages from Bengaluru. Our travel window is:')}
               target="_blank" rel="noopener noreferrer" className="btn btn-wa"
             >
-              Ask for an Umrah quote <ArrowRight size={17} />
+              Ask for an Umrah quote <span className="sr-only">on WhatsApp</span> <ArrowRight size={17} aria-hidden="true" />
             </a>
             <a href={`tel:${BIZ.phone}`} className="link-grow inline-flex items-center gap-2 font-display text-[1.02rem] font-bold text-white/90">
-              <Phone size={15} className="text-gold-400" /> or call {BIZ.phoneDisplay}
+              <Phone size={15} aria-hidden="true" className="text-gold-400" /> or call {BIZ.phoneDisplay}
             </a>
           </div>
         </div>
@@ -263,7 +262,7 @@ function UmrahHero() {
         <div className="relative hidden h-[420px] w-[420px] place-items-center lg:grid" aria-hidden="true">
           <Rosette hero spin={260} className="absolute inset-0" />
           <div data-hero-mark className="relative grid place-items-center text-center">
-            <Moon size={26} strokeWidth={1.5} className="text-gold-400" />
+            <Moon size={26} strokeWidth={1.5} aria-hidden="true" className="text-gold-400" />
             <span className="note mt-2 text-[1.35rem] leading-tight text-white/85">Makkah<br />&amp; Madinah</span>
           </div>
         </div>
@@ -456,16 +455,25 @@ export default function Umrah() {
   return (
     /* The hero, packages and FAQ sit on Makkah imagery fixed behind the page. */
     <div className="relative isolate min-h-screen overflow-x-hidden">
-      <div className="fixed inset-0 -z-30">
-        <img src={BG} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+      <div className="fixed inset-0 -z-30" aria-hidden="true">
+        {/* Decorative backdrop behind the hero: eager, it is the first thing seen. */}
+        <img
+          {...BG_IMG}
+          alt=""
+          width={2000}
+          height={1333}
+          decoding="async"
+          fetchPriority="high"
+          className="h-full w-full object-cover"
+        />
       </div>
-      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-navy-950/66 via-navy-950/55 to-navy-950/72" />
+      <div aria-hidden="true" className="fixed inset-0 -z-20 bg-gradient-to-b from-navy-950/66 via-navy-950/55 to-navy-950/72" />
 
       {/* ---------- Hero ---------- */}
       <UmrahHero />
 
       {/* ---------- Ziyarat ticker (the page's only marquee) ---------- */}
-      <div className="border-y border-white/10 bg-navy-950/85 py-5">
+      <div aria-hidden="true" className="border-y border-white/10 bg-navy-950/85 py-5">
         <Marquee speed={80} className="[mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
           {PLACES.map((p) => (
             <span key={p} className="flex shrink-0 items-center gap-6 px-6">
@@ -477,12 +485,12 @@ export default function Umrah() {
       </div>
 
       {/* ---------- Our Umrah desk (paper) ---------- */}
-      <section className="section paper bg-paper">
+      <section aria-label="Our Umrah desk" className="section paper bg-paper">
         <div className="wrap grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
           <div className="relative mx-auto w-full max-w-md pt-4 lg:max-w-none">
             <Polaroid
               src={PHOTOS.umrah || BG2}
-              alt={ownPhoto ? 'A Pro Tours Umrah group in Madinah' : 'Al-Masjid an-Nabawi, Madinah'}
+              alt={ownPhoto ? 'A Pro Tours Umrah group in Madinah' : 'Al-Masjid an-Nabawi, the Prophet’s Mosque in Madinah'}
               caption={ownPhoto ? 'One of our groups, Madinah' : 'Masjid an-Nabawi, Madinah'}
               rotate={-2.5}
               imgClassName="aspect-[4/3.4]"
@@ -503,18 +511,25 @@ export default function Umrah() {
               <ul className="mt-9 grid gap-3 border-t border-slate-200 pt-7">
                 {HANDLED.map((x) => (
                   <li key={x} className="flex gap-3.5">
-                    <Check size={17} strokeWidth={2.6} className="mt-1 shrink-0 text-palm" />
+                    <Check size={17} strokeWidth={2.6} aria-hidden="true" className="mt-1 shrink-0 text-palm" />
                     <span className="text-[1.06rem] text-pretty">{x}</span>
                   </li>
                 ))}
               </ul>
+              <p className="mt-6 text-[1.02rem] text-pretty">
+                Passport expiring soon? Our{' '}
+                <Link to="/visa#passport" className="link-grow font-bold text-navy-900 hover:text-brand-500">
+                  passport renewal and tatkal help
+                </Link>{' '}
+                can sort that out before you travel.
+              </p>
             </Reveal>
           </div>
         </div>
       </section>
 
       {/* ---------- Tiers (on the imagery) ---------- */}
-      <section className="section py-16 md:py-24">
+      <section aria-label="Umrah packages from Bengaluru" className="section py-16 md:py-24">
         <div className="wrap">
           <div className="mb-12 grid gap-6 md:mb-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <SectionHeading light eyebrow="Three ways to go" title="Umrah packages from Bengaluru" className="!mb-0 md:!mb-0" />
@@ -546,7 +561,7 @@ export default function Umrah() {
                 <ul className={`mt-6 grid flex-1 gap-2.5 border-t pt-6 ${t.featured ? 'border-slate-200' : 'border-white/12'}`}>
                   {t.inc.map((x) => (
                     <li key={x} className="flex gap-3 text-[1.01rem]">
-                      <Check size={15} strokeWidth={2.8} className={`mt-1.5 shrink-0 ${t.featured ? 'text-palm' : 'text-gold-400'}`} />
+                      <Check size={15} strokeWidth={2.8} aria-hidden="true" className={`mt-1.5 shrink-0 ${t.featured ? 'text-palm' : 'text-gold-400'}`} />
                       <span className="text-pretty">{x}</span>
                     </li>
                   ))}
@@ -567,7 +582,7 @@ export default function Umrah() {
       </section>
 
       {/* ---------- Walking distances (sand, map note) ---------- */}
-      <section className="section paper bg-sand">
+      <section aria-label="Walking distance to the Haram" className="section paper bg-sand">
         <div className="wrap grid items-center gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           <div>
             <SectionHeading eyebrow="Walking distance" title="How far you walk, five times a day" className="!mb-6 md:!mb-6" />
@@ -581,14 +596,14 @@ export default function Umrah() {
           </div>
 
           <div className="relative rounded-2xl border border-slate-300/70 bg-paper p-5 shadow-[var(--shadow-lift)] sm:p-8">
-            <span className="note absolute top-3 right-5 text-[1rem] text-slate-500">Makkah, not to scale</span>
+            <span aria-hidden="true" className="note absolute top-3 right-5 text-[1rem] text-slate-500">Makkah, not to scale</span>
             <DistanceMap />
           </div>
         </div>
       </section>
 
       {/* ---------- Process + checklist (paper) ---------- */}
-      <section className="section paper bg-paper">
+      <section aria-label="How booking an Umrah package works" className="section paper bg-paper">
         <div className="wrap">
           <SectionHeading eyebrow="How it works" title="From first message to the Haram" className="md:!mb-14" />
           <div className="grid items-start gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
@@ -599,7 +614,7 @@ export default function Umrah() {
       </section>
 
       {/* ---------- FAQ (on the imagery) ---------- */}
-      <section className="section py-16 md:py-24">
+      <section aria-label="Umrah FAQs" className="section py-16 md:py-24">
         <div className="wrap grid items-start gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
           <div className="relative isolate">
             <Rosette stroke="rgb(251 247 240 / 0.2)" className="absolute -top-16 -right-4 -z-10 h-56 w-56 md:-right-10 md:h-72 md:w-72" />
@@ -630,7 +645,13 @@ export default function Umrah() {
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute inset-y-0 left-0 w-[3px] origin-top bg-gold-500"
                 />
+                {/* Each question is a heading so the Q&A reads as a clear list to
+                    screen readers and crawlers. The answer text is always in the
+                    DOM (and in the pre-rendered HTML), only visually collapsed. */}
+                <h3 className="leading-[inherit] tracking-normal">
                 <button
+                  type="button"
+                  id={`umrah-faq-q-${i}`}
                   onClick={() => setOpen(open === i ? -1 : i)}
                   aria-expanded={open === i}
                   aria-controls={`umrah-faq-${i}`}
@@ -638,6 +659,7 @@ export default function Umrah() {
                 >
                   {f.q}
                   <motion.span
+                    aria-hidden="true"
                     animate={{ rotate: open === i ? 45 : 0 }}
                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-gold-500/50 text-gold-400"
@@ -647,8 +669,11 @@ export default function Umrah() {
                     </svg>
                   </motion.span>
                 </button>
+                </h3>
                 <motion.div
                   id={`umrah-faq-${i}`}
+                  role="region"
+                  aria-labelledby={`umrah-faq-q-${i}`}
                   initial={false}
                   animate={{ height: open === i ? 'auto' : 0, opacity: open === i ? 1 : 0 }}
                   transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
@@ -688,11 +713,14 @@ export default function Umrah() {
                     href={waLink('Assalamu alaikum, please send me current Umrah package rates. Our travel window is:')}
                     target="_blank" rel="noopener noreferrer" className="btn btn-wa"
                   >
-                    Send your travel window <ArrowRight size={17} />
+                    Send your travel window <span className="sr-only">on WhatsApp</span> <ArrowRight size={17} aria-hidden="true" />
                   </a>
                   <a href={`tel:${BIZ.phone}`} className="link-grow font-display text-[1rem] font-bold text-white/80">
                     or call {BIZ.phoneDisplay}
                   </a>
+                  <Link to="/contact" className="link-grow font-display text-[1rem] font-bold text-white/80">
+                    or visit our Shivaji Nagar office
+                  </Link>
                 </div>
               </div>
             </div>

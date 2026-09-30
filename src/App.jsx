@@ -7,20 +7,26 @@ import Footer from './components/Footer.jsx'
 import FloatingActions from './components/FloatingActions.jsx'
 import SmoothScroll from './components/SmoothScroll.jsx'
 import { Preloader } from './components/fx.jsx'
+import { metaFor, canonicalFor, ROUTES } from './seo.js'
 
 // Home ships in the main bundle; every other route is code-split so the
 // first paint stays small.
 import Home from './pages/Home.jsx'
-const Services = lazy(() => import('./pages/Services.jsx'))
-const Packages = lazy(() => import('./pages/Packages.jsx'))
+const Services      = lazy(() => import('./pages/Services.jsx'))
+const Packages      = lazy(() => import('./pages/Packages.jsx'))
 const FlightsHotels = lazy(() => import('./pages/FlightsHotels.jsx'))
-const Umrah    = lazy(() => import('./pages/Umrah.jsx'))
-const Visa     = lazy(() => import('./pages/Visa.jsx'))
-const Contact  = lazy(() => import('./pages/Contact.jsx'))
-const About    = lazy(() => import('./pages/About.jsx'))
-const Terms    = lazy(() => import('./pages/Terms.jsx'))
-const Privacy  = lazy(() => import('./pages/Privacy.jsx'))
-const RefundPolicy = lazy(() => import('./pages/RefundPolicy.jsx'))
+const Umrah         = lazy(() => import('./pages/Umrah.jsx'))
+const Visa          = lazy(() => import('./pages/Visa.jsx'))
+const Contact       = lazy(() => import('./pages/Contact.jsx'))
+const About         = lazy(() => import('./pages/About.jsx'))
+const Terms         = lazy(() => import('./pages/Terms.jsx'))
+const Privacy       = lazy(() => import('./pages/Privacy.jsx'))
+const RefundPolicy  = lazy(() => import('./pages/RefundPolicy.jsx'))
+const Disclaimer    = lazy(() => import('./pages/Disclaimer.jsx'))
+const NotFound      = lazy(() => import('./pages/NotFound.jsx'))
+
+/** True while scripts/prerender.mjs renders pages to static HTML in Node. */
+const SSR = typeof window === 'undefined'
 
 /** Lightweight placeholder while a route chunk loads. */
 function RouteFallback() {
@@ -43,35 +49,29 @@ const fade = {
   transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] },
 }
 
-/* Per-route <title> + description. It's an SPA, so without this every
-   page shares one title in search results and browser tabs. */
-const META = {
-  '/': ['Pro Tours & Travel Solutions | Travel agency in Shivaji Nagar, Bengaluru', 'A Bengaluru travel agency since 2009, and an IATA-accredited agent — flights, hotels, visas, passports, tour packages, cruises and Hajj & Umrah. Walk in on Hospital Road or WhatsApp us.'],
-  '/services': ['Travel services — flights, hotels, visas & more | Pro Tours', 'Flight and hotel bookings, tailor-made and group tours, visa and passport help, cruises and Umrah — handled by one desk in Shivaji Nagar, Bengaluru.'],
-  '/packages': ['Tour packages from Bengaluru — Dubai, Bali, Maldives, Europe | Pro Tours', 'Economy, Deluxe and Premium holiday packages from Bengaluru, with inclusions and exclusions listed clearly. Get today\'s quote on WhatsApp.'],
-  '/flights-hotels': ['Flight & hotel booking in Bengaluru | Pro Tours', 'Domestic and international air tickets and hotel bookings with fare rules explained and confirmed vouchers before you fly.'],
-  '/umrah': ['Umrah packages from Bengaluru | Pro Tours Hajj & Umrah Division', 'Umrah visa, flights and hotels near the Haram with walking distances quoted in metres, group co-ordinators and Ziyarat tours.'],
-  '/visa': ['Visa requirements for Indian passport holders | Pro Tours', 'Search visa rules for 100+ destinations and get your file checked line by line before it goes in. Passport fresh, renewal and tatkal help too.'],
-  '/contact': ['Contact & office address | Pro Tours & Travel Solutions', 'A.M. Plaza, Hospital Road, Shivaji Nagar, Bengaluru 560001. Call, WhatsApp or walk in, Monday–Saturday 10 AM–8 PM.'],
-  '/about': ['About us | Pro Tours & Travel Solutions, Bengaluru', 'A travel desk on Hospital Road, Bengaluru, booking trips since 2009. IATA-accredited agent.'],
-  '/terms': ['Terms & Conditions | Pro Tours', 'Terms and conditions for bookings made with Pro Tours & Travel Solutions.'],
-  '/privacy': ['Privacy Policy | Pro Tours', 'How Pro Tours & Travel Solutions collects, uses and protects your personal information.'],
-  '/refund-policy': ['Cancellation & Refund Policy | Pro Tours', 'Cancellation charges and refund timelines for flights, hotels, packages, visas and Umrah.'],
-}
-
+/* Keeps <title>, description, canonical and OG tags in step with the route
+   during client-side navigation (the pre-renderer bakes the same values
+   into each page's static HTML — both read src/seo.js). */
 function useRouteMeta(pathname) {
   useEffect(() => {
-    const [title, desc] = META[pathname] || META['/']
+    const [title, desc] = metaFor(pathname)
+    const known = Boolean(ROUTES[pathname])
     document.title = title
-    document.querySelector('meta[name="description"]')?.setAttribute('content', desc)
-    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
-    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc)
-    document.querySelector('link[rel="canonical"]')?.setAttribute('href', `https://www.protoursandtravelsolutions.com${pathname === '/' ? '/' : pathname}`)
+    const set = (sel, attr, val) => document.querySelector(sel)?.setAttribute(attr, val)
+    set('meta[name="description"]', 'content', desc)
+    set('meta[property="og:title"]', 'content', title)
+    set('meta[property="og:description"]', 'content', desc)
+    set('meta[property="og:url"]', 'content', canonicalFor(pathname))
+    set('meta[name="twitter:title"]', 'content', title)
+    set('meta[name="twitter:description"]', 'content', desc)
+    set('link[rel="canonical"]', 'href', canonicalFor(known ? pathname : '/'))
+    set('meta[name="robots"]', 'content', known ? 'index, follow, max-image-preview:large' : 'noindex, follow')
   }, [pathname])
 }
 
 function Page({ children }) {
-  return <motion.main id="main" tabIndex={-1} {...fade}>{children}</motion.main>
+  // Rendered visible in static HTML (no fade-from-0), animated in the browser.
+  return <motion.main id="main" tabIndex={-1} {...fade} initial={SSR ? false : fade.initial}>{children}</motion.main>
 }
 
 export default function App() {
@@ -99,18 +99,21 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Suspense fallback={<RouteFallback />}>
           <Routes location={location} key={location.pathname}>
-            <Route path="/"         element={<Page><Home /></Page>} />
-            <Route path="/services" element={<Page><Services /></Page>} />
-            <Route path="/packages" element={<Page><Packages /></Page>} />
+            <Route path="/"               element={<Page><Home /></Page>} />
+            <Route path="/services"       element={<Page><Services /></Page>} />
+            <Route path="/packages"       element={<Page><Packages /></Page>} />
             <Route path="/flights-hotels" element={<Page><FlightsHotels /></Page>} />
-            <Route path="/umrah"    element={<Page><Umrah /></Page>} />
-            <Route path="/visa"     element={<Page><Visa /></Page>} />
-            <Route path="/contact"  element={<Page><Contact /></Page>} />
-            <Route path="/about"    element={<Page><About /></Page>} />
-            <Route path="/terms"    element={<Page><Terms /></Page>} />
-            <Route path="/privacy"  element={<Page><Privacy /></Page>} />
-            <Route path="/refund-policy" element={<Page><RefundPolicy /></Page>} />
-            <Route path="*"         element={<Page><Home /></Page>} />
+            <Route path="/umrah"          element={<Page><Umrah /></Page>} />
+            <Route path="/visa"           element={<Page><Visa /></Page>} />
+            <Route path="/contact"        element={<Page><Contact /></Page>} />
+            <Route path="/about"          element={<Page><About /></Page>} />
+            <Route path="/terms"          element={<Page><Terms /></Page>} />
+            <Route path="/privacy"        element={<Page><Privacy /></Page>} />
+            <Route path="/refund-policy"  element={<Page><RefundPolicy /></Page>} />
+            <Route path="/disclaimer"     element={<Page><Disclaimer /></Page>} />
+            {/* A real 404 (noindex) instead of silently showing Home — search
+                engines treat "every URL returns the homepage" as soft 404s. */}
+            <Route path="*"               element={<Page><NotFound /></Page>} />
           </Routes>
         </Suspense>
       </AnimatePresence>

@@ -1,87 +1,170 @@
+import { Link } from 'react-router-dom'
 import { BIZ } from '../data/site.js'
-import { LegalLayout, LegalSection, LegalList } from '../components/legal.jsx'
+import { LegalLayout, LegalSection, LegalList, GrievanceContact, legalLink as a } from '../components/legal.jsx'
 
 export default function Terms() {
   return (
-    <LegalLayout eyebrow="Legal" title="Terms & Conditions" updated="26 September 2026">
-      <LegalSection title="1. About these terms">
+    <LegalLayout
+      eyebrow="Legal"
+      title="Terms & Conditions"
+      updated="30 September 2026"
+      intro="The rules that apply when you use this website or book a trip with us. We have kept them short and plain — if anything is unclear, ask us before you book."
+    >
+      <LegalSection title="1. Who we are">
         <p>
-          These Terms & Conditions govern your use of the {BIZ.name} website and any flight, hotel, tour
-          package, visa, passport, cruise or Umrah service booked with us, whether online, over WhatsApp,
-          by phone, or in person at our Bengaluru office. By making a booking or an online payment with us,
-          you agree to these terms.
+          {BIZ.name} is an IATA-accredited travel agent run by {BIZ.owner} from {BIZ.addressOneLine},
+          India. Phone / WhatsApp {BIZ.phoneDisplay}, email{' '}
+          <a href={`mailto:${BIZ.email2}`} className={a}>{BIZ.email2}</a>.
+        </p>
+        <p>
+          Trading in Bengaluru since {BIZ.since}, we arrange flights, hotels, tour packages, visas, passport assistance, cruises, and Hajj &amp; Umrah
+          travel. These terms apply to this website and to every booking you make with us — online, on
+          WhatsApp, by phone, by email or at our office. By booking or paying, you accept these terms, our{' '}
+          <Link to="/refund-policy" className={a}>Cancellation &amp; Refund Policy</Link> and our{' '}
+          <Link to="/privacy" className={a}>Privacy Policy</Link>.
         </p>
       </LegalSection>
 
-      <LegalSection title="2. Bookings and pricing">
+      <LegalSection title="2. Our role as your agent">
+        <p>
+          We are a booking agent. The flight, hotel room, cruise, transfer or tour is provided by the airline,
+          hotel, cruise line or local operator (the “supplier”), and their own terms and conditions — fare
+          rules, check-in times, baggage rules, cancellation terms — also apply to you. We will share the key
+          supplier terms with you before you pay, and full terms on request.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="3. Quotes and prices">
         <p>
           We don't publish prices on this website; every booking is quoted to you individually. Package
-          quotes are per person on twin sharing unless stated otherwise. Airfares, hotel rates, visa fees and package prices are set by airlines, hotels,
-          visa authorities and our suppliers, and can change without notice until a booking is fully paid and
-          confirmed. We will always confirm the final price with you in writing (WhatsApp or email) before
-          you pay.
-        </p>
-        <p>
-          A booking is confirmed only once payment is received and we have issued a confirmation (ticket,
-          hotel voucher, visa receipt or booking confirmation). An enquiry or a quote is not a confirmed
-          booking.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="3. Payments">
-        <p>
-          Online payments on this website are processed through Razorpay, a PCI-DSS compliant payment
-          gateway. We do not store your card, UPI or net banking credentials on our servers — they are
-          handled entirely by Razorpay and your bank.
+          quotes are per person on twin sharing unless we say otherwise.
         </p>
         <LegalList
           items={[
-            'Accepted methods include major domestic and international debit/credit cards (Visa, Mastercard, American Express, Diners Club/Discover, RuPay), UPI, net banking and supported wallets.',
-            'International cards are supported; the charge is processed in Indian Rupees (INR) and your card network/issuing bank converts it to your local currency at their prevailing exchange rate, which may include a currency-conversion fee charged by your bank.',
-            'For phone/WhatsApp bookings, we may also accept bank transfer or cash at our office — these are confirmed manually and are not processed through the online gateway.',
+            'Every quote is itemised in writing (WhatsApp or email) and shows the total you will pay, including taxes (such as GST and any TCS on overseas packages) and our service fee. No hidden charges are added later.',
+            'Airfares, hotel rates and visa fees are set by suppliers and governments and can change until the booking is paid and issued. If a price changes before that, we will tell you and you can choose not to go ahead.',
+            'Things not included in the quote (for example, tips, personal expenses, optional tours, excess baggage) are listed as exclusions.',
           ]}
         />
       </LegalSection>
 
-      <LegalSection title="4. Travel documents and eligibility">
+      <LegalSection title="4. How a booking is confirmed">
         <p>
-          You are responsible for holding a valid passport (with the minimum validity required by your
-          destination), correct visa, and any health/insurance documents required for your trip. We provide
-          guidance and processing assistance, but final approval of visas and immigration decisions rests
-          with the respective government authority and is outside our control.
+          An enquiry or a quote is not a booking. A booking is confirmed only when we have received your
+          payment (or the agreed deposit) and sent you a confirmation — an e-ticket, hotel voucher, visa
+          application receipt or written booking confirmation. Please check names, dates and details on it
+          straight away; names must match passports exactly, and airlines may charge for corrections.
         </p>
       </LegalSection>
 
-      <LegalSection title="5. Our liability">
+      <LegalSection title="5. Payments">
+        <LegalList
+          items={[
+            'You can pay by bank transfer, UPI, cash at our office, or — where we send you a payment link — online through Razorpay. The amount and method are always confirmed with you in writing first.',
+            'Online payments are processed by Razorpay, a PCI-DSS compliant payment gateway. We never see or store your card, UPI or net-banking credentials.',
+            'Online charges are made in Indian Rupees. If you pay with a foreign card, your bank converts the amount and may add its own currency-conversion fee.',
+            'Cash payments are accepted only within the limits set by Indian law, and you will always get a receipt.',
+            'For packages, the balance is due by the date shown on your confirmation. If it is not paid on time, suppliers may release the booking and our cancellation terms apply.',
+          ]}
+        />
+      </LegalSection>
+
+      <LegalSection title="6. Passports, visas and travel documents">
+        <LegalList
+          items={[
+            'You are responsible for having a valid passport (most countries require at least six months’ validity and blank pages), the right visa, and any transit visas, permits and health documents for every traveller.',
+            'Visa decisions are made only by the embassy, consulate or immigration authority. We help prepare and submit your application, but we cannot guarantee a visa, the processing time, or the validity granted. Entry is always at the discretion of immigration at the border.',
+            'Passport services are assistance only — we help you fill and file your application and book appointments. The Passport Seva / Ministry of External Affairs and the police verification process decide the outcome and timing.',
+            'You must give us true, complete documents. We cannot be responsible for refusals or delays caused by incorrect or missing information.',
+          ]}
+        />
+      </LegalSection>
+
+      <LegalSection title="7. Hajj and Umrah">
+        <LegalList
+          items={[
+            'Umrah visas, permits, and many hotel and transport arrangements are subject to the rules of the Ministry of Hajj and Umrah of Saudi Arabia and its Nusuk platform, and to the Saudi authorities’ decisions, which can change at short notice.',
+            'Hajj from India is organised through the Haj Committee of India or through Hajj Group Organisers registered with the Ministry of Minority Affairs, under the Government of India’s Hajj Policy and the quota allotted by Saudi Arabia. Before you pay for any Hajj arrangement, we will tell you in writing who the registered organiser is and what we are arranging.',
+            'Seat, hotel, tent and transport allocations are made by the authorities and licensed service providers and may change. We will pass on any change as soon as we hear of it.',
+          ]}
+        />
+      </LegalSection>
+
+      <LegalSection title="8. Health, safety and insurance">
+        <LegalList
+          items={[
+            'Check vaccination and health entry rules for your destination (for example, meningitis vaccination for Hajj and Umrah, or yellow fever certificates for some countries) and speak to your doctor before travel.',
+            'We strongly recommend travel insurance that covers medical costs, cancellation and lost baggage. Some visas require it. We can help you buy it; the insurer decides claims.',
+            'Tell us about any disability, medical condition or special assistance needs at the time of booking, so we can pass them to suppliers.',
+          ]}
+        />
+      </LegalSection>
+
+      <LegalSection title="9. Changes and cancellations">
         <p>
-          We act as a booking agent between you and airlines, hotels, visa authorities and other travel
-          suppliers. We are not liable for delays, cancellations, schedule changes, denied boarding, denied
-          visas, strikes, weather, natural events or other circumstances beyond our reasonable control. Where
-          a supplier is at fault, our assistance is limited to helping you pursue the remedy that supplier
-          offers (rebooking, refund, compensation as applicable).
+          If you want to change or cancel, tell us in writing. Charges depend on the supplier’s rules and
+          our <Link to="/refund-policy" className={a}>Cancellation &amp; Refund Policy</Link>. If a supplier
+          changes or cancels your booking, we will tell you promptly, offer the alternatives or refund the
+          supplier gives, and help you claim any compensation you are entitled to.
         </p>
       </LegalSection>
 
-      <LegalSection title="6. Changes to these terms">
+      <LegalSection title="10. Events outside anyone’s control">
         <p>
-          We may update these terms from time to time to reflect changes in our services, the law, or our
-          payment provider's requirements. The "Last updated" date above shows when this page last changed.
-          Continuing to use the site or book with us after an update means you accept the revised terms.
+          We are not liable for failures or delays caused by events beyond our reasonable control — such as
+          natural disasters, extreme weather, epidemics, war, terrorism, civil unrest, strikes, airport or
+          airspace closures, government orders or changes to visa or entry rules. In such cases we will
+          help you rebook or recover whatever refund the supplier gives.
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Governing law">
+      <LegalSection title="11. Our responsibility">
+        <LegalList
+          items={[
+            'We will arrange your booking with reasonable skill and care, and give you correct information as we have it.',
+            'We are not responsible for the acts or omissions of airlines, hotels and other suppliers, or for delays, cancellations, overbooking, denied boarding, lost baggage or visa refusals — but we will help you pursue the supplier’s remedy.',
+            'Where we are at fault, our liability is limited to the amount you paid us for the affected service, except where the law does not allow such a limit.',
+            'Nothing in these terms takes away your rights under the Consumer Protection Act, 2019.',
+          ]}
+        />
+      </LegalSection>
+
+      <LegalSection title="12. Using this website">
+        <LegalList
+          items={[
+            'We try to keep information on this site accurate and current, but itineraries, inclusions, visa rules and photos are for general guidance. Your written quote and confirmation are what count.',
+            'Photos may be representative. Links to other websites are for convenience; we do not control them.',
+            'Do not misuse the site, copy its content or design for commercial use, or try to disrupt it. The text, design and our logo belong to us.',
+          ]}
+        />
         <p>
-          These terms are governed by the laws of India. Any dispute will be subject to the exclusive
-          jurisdiction of the courts in Bengaluru, Karnataka.
+          See also our <Link to="/disclaimer" className={a}>Disclaimer</Link>.
         </p>
       </LegalSection>
 
-      <LegalSection title="8. Contact us">
+      <LegalSection title="13. Complaints and disputes">
+        <p>We want to fix problems quickly. Please follow these steps:</p>
+        <LegalList
+          items={[
+            'Step 1 — tell the person handling your booking, on WhatsApp, phone or email.',
+            'Step 2 — if it is not resolved, write to our Grievance Officer (below). We will acknowledge your complaint within 48 hours and aim to resolve it within one month of receiving it.',
+            'Step 3 — if you are still unhappy, you can call the National Consumer Helpline (1915) or file a complaint online at e-daakhil.nic.in with the appropriate Consumer Commission under the Consumer Protection Act, 2019.',
+          ]}
+        />
+        <GrievanceContact />
+      </LegalSection>
+
+      <LegalSection title="14. Governing law">
         <p>
-          For any question about these terms, write to us at{' '}
-          <a href={`mailto:${BIZ.email2}`} className="font-semibold text-brand-500 hover:underline">{BIZ.email2}</a>{' '}
-          or call {BIZ.phoneDisplay}.
+          These terms are governed by the laws of India. Subject to your right to approach a Consumer
+          Commission, the courts in Bengaluru, Karnataka have exclusive jurisdiction over any dispute.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="15. Changes to these terms">
+        <p>
+          We may update these terms when our services or the law change. The “Last updated” date above shows
+          the latest version. The terms in force on the day you confirm a booking apply to that booking.
         </p>
       </LegalSection>
     </LegalLayout>

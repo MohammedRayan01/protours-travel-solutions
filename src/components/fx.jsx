@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { photo } from '../lib/img.js'
 import {
   gsap, ScrollTrigger, SplitText, useGSAP, EASE_EXPO, reduceMotion, enterTrigger,
 } from '../lib/gsap.js'
@@ -416,7 +417,7 @@ export function Stamp({ top, main, bottom, className = '', tone = 'clay', rotate
  * handwritten caption. Settles into place as it enters. Built as the
  * drop-in slot for the business's own photos (office, team, trips).
  */
-export function Polaroid({ src, alt, caption, rotate = -3, className = '', imgClassName = 'aspect-[4/3.3]', tape = true }) {
+export function Polaroid({ src, alt, caption, rotate = -3, className = '', imgClassName = 'aspect-[4/3.3]', tape = true, sizes = '(min-width: 1024px) 40vw, 90vw' }) {
   const ref = useRef(null)
   useGSAP(() => {
     const el = ref.current
@@ -436,7 +437,7 @@ export function Polaroid({ src, alt, caption, rotate = -3, className = '', imgCl
       {tape && (
         <span aria-hidden="true" className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-[-4deg] bg-sand/85 shadow-sm" />
       )}
-      <img src={src} alt={alt} loading="lazy" className={`w-full object-cover ${imgClassName}`} />
+      <img {...photo(src, { sizes, widths: [480, 768, 1080, 1440] })} alt={alt} loading="lazy" decoding="async" width={1080} height={890} className={`h-auto w-full object-cover ${imgClassName}`} />
       {caption && <figcaption className="note mt-2 px-1 text-center text-[1.15rem] text-navy-900/80">{caption}</figcaption>}
     </figure>
   )

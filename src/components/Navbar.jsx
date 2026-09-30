@@ -68,13 +68,13 @@ export default function Navbar() {
         <div className="wrap flex items-center justify-between gap-6 py-2.5 text-[0.92rem]">
           <div className="flex items-center gap-7">
             <a href={`tel:${BIZ.phone}`} className="flex items-center gap-2 transition-colors hover:text-gold-400">
-              <Phone size={14} className="text-gold-500" /> {BIZ.phoneDisplay}
+              <Phone size={14} aria-hidden="true" className="text-gold-500" /> <span className="sr-only">Call </span>{BIZ.phoneDisplay}
             </a>
             <a href={`mailto:${BIZ.email}`} className="flex items-center gap-2 transition-colors hover:text-gold-400">
-              <Mail size={14} className="text-gold-500" /> {BIZ.email}
+              <Mail size={14} aria-hidden="true" className="text-gold-500" /> <span className="sr-only">Email </span>{BIZ.email}
             </a>
             <a href={`mailto:${BIZ.email2}`} className="flex items-center gap-2 transition-colors hover:text-gold-400">
-              <Mail size={14} className="text-gold-500" /> {BIZ.email2}
+              <Mail size={14} aria-hidden="true" className="text-gold-500" /> <span className="sr-only">Email </span>{BIZ.email2}
             </a>
           </div>
           <div className="flex shrink-0 items-center gap-5">
@@ -82,10 +82,10 @@ export default function Navbar() {
               href={BIZ.mapsUrl} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 transition-colors hover:text-gold-400"
             >
-              <MapPin size={14} className="text-gold-500" />
+              <MapPin size={14} aria-hidden="true" className="text-gold-500" />
               A.M. Plaza, Hospital Road, Shivaji Nagar, Bengaluru 560001
             </a>
-            <img src="/iata-logo.png" alt="IATA Accredited Travel Agent" width={512} height={512} className="h-7 w-7 shrink-0" />
+            <img src="/iata-logo.png" alt="IATA accredited travel agent" width={512} height={512} decoding="async" className="h-7 w-7 shrink-0" />
           </div>
         </div>
       </div>
@@ -172,20 +172,23 @@ export default function Navbar() {
               href={waLink()} target="_blank" rel="noopener noreferrer"
               className="btn btn-gold hidden !px-5 !py-2.5 !text-[0.97rem] sm:inline-flex"
             >
-              Get a Quote <ArrowRight size={15} />
+              Get a Quote <span className="sr-only">on WhatsApp</span> <ArrowRight size={15} aria-hidden="true" />
             </a>
 
             {/* Three-line hamburger — plain icon, no box, just a tap target */}
             <button
               ref={burgerRef}
               onClick={() => setOpen((v) => !v)}
+              type="button"
               aria-label={open ? 'Close menu' : 'Open menu'}
               aria-expanded={open}
+              aria-controls="mobile-menu"
               className="grid h-11 w-11 shrink-0 place-items-center gap-[4px] xl:hidden"
             >
               {[0, 1, 2].map((i) => (
                 <motion.span
                   key={i}
+                  aria-hidden="true"
                   animate={
                     open
                       ? i === 0 ? { rotate: 45, y: 6.5 } : i === 1 ? { opacity: 0, scaleX: 0 } : { rotate: -45, y: -6.5 }
@@ -232,6 +235,10 @@ export default function Navbar() {
         transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         style={{ pointerEvents: open ? 'auto' : 'none' }}
         aria-hidden={!open}
+        // Closed = off-screen: `inert` also takes its links out of the tab
+        // order, so keyboard focus can't land on hidden items.
+        inert={!open}
+        id="mobile-menu"
         className="fixed top-0 right-0 z-50 flex h-[100dvh] w-[86%] max-w-sm flex-col overflow-y-auto bg-navy-950 px-7 pt-7 pb-10 xl:hidden"
         aria-label="Mobile"
       >
@@ -240,6 +247,7 @@ export default function Navbar() {
                   Menu
                 </span>
                 <button
+                  type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close menu"
                   className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-white/5 text-white"
@@ -272,7 +280,7 @@ export default function Navbar() {
                         }`
                       }
                     >
-                      {n.label} <ArrowRight size={17} />
+                      {n.label} <ArrowRight size={17} aria-hidden="true" />
                     </NavLink>
                   </motion.div>
                 ))}
@@ -280,26 +288,26 @@ export default function Navbar() {
 
               <div className="mt-auto space-y-3 pt-9">
                 <a href={waLink()} target="_blank" rel="noopener noreferrer" className="btn btn-wa w-full">
-                  Chat on WhatsApp
+                  Chat on WhatsApp<span className="sr-only"> with {BIZ.shortName}</span>
                 </a>
                 <a href={`tel:${BIZ.phone}`} className="btn w-full border-white/30 text-white hover:border-white/70">
-                  <Phone size={16} /> {BIZ.phoneDisplay}
+                  <Phone size={16} aria-hidden="true" /> <span className="sr-only">Call </span>{BIZ.phoneDisplay}
                 </a>
                 <a
                   href={`mailto:${BIZ.email}`}
                   className="flex items-center justify-center gap-2 pt-2 text-[0.97rem] text-white/60 hover:text-gold-400"
                 >
-                  <Mail size={14} /> {BIZ.email}
+                  <Mail size={14} aria-hidden="true" /> <span className="sr-only">Email </span>{BIZ.email}
                 </a>
                 <a
                   href={`mailto:${BIZ.email2}`}
                   className="flex items-center justify-center gap-2 text-[0.97rem] text-white/60 hover:text-gold-400"
                 >
-                  <Mail size={14} /> {BIZ.email2}
+                  <Mail size={14} aria-hidden="true" /> <span className="sr-only">Email </span>{BIZ.email2}
                 </a>
                 <img
-                  src="/iata-logo.png" alt="IATA Accredited Travel Agent"
-                  width={512} height={512}
+                  src="/iata-logo.png" alt="IATA accredited travel agent"
+                  width={512} height={512} loading="lazy" decoding="async"
                   className="mx-auto h-10 w-10 pt-2"
                 />
               </div>

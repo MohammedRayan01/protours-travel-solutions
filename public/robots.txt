@@ -1,4 +1,8 @@
+# Pro Tours & Travel Solutions — https://www.protoursandtravelsolutions.com
+# We want to be found and cited: search engines and AI answer engines
+# (Google, Bing, ChatGPT, Perplexity, Claude, Apple, etc.) are all welcome.
 User-agent: *
 Allow: /
+Disallow: /api/
 
 Sitemap: https://www.protoursandtravelsolutions.com/sitemap.xml

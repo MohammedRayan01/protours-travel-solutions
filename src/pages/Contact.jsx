@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { MapPin, Phone, Mail, Instagram, Clock, ArrowUpRight } from 'lucide-react'
 
 import { BIZ, waLink } from '../data/site.js'
@@ -27,18 +28,18 @@ export default function Contact() {
     <>
       <PageHero
         img="https://images.unsplash.com/photo-1556388158-158ea5ccacbd?auto=format&fit=crop&w=1800&q=74"
-        alt="Airport departure hall"
-        eyebrow="Get in touch"
+        alt="Travellers walking through a bright airport departure hall"
+        eyebrow="Contact Pro Tours, Shivaji Nagar"
         title="Come in, call, or send us a message"
-        sub="Our office is on the ground floor of A.M. Plaza on Hospital Road. Most people start with a WhatsApp message, and that is fine by us."
+        sub="Our office is on the ground floor of A.M. Plaza on Hospital Road, Shivaji Nagar, Bengaluru. Most people start with a WhatsApp message, and that is fine by us."
       />
 
-      <section className="section overflow-hidden bg-paper">
+      <section aria-labelledby="contact-find" className="section overflow-hidden bg-paper">
         <div className="wrap grid items-start gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
           {/* ---- Where we are + how to reach us ---- */}
           <div className="min-w-0">
             <Reveal><span className="eyebrow">How to find us</span></Reveal>
-            <h2 className="h-sec mt-4 text-balance">We're easy to find in Shivaji Nagar</h2>
+            <h2 id="contact-find" className="h-sec mt-4 text-balance">We're easy to find in Shivaji Nagar</h2>
 
             {/* the address, written out like a note left on the counter */}
             <Reveal y={20}>
@@ -66,17 +67,21 @@ export default function Contact() {
             </Reveal>
 
             <p className="mt-8 max-w-xl text-pretty">
-              We're on Hospital Road, a short walk from Infantry Road. Look for A.M. Plaza; we're on the ground
-              floor. Street parking is available, and if you get lost, call us and we'll guide you in.
+              {BIZ.name} is an IATA-accredited travel agency in Shivaji Nagar, Bengaluru, booking trips since{' '}
+              {BIZ.since}. We're on Hospital Road, a short walk from Infantry Road. Look for A.M. Plaza; we're on
+              the ground floor, open {DAYS}, {TIMES}. Street parking is available, and if you get lost, call us
+              and we'll guide you in.
             </p>
 
+            {/* Phone, email and hours as real, linkable text for people and crawlers alike */}
+            <address className="not-italic">
             <dl className="mt-8 border-t border-slate-200">
               <Row icon={Phone} label="Call or WhatsApp">
                 <a href={`tel:${BIZ.phone}`} className={`${LINK} font-display font-bold`}>{BIZ.phoneDisplay}</a>
                 <span className="block text-[0.96rem] text-body">
                   Same number for both.{' '}
                   <a href={waLink()} target="_blank" rel="noopener noreferrer" className="link-grow font-bold text-palm">
-                    Open WhatsApp
+                    Open WhatsApp<span className="sr-only"> chat with {BIZ.shortName}</span>
                   </a>
                 </span>
               </Row>
@@ -95,12 +100,20 @@ export default function Contact() {
                 <span className="block text-[0.96rem] text-body">Latest offers and departures</span>
               </Row>
             </dl>
+            </address>
+
+            <p className="mt-7 max-w-xl text-[1.02rem] text-pretty">
+              Coming in about a visa, a passport or Umrah? Our{' '}
+              <Link to="/visa" className="link-grow font-bold text-navy-900 hover:text-brand-500">visa assistance</Link> and{' '}
+              <Link to="/umrah" className="link-grow font-bold text-navy-900 hover:text-brand-500">Umrah packages from Bengaluru</Link>{' '}
+              pages list the documents worth bringing.
+            </p>
           </div>
 
           {/* ---- The form: a plain card, nothing spinning around it ---- */}
           <Reveal delay={0.1} y={24} className="min-w-0 lg:sticky lg:top-28">
             <div className="rounded-3xl border border-slate-200 bg-sand p-6 sm:p-8 md:p-10">
-              <h3 className="text-[1.5rem]">Send us an enquiry</h3>
+              <h2 className="text-[1.5rem]">Send us an enquiry</h2>
               <p className="mt-2 mb-7 text-[1.03rem] text-pretty">
                 Fill in what you know. It opens WhatsApp with everything written out, ready to send.
               </p>
@@ -111,7 +124,7 @@ export default function Contact() {
       </section>
 
       {/* ---- Map ---- */}
-      <section className="overflow-x-clip bg-paper pb-20 md:pb-24">
+      <section aria-label="Map" className="overflow-x-clip bg-paper pb-20 md:pb-24">
         <div className="wrap">
           <div className="relative">
             <ImageReveal from="bottom" className="rounded-3xl border border-slate-200">
@@ -137,6 +150,7 @@ export default function Contact() {
                   <span className="block font-display text-[0.98rem] font-bold">A.M. Plaza, Hospital Road</span>
                   <span className="flex items-center gap-1 text-[0.88rem] text-white/75 group-hover:text-gold-400">
                     Open in Google Maps <ArrowUpRight size={13} aria-hidden="true" />
+                    <span className="sr-only">(opens in a new tab)</span>
                   </span>
                 </span>
               </a>

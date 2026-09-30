@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Search, Info, ArrowRight, X } from 'lucide-react'
 
@@ -10,6 +11,16 @@ import EnquiryForm from '../components/EnquiryForm.jsx'
 import { Parallax } from '../components/motion.jsx'
 import { ImageReveal, Marquee, FlightPath, Stamp, ArrowDoodle, introDone } from '../components/fx.jsx'
 import { gsap, useGSAP, reduceMotion, enterTrigger } from '../lib/gsap.js'
+import { photo } from '../lib/img.js'
+
+const PASSPORT_IMG = photo(
+  'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1000&q=72',
+  { sizes: '(min-width: 1240px) 540px, (min-width: 1024px) 45vw, calc(100vw - 40px)', widths: [480, 768, 1080, 1440], quality: 72 },
+)
+const TIPS_BG = photo(
+  'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=1800&q=70',
+  { sizes: '100vw', widths: [640, 1080, 1440, 1920], quality: 70 },
+)
 
 /* One colour per visa type, used by the filter dots, the ticker and
    the stamps. Tailwind needs literal class strings. */
@@ -138,10 +149,13 @@ function PillBg({ id, className }) {
 function VisaStamp({ type, country, delay = 0 }) {
   const [top, main, bottom] = STAMP_WORDS[type]
   const r = tilt(country)
+  /* No matchMedia during render (SSR-safe and hydration-stable): the app's
+     <MotionConfig reducedMotion="user"> already skips the thud for
+     visitors who ask for reduced motion. */
   return (
     <motion.span
       aria-hidden="true"
-      initial={reduceMotion() ? false : { opacity: 0, scale: 1.7, rotate: r - 12 }}
+      initial={{ opacity: 0, scale: 1.7, rotate: r - 12 }}
       animate={{ opacity: 0.9, scale: 1, rotate: r }}
       transition={{ duration: 0.42, delay: delay + 0.22, ease: [0.34, 1.56, 0.64, 1] }}
       className={`pointer-events-none absolute top-4 right-4 inline-flex select-none flex-col items-center rounded-md border-2 p-[3px] text-center mix-blend-multiply ${INK[type]}`}
@@ -191,8 +205,8 @@ function VisaCard({ v, i }) {
           target="_blank" rel="noopener noreferrer"
           className="mt-5 inline-flex items-center gap-2 self-start font-display text-[0.95rem] font-bold text-brand-500"
         >
-          Ask about this visa
-          <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
+          Ask about this visa<span className="sr-only"> for {v.c} on WhatsApp</span>
+          <ArrowRight size={14} aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1" />
         </a>
       </div>
       <div aria-hidden="true" className="overflow-hidden border-t border-slate-200 bg-sand/70 px-6 py-1.5 font-mono text-[0.66rem] tracking-[0.14em] whitespace-nowrap text-slate-500">
@@ -273,10 +287,10 @@ export default function Visa() {
     <>
       <PageHero
         img="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=1800&q=74"
-        alt="Passport and travel documents"
-        eyebrow="Visa & passport"
+        alt="An Indian passport with travel documents, ready for a visa application"
+        eyebrow="Visa & passport help, Bengaluru"
         title="Visa requirements for every country we book"
-        sub="Most rejections come from paperwork, not from the applicant. We check every file line by line before it goes in."
+        sub="Visa assistance in Bengaluru, from our office in Shivaji Nagar. Most rejections come from paperwork, not from the applicant, so we check every file line by line before it goes in."
       >
         <div className="flex flex-wrap gap-3">
           {[
@@ -291,7 +305,7 @@ export default function Visa() {
       </PageHero>
 
       {/* ---------- Destination ticker (the page's only marquee) ---------- */}
-      <div className="border-b border-white/10 bg-navy-950 py-5 md:py-6">
+      <div aria-hidden="true" className="border-b border-white/10 bg-navy-950 py-5 md:py-6">
         <Marquee speed={90} className="[mask-image:linear-gradient(90deg,transparent,#000_10%,#000_90%,transparent)]">
           {TICKER.map((v) => (
             <span key={v.c} className="flex shrink-0 items-center gap-3 px-5 md:px-7">
@@ -303,7 +317,7 @@ export default function Visa() {
       </div>
 
       {/* ---------- Browser ---------- */}
-      <section className="section paper bg-paper">
+      <section aria-label="Visa requirements by country" className="section paper bg-paper">
         <div className="wrap">
           <div className="mb-10 grid gap-6 md:mb-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
             <SectionHeading
@@ -322,30 +336,40 @@ export default function Visa() {
           {/* Controls */}
           <Reveal>
             <div className="mb-10 rounded-2xl border border-slate-200 bg-sand p-5 md:p-6">
-              <div className="relative mb-5">
+              <div className="relative mb-5" role="search">
+                <label htmlFor="visa-search" className="sr-only">Search visa requirements by country or region</label>
                 <Search size={19} aria-hidden="true" className="absolute top-1/2 left-5 -translate-y-1/2 text-slate-500" />
                 <input
+                  id="visa-search"
+                  type="text"
+                  inputMode="search"
+                  autoComplete="off"
+                  spellCheck={false}
+                  enterKeyHint="search"
+                  aria-controls="visa-results"
+                  aria-describedby="visa-count"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search a country: Dubai, Japan, Kenya…"
-                  aria-label="Search countries"
                   className="field !rounded-xl !border-slate-300 !bg-white !py-3.5 !pr-12 !pl-12 !text-[1rem] md:!py-4 md:!pl-14 md:!text-[1.1rem]"
                 />
                 {q && (
                   <button
+                    type="button"
                     onClick={() => setQ('')}
                     aria-label="Clear search"
                     className="absolute top-1/2 right-4 grid -translate-y-1/2 place-items-center p-1 text-slate-500 hover:text-ink"
                   >
-                    <X size={18} />
+                    <X size={18} aria-hidden="true" />
                   </button>
                 )}
               </div>
 
               {/* Type filter: a navy highlight slides between the active pill */}
               <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Filter by visa type">
-                <span className="note mr-1 text-[1.1rem] text-slate-600">Entry type</span>
+                <span aria-hidden="true" className="note mr-1 text-[1.1rem] text-slate-600">Entry type</span>
                 <button
+                  type="button"
                   onClick={() => setType('all')}
                   aria-pressed={type === 'all'}
                   className={`relative isolate rounded-full border px-4 py-2 text-[0.92rem] font-semibold transition-colors duration-300 ${
@@ -357,6 +381,7 @@ export default function Visa() {
                 </button>
                 {Object.entries(VISA_TYPES).map(([k, v]) => (
                   <button
+                    type="button"
                     key={k}
                     onClick={() => setType(type === k ? 'all' : k)}
                     aria-pressed={type === k}
@@ -373,9 +398,10 @@ export default function Visa() {
 
               {/* Region filter */}
               <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by region">
-                <span className="note mr-1 text-[1.1rem] text-slate-600">Region</span>
+                <span aria-hidden="true" className="note mr-1 text-[1.1rem] text-slate-600">Region</span>
                 {['All', ...REGIONS].map((r) => (
                   <button
+                    type="button"
                     key={r}
                     onClick={() => setRegion(r)}
                     aria-pressed={region === r}
@@ -392,7 +418,7 @@ export default function Visa() {
           </Reveal>
 
           {/* Results */}
-          <p className="mb-7 text-[1.01rem] text-slate-500" aria-live="polite">
+          <p id="visa-count" className="mb-7 text-[1.01rem] text-slate-500" role="status" aria-live="polite" aria-atomic="true">
             Showing{' '}
             <motion.b
               key={list.length}
@@ -406,6 +432,7 @@ export default function Visa() {
             of {stats.total} destinations
           </p>
 
+          <div id="visa-results">
           {grouped.map(([r, items]) => (
             <div key={r} className="mb-12">
               <h3 className="mb-5 flex items-center gap-4 text-[1.3rem]">
@@ -419,7 +446,9 @@ export default function Visa() {
                     transition={{ duration: 1.1, ease: [0.65, 0, 0.35, 1] }}
                   />
                 </svg>
-                <span className="note text-[1.1rem] font-semibold text-slate-500">{items.length}</span>
+                <span className="note text-[1.1rem] font-semibold text-slate-500">
+                  {items.length}<span className="sr-only"> {items.length === 1 ? 'destination' : 'destinations'}</span>
+                </span>
               </h3>
 
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
@@ -427,6 +456,7 @@ export default function Visa() {
               </div>
             </div>
           ))}
+          </div>
 
           {!list.length && (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-sand/60 px-6 py-16 text-center">
@@ -459,7 +489,7 @@ export default function Visa() {
       </section>
 
       {/* ---------- Passport ---------- */}
-      <section id="passport" className="section paper scroll-mt-24 bg-sand">
+      <section id="passport" aria-label="Passport services" className="section paper scroll-mt-24 bg-sand">
         <div className="wrap grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
           <div className="relative min-w-0">
             <div className="rounded-2xl shadow-[var(--shadow-lift)]">
@@ -467,9 +497,12 @@ export default function Visa() {
               <ImageReveal className="rounded-2xl" from="left">
                 <Parallax speed={0.1}>
                   <img
-                    src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1000&q=72"
-                    alt="Passport application documents on a desk"
+                    {...PASSPORT_IMG}
+                    alt="Passport application forms and supporting documents laid out on a desk"
+                    width={1000}
+                    height={825}
                     loading="lazy"
+                    decoding="async"
                     className="aspect-[4/3.3] w-full scale-110 object-cover"
                   />
                 </Parallax>
@@ -486,7 +519,15 @@ export default function Visa() {
               <p className="text-pretty">
                 The passport process is straightforward until something is unusual: a name change, a lost booklet, a
                 minor without both parents present, or an address that does not match your documents. That is where
-                we are most useful.
+                we are most useful, whether it is a routine renewal or passport tatkal help when you need to travel
+                at short notice.
+              </p>
+              <p className="mt-4 text-pretty">
+                Renewing for a pilgrimage? Umrah visas need six months or more of passport validity; our{' '}
+                <Link to="/umrah" className="link-grow font-bold text-navy-900 hover:text-brand-500">
+                  Umrah packages from Bengaluru
+                </Link>{' '}
+                page lists what else to keep ready.
               </p>
             </Reveal>
 
@@ -515,7 +556,7 @@ export default function Visa() {
                 href={waLink('Hello Pro Tours & Travel Solutions, I need help with a passport (fresh / renewal / tatkal / re-issue). My situation is:')}
                 target="_blank" rel="noopener noreferrer" className="btn btn-brand mt-8"
               >
-                Ask about your passport <ArrowRight size={16} />
+                Ask about your passport <span className="sr-only">on WhatsApp</span> <ArrowRight size={16} aria-hidden="true" />
               </a>
             </Reveal>
           </div>
@@ -523,13 +564,14 @@ export default function Visa() {
       </section>
 
       {/* ---------- Tips ---------- */}
-      <section className="relative isolate overflow-hidden bg-navy-950 py-20 md:py-28">
+      <section aria-label="Visa application tips" className="relative isolate overflow-hidden bg-navy-950 py-20 md:py-28">
         <img
-          src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=1800&q=70"
-          alt="" aria-hidden="true" loading="lazy"
+          {...TIPS_BG}
+          alt="" aria-hidden="true" loading="lazy" decoding="async"
+          width={1800} height={1200}
           className="absolute inset-0 -z-20 h-full w-full object-cover opacity-30"
         />
-        <div className="absolute inset-0 -z-10 bg-navy-950/60" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-navy-950/60" />
         <FlightPath className="absolute inset-x-0 top-6 -z-[5] opacity-40 md:top-10" start="top 80%" end="bottom 40%" />
 
         <div className="wrap relative z-10 grid items-start gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
@@ -553,7 +595,7 @@ export default function Visa() {
       </section>
 
       {/* ---------- Form ---------- */}
-      <section className="section paper bg-paper">
+      <section aria-label="Visa enquiry" className="section paper bg-paper">
         <div className="wrap grid items-start gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-14">
           <div className="relative min-w-0">
             <SectionHeading

@@ -1,16 +1,24 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion'
 import { Plane, BedDouble, MessageCircle } from 'lucide-react'
 
-import { SERVICES, waLink } from '../data/site.js'
-import { Reveal, SectionHeading, PageHero, Parallax, Stagger, SplitHeading } from '../components/ui.jsx'
+import { BIZ, SERVICES, waLink } from '../data/site.js'
+import { Reveal, SectionHeading, PageHero, Parallax, SplitHeading } from '../components/ui.jsx'
 import { ImageReveal, FlightPath, Polaroid, Stamp } from '../components/fx.jsx'
 import EnquiryForm from '../components/EnquiryForm.jsx'
 import { useHashScroll } from '../components/SmoothScroll.jsx'
-import { gsap, useGSAP, reduceMotion, enterTrigger } from '../lib/gsap.js'
+import { gsap, useGSAP, reduceMotion, enterTrigger, EASE as GSAP_EASE } from '../lib/gsap.js'
+import { photo } from '../lib/img.js'
 
 const flights = SERVICES.find((s) => s.id === 'flights')
 const hotels = SERVICES.find((s) => s.id === 'hotels')
+
+/* Responsive sources, computed once. Section photos fill half the
+   container on desktop (the hotel one ~78% of that half). */
+const FLIGHT_IMG = photo(flights.img, { sizes: '(min-width: 1280px) 600px, (min-width: 1024px) 46vw, 100vw', widths: [480, 768, 1080, 1440] })
+const HOTEL_IMG = photo(hotels.img, { sizes: '(min-width: 1280px) 470px, (min-width: 1024px) 36vw, (min-width: 640px) 78vw, 100vw', widths: [480, 768, 1080, 1440] })
+const WHY_BG = photo('https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=1800&q=70', { sizes: '100vw', widths: [768, 1080, 1440, 1920] })
 
 const WHY = [
   ['Fares compared first', 'Every major carrier out of Bengaluru, checked across GDS and airline-direct inventory before we quote you.'],
@@ -100,7 +108,10 @@ function RoutePass() {
 
   const fromCode = codeFor(f.from, 'BLR')
   const toCode = codeFor(f.to)
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+  // Today's date is read on the client only: a value baked in at pre-render
+  // time would be stale (and mismatch hydration) by the time anyone visits.
+  const [today, setToday] = useState('')
+  useEffect(() => { setToday(new Date().toISOString().slice(0, 10)) }, [])
 
   useSlideIn(card)
 
@@ -188,11 +199,11 @@ function RoutePass() {
           </div>
           <div>
             <label className={label} htmlFor="rp-dep">Depart</label>
-            <input id="rp-dep" type="date" min={today} className="field" value={f.depart} onChange={set('depart')} />
+            <input id="rp-dep" type="date" min={today || undefined} className="field" value={f.depart} onChange={set('depart')} />
           </div>
           <div>
             <label className={label} htmlFor="rp-ret">Return <span className="sr-only sm:not-sr-only tracking-normal normal-case">(optional)</span></label>
-            <input id="rp-ret" type="date" min={f.depart || today} className="field" value={f.ret} onChange={set('ret')} />
+            <input id="rp-ret" type="date" min={f.depart || today || undefined} className="field" value={f.ret} onChange={set('ret')} />
           </div>
         </div>
 
@@ -289,18 +300,32 @@ function Voucher() {
   )
 }
 
+/* Tick list: items rise in sequence (same motion as <Stagger>), rendered
+   as a real <ul> so it reads as a list. */
 function Points({ items }) {
+  const ref = useRef(null)
+  useGSAP(() => {
+    const el = ref.current
+    if (!el) return
+    const kids = gsap.utils.toArray(el.children)
+    if (!kids.length) return
+    if (reduceMotion()) { gsap.set(kids, { opacity: 1, y: 0 }); return }
+    gsap.fromTo(kids, { opacity: 0, y: 16 }, {
+      opacity: 1, y: 0, duration: 0.95, ease: GSAP_EASE, stagger: { each: 0.07 },
+      scrollTrigger: enterTrigger(el),
+    })
+  }, { scope: ref })
   return (
-    <Stagger className="mt-7 grid gap-3 border-t border-slate-200 pt-6" stagger={0.07} y={16}>
+    <ul ref={ref} role="list" className="mt-7 grid gap-3 border-t border-slate-200 pt-6">
       {items.map((x) => (
-        <div key={x} className="flex gap-3">
+        <li key={x} className="flex gap-3">
           <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" className="mt-1.5 h-4 w-4 shrink-0">
             <path d="M3 11c2 1.5 3.5 3 4.5 5C10 10 13 6 17.5 3" stroke="#0f5e9e" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span className="text-[1.05rem] text-pretty">{x}</span>
-        </div>
+        </li>
       ))}
-    </Stagger>
+    </ul>
   )
 }
 
@@ -315,13 +340,13 @@ export default function FlightsHotels() {
       <PageHero
         img="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1800&q=74"
         alt="Aircraft wing above the clouds"
-        eyebrow="Flights & Hotels"
+        eyebrow="Flight & hotel booking"
         title="Air tickets and hotel rooms, booked by people you can call"
-        sub="Fares compared across airlines, rooms confirmed in writing, and the same desk on WhatsApp if your plans change."
+        sub="Flight booking and hotel reservations from our desk in Bengaluru: fares compared across airlines, rooms confirmed in writing, and the same people on WhatsApp if your plans change."
       />
 
       {/* ---------- Tell us your route ---------- */}
-      <section className="section paper overflow-x-clip bg-sand">
+      <section aria-label="Where are you flying?" className="section paper overflow-x-clip bg-sand">
         <div className="wrap">
           <div className="mb-10 grid gap-6 md:grid-cols-[1.2fr_1fr] md:items-end">
             <SectionHeading
@@ -342,15 +367,18 @@ export default function FlightsHotels() {
       </section>
 
       {/* ---------- Flights ---------- */}
-      <section id="flights" className="section scroll-mt-24 overflow-x-clip bg-white">
+      <section id="flights" aria-label="International and domestic flight tickets" className="section scroll-mt-24 overflow-x-clip bg-white">
         <div className="wrap grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="relative">
             <ImageReveal from="left" className="relative aspect-[4/3.2] rounded-3xl">
               <Parallax speed={0.12} className="absolute inset-0">
                 <img
-                  src={flights.img}
-                  alt="Aircraft wing over the clouds"
+                  {...FLIGHT_IMG}
+                  alt="Aircraft wing above sunlit clouds"
+                  width={1080}
+                  height={864}
                   loading="lazy"
+                  decoding="async"
                   className="absolute inset-x-0 -top-[8%] h-[116%] w-full object-cover"
                 />
               </Parallax>
@@ -370,7 +398,7 @@ export default function FlightsHotels() {
                 <Plane size={15} aria-hidden="true" className="rotate-45" /> Flight booking
               </span>
             </Reveal>
-            <SplitHeading className="h-sec mt-4 text-balance">International and domestic tickets</SplitHeading>
+            <SplitHeading className="h-sec mt-4 text-balance">International and domestic flight tickets</SplitHeading>
             <Reveal delay={0.1}>
               <p className="mt-5 text-[1.12rem] text-pretty">{flights.desc}</p>
             </Reveal>
@@ -382,6 +410,13 @@ export default function FlightsHotels() {
               >
                 <MessageCircle size={17} aria-hidden="true" /> Ask about flights
               </a>
+              <p className="mt-5 text-[1rem] text-pretty">
+                Flying abroad? Start the paperwork early with our{' '}
+                <Link to="/visa" className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">visa assistance</Link>
+                , or see{' '}
+                <Link to="/umrah" className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">Umrah packages from Bengaluru</Link>
+                {' '}with flights included.
+              </p>
             </Reveal>
           </div>
         </div>
@@ -407,7 +442,7 @@ export default function FlightsHotels() {
       </section>
 
       {/* ---------- Hotels ---------- */}
-      <section id="hotels" className="section paper scroll-mt-24 overflow-x-clip bg-sand">
+      <section id="hotels" aria-label="Hotels and resorts, confirmed in writing" className="section paper scroll-mt-24 overflow-x-clip bg-sand">
         <div className="wrap grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           <div>
             <Reveal>
@@ -427,6 +462,11 @@ export default function FlightsHotels() {
               >
                 <MessageCircle size={17} aria-hidden="true" /> Ask about hotels
               </a>
+              <p className="mt-5 text-[1rem] text-pretty">
+                Want flights, hotel and transfers in one booking? Our{' '}
+                <Link to="/packages" className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">tour packages from Bengaluru</Link>
+                {' '}come in Economy, Deluxe and Premium.
+              </p>
             </Reveal>
           </div>
 
@@ -434,9 +474,12 @@ export default function FlightsHotels() {
             <ImageReveal from="right" className="relative aspect-[4/3.4] rounded-3xl sm:w-[78%]">
               <Parallax speed={0.12} className="absolute inset-0">
                 <img
-                  src={hotels.img}
-                  alt="Hotel pool and resort buildings"
+                  {...HOTEL_IMG}
+                  alt="Resort pool and sun loungers beside a timber lodge"
+                  width={1080}
+                  height={918}
                   loading="lazy"
+                  decoding="async"
                   className="absolute inset-x-0 -top-[8%] h-[116%] w-full object-cover"
                 />
               </Parallax>
@@ -449,11 +492,11 @@ export default function FlightsHotels() {
       </section>
 
       {/* ---------- Why book both with us ---------- */}
-      <section className="relative isolate overflow-hidden bg-navy-950 py-20 md:py-28">
+      <section aria-label="What you get booking both with us" className="relative isolate overflow-hidden bg-navy-950 py-20 md:py-28">
         <Parallax speed={0.2} className="absolute inset-0 -z-20 overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=1800&q=70"
-            alt="" aria-hidden="true" loading="lazy"
+            {...WHY_BG}
+            alt="" aria-hidden="true" width={1920} height={1280} loading="lazy" decoding="async"
             className="absolute inset-x-0 -top-[12%] h-[124%] w-full object-cover opacity-30"
           />
         </Parallax>
@@ -483,7 +526,7 @@ export default function FlightsHotels() {
       </section>
 
       {/* ---------- Form ---------- */}
-      <section className="section bg-white">
+      <section aria-label="Tell us what you need" className="section bg-white">
         <div className="wrap grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           <div>
             <SectionHeading
@@ -492,6 +535,15 @@ export default function FlightsHotels() {
               sub="A few details are enough. We come back with fare and room options that fit your dates."
               className="!mb-6"
             />
+            <Reveal delay={0.15}>
+              <p className="max-w-md text-[1rem] text-slate-600 text-pretty">
+                {BIZ.name} is an IATA-accredited travel agency at A.M. Plaza, Hospital Road, Shivaji Nagar,
+                Bengaluru, booking flights and hotels since {BIZ.since}.{' '}
+                <Link to="/contact" className="font-semibold text-brand-500 underline decoration-brand-500/30 underline-offset-4 hover:decoration-brand-500">
+                  Find our office and hours
+                </Link>.
+              </p>
+            </Reveal>
           </div>
           <Reveal>
             <div className="rounded-2xl border border-slate-200 bg-sand/50 p-6 md:p-9">

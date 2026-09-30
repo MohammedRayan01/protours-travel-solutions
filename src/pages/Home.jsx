@@ -11,11 +11,42 @@ import {
 } from '../components/fx.jsx'
 import { gsap, useGSAP, SplitText, ScrollTrigger, EASE_EXPO, reduceMotion, enterTrigger } from '../lib/gsap.js'
 import EnquiryForm from '../components/EnquiryForm.jsx'
+import { photo } from '../lib/img.js'
 
 const serviceLink = (id) =>
   id === 'umrah' ? '/umrah' : id === 'passport' ? '/visa#passport' : id === 'visa' ? '/visa' : `/services#${id}`
 
 const HELLO = `Hello ${BIZ.name},`
+
+/* Alt text describing what each photograph actually shows (keyed by the
+   Unsplash photo id), so screen readers and image search get the scene,
+   not just a place name. Falls back to the data file's own label. */
+const ALT = {
+  '1506905925346': 'Snow-capped mountain peaks rising above a sea of clouds at sunrise',
+  '1512453979798': 'Dubai skyline with the Burj Khalifa at dusk',
+  '1507525428034': 'Turquoise water rolling onto a sandy tropical beach at sunset',
+  '1580418827493': 'The clock towers above Masjid al-Haram in Makkah',
+  '1544551763': 'Scuba diver among a shoal of yellow fish on a Maldives reef',
+  '1537996194471': 'Ulun Danu Beratan water temple on Lake Bratan, Bali',
+  '1525625293386': 'Marina Bay Sands and the ArtScience Museum, Singapore',
+  '1476514525535': 'Wooden rowing boat on an alpine lake beneath the mountains in Europe',
+  '1528181304800': 'Gilded Buddhist temple spires against a blue sky in Thailand',
+  '1602216056096': 'Houseboat on the palm-lined Kerala backwaters',
+  '1591604129939': 'Masjid an-Nabawi with its green dome, Madinah',
+  '1518684079': 'Aerial view of the Burj Al Arab on the Dubai coast',
+  '1590523741831': 'Palm trees leaning over a white-sand beach in the Maldives',
+}
+const altFor = (url, fallback) => ALT[url?.match(/photo-(\d+)/)?.[1]] ?? fallback
+
+/* Responsive sources, computed once at module load rather than per render. */
+const HERO_SRC = HERO_SLIDES.map((s) => photo(s.img, { sizes: '100vw', widths: [768, 1080, 1440, 1920, 2560] }))
+const SERVICE_FRAME = SERVICES.map((s) => photo(s.img, { sizes: '(min-width: 1280px) 460px, 36vw', widths: [480, 768, 1080] }))
+const SERVICE_THUMB = SERVICES.map((s) => photo(s.img, { sizes: '48px', widths: [96, 160] }))
+const DEST_SRC = DESTINATIONS.map((d) => photo(d.img, { sizes: '(min-width: 1024px) 23vw, 46vw', widths: [320, 480, 768] }))
+const CTA_BG = photo('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=70', {
+  sizes: '(min-width: 1280px) 1240px, 100vw', widths: [768, 1080, 1440, 1920],
+})
+
 /* "Monday – Saturday: 10:00 AM – 8:00 PM" → reads as part of a sentence. */
 const HOURS = BIZ.hours.replace(/^Monday – Saturday:\s*/, 'Monday to Saturday, ').replace(' – ', ' to ')
 
@@ -135,15 +166,18 @@ function Hero() {
 
   return (
     /* -mt pulls the hero under the sticky nav so the bar floats over the photo. */
-    <section ref={root} className="relative isolate -mt-[74px] flex min-h-[100svh] items-end overflow-hidden">
+    <section ref={root} aria-labelledby="home-title" className="relative isolate -mt-[74px] flex min-h-[100svh] items-end overflow-hidden">
       {HERO_SLIDES.map((s, k) => (
         <img
           key={s.img}
           ref={(el) => { slidesRef.current[k] = el }}
-          src={s.img}
-          alt={s.alt}
+          {...HERO_SRC[k]}
+          alt={altFor(s.img, s.alt)}
+          width={1920}
+          height={1280}
           fetchPriority={k === 0 ? 'high' : 'low'}
           loading={k === 0 ? 'eager' : 'lazy'}
+          decoding={k === 0 ? 'auto' : 'async'}
           style={{ opacity: k === 0 ? 1 : 0 }}
           className="absolute inset-0 -z-20 h-full w-full object-cover will-change-transform"
         />
@@ -169,7 +203,7 @@ function Hero() {
             Hospital Road, Bengaluru · since {BIZ.since}
           </p>
 
-          <h1 data-hero-title className="js-hide h-hero mt-6 !text-[clamp(2.35rem,6.2vw,4.6rem)] !text-white text-balance">
+          <h1 id="home-title" data-hero-title className="js-hide h-hero mt-6 !text-[clamp(2.35rem,6.2vw,4.6rem)] !text-white text-balance">
             One stop travel solutions for{' '}
             <span className="accent text-gold-400">all your travel needs</span>
           </h1>
@@ -184,8 +218,8 @@ function Hero() {
           </p>
 
           <p data-hero-copy className="js-hide mt-6 max-w-[38rem] text-[1.2rem] text-white/80 text-pretty">
-            Flights, hotels, visas, passports, holidays, cruises and Umrah. Planned and booked by people you
-            can call, message, or walk in and meet.
+            An IATA-accredited travel agency in Bengaluru for flights, hotels, visas, passports, holidays,
+            cruises and Umrah. Planned and booked by people you can call, message, or walk in and meet.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
@@ -197,7 +231,7 @@ function Hero() {
               <MessageCircle size={18} /> Plan my trip on WhatsApp
             </a>
             <Link to="/packages" data-hero-btn className="js-hide link-grow inline-flex items-center gap-2 font-display text-[1.05rem] font-bold text-white">
-              Browse packages <ArrowRight size={16} />
+              Browse tour packages <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -215,6 +249,7 @@ function Hero() {
           {HERO_SLIDES.map((s, k) => (
             <button
               key={s.img}
+              type="button"
               onClick={() => setI(k)}
               aria-label={`Show photo ${k + 1}: ${s.alt}`}
               aria-pressed={k === i}
@@ -248,7 +283,7 @@ function QuickEnquiry() {
   }, { scope: ref })
 
   return (
-    <section ref={ref} className="relative z-20 -mt-16">
+    <section ref={ref} aria-labelledby="enquiry-title" className="relative z-20 -mt-16">
       <div className="wrap">
         <div data-ticket className={`grid lg:grid-cols-[17.5rem_1fr] ${TICKET_SHADOW}`}>
           <div
@@ -256,7 +291,7 @@ function QuickEnquiry() {
             style={notched()}
             className="relative border-b-2 border-dashed border-white/25 bg-navy-950 px-7 py-6 text-white lg:border-r-2 lg:border-b-0 lg:py-8"
           >
-            <span className="font-display text-[0.72rem] font-bold tracking-[0.24em] text-white/60 uppercase">Trip enquiry</span>
+            <span id="enquiry-title" className="font-display text-[0.72rem] font-bold tracking-[0.24em] text-white/60 uppercase">Trip enquiry</span>
             <div className="mt-2 flex items-center gap-3 font-display text-[2.1rem] leading-none font-black tracking-tight">
               BLR
               <Plane size={20} aria-hidden="true" className="rotate-45 text-gold-400" />
@@ -324,19 +359,20 @@ function ServicesSection() {
   }, { scope: list })
 
   return (
-    <section id="services" className="section scroll-mt-20">
+    <section id="services" aria-labelledby="services-title" className="section scroll-mt-20">
       <div className="wrap grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <div>
           <div className="lg:sticky lg:top-28">
             <Reveal><span className="eyebrow">What we do</span></Reveal>
             <Reveal delay={0.06}>
-              <h2 className="h-sec mt-4 text-balance">
+              <h2 id="services-title" className="h-sec mt-4 text-balance">
                 Everything a trip needs, handled at <CircleMark className="ml-[0.18em]">one desk</CircleMark>
               </h2>
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mt-5 max-w-md text-[1.12rem] text-pretty">
-                Eight services that cover a journey from the first enquiry to the day you land back in Bengaluru.
+                Flight booking, hotels, tour packages, visa assistance, passports, cruises and Umrah: eight
+                services that cover a journey from the first enquiry to the day you land back in Bengaluru.
               </p>
             </Reveal>
 
@@ -346,9 +382,12 @@ function ServicesSection() {
                 {SERVICES.map((s, k) => (
                   <img
                     key={s.id}
-                    src={s.img}
+                    {...SERVICE_FRAME[k]}
                     alt=""
+                    width={1080}
+                    height={864}
                     loading="lazy"
+                    decoding="async"
                     className={`absolute inset-0 h-full w-full object-cover transition-[clip-path,scale] ease-[var(--ease-out-expo)] ${
                       k === active
                         ? 'z-10 scale-100 [clip-path:inset(0_0_0_0)] duration-[900ms]'
@@ -382,7 +421,7 @@ function ServicesSection() {
                     </span>
                     <div data-body className="min-w-0">
                       <div className="flex items-center gap-4">
-                        <img src={s.img} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-lg object-cover lg:hidden" />
+                        <img {...SERVICE_THUMB[k]} alt="" aria-hidden="true" width={48} height={48} loading="lazy" decoding="async" className="h-12 w-12 shrink-0 rounded-lg object-cover lg:hidden" />
                         <div className="min-w-0">
                           <h3 className={`transition-colors group-hover:text-brand-500 ${lead ? 'text-[clamp(1.45rem,2.4vw,1.9rem)]' : 'text-[1.28rem]'}`}>
                             {s.title}
@@ -418,7 +457,7 @@ function ServicesSection() {
                 >
                   <MessageCircle size={17} /> Describe my trip
                 </a>
-                <Link to="/services" className="link-grow font-display text-[1rem] font-bold text-ink">All services</Link>
+                <Link to="/services" className="link-grow font-display text-[1rem] font-bold text-ink">All services<span className="sr-only"> we offer</span></Link>
               </div>
             </div>
           </Reveal>
@@ -452,10 +491,10 @@ function DestinationsSection() {
   }, { scope: grid })
 
   return (
-    <section className="section paper relative overflow-hidden bg-sand">
+    <section aria-label="Popular destinations from Bengaluru" className="section paper relative overflow-hidden bg-sand">
       <div className="wrap">
         <div className="mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between">
-          <SectionHeading eyebrow="Where our travellers go" title="Popular destinations this season" className="!mb-0" />
+          <SectionHeading eyebrow="Where our travellers go" title="Popular destinations from Bengaluru" className="!mb-0" />
           <div className="relative flex items-end gap-2 md:max-w-[17rem] md:pb-2">
             <ArrowDoodle className="hidden h-12 w-20 shrink-0 -scale-y-100 text-gold-600 md:block" flip />
             <p className="note text-[1.2rem] leading-snug text-navy-900/80">
@@ -468,15 +507,18 @@ function DestinationsSection() {
           {DESTINATIONS.map((d, k) => (
             <div key={d.name} data-drift={k % 2 === 1 ? '' : undefined} className={k % 2 === 1 ? 'mt-8 lg:mt-14' : ''}>
               <Link
-                to="/packages"
+                to={d.name.startsWith('Makkah') ? '/umrah' : '/packages'}
                 style={{ '--r': `${TILT[k]}deg` }}
                 className="group block bg-white p-2 pb-3 shadow-[0_18px_30px_-20px_rgb(60_40_20/0.55),0_1px_3px_rgb(60_40_20/0.15)] transition-[rotate] duration-500 ease-[var(--ease-out-expo)] [rotate:var(--r)] hover:[rotate:0deg] sm:p-2.5 sm:pb-4"
               >
                 <ImageReveal from={k % 2 ? 'top' : 'bottom'} delay={(k % 4) * 0.08} className={SHAPE[k % 4]}>
                   <img
-                    src={d.img}
-                    alt={d.name}
+                    {...DEST_SRC[k]}
+                    alt={altFor(d.img, d.name)}
+                    width={768}
+                    height={k % 4 === 0 || k % 4 === 3 ? 960 : 768}
                     loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover transition-transform duration-[1100ms] ease-[var(--ease-out-expo)] group-hover:scale-105"
                   />
                 </ImageReveal>
@@ -525,7 +567,18 @@ function BoardingPass({ p, wide = false, index = 0, stamp }) {
     <article data-pass className={`grid h-full ${wide ? 'md:grid-cols-[1.35fr_1fr]' : 'grid-rows-[auto_1fr]'} ${TICKET_SHADOW}`}>
       <div style={notched()} className={`relative overflow-hidden ${wide ? 'min-h-[260px] md:min-h-[400px]' : 'aspect-[16/10]'}`}>
         <ImageReveal from={wide ? 'left' : 'bottom'} delay={index * 0.1} className="absolute inset-0">
-          <img src={p.img} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+          <img
+            {...photo(p.img, {
+              sizes: wide ? '(min-width: 768px) 55vw, 100vw' : '(min-width: 768px) 46vw, 100vw',
+              widths: [480, 768, 1080, 1440],
+            })}
+            alt={altFor(p.img, p.name)}
+            width={1080}
+            height={675}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
         </ImageReveal>
         <span className="absolute top-4 left-4 rounded bg-white px-2.5 py-1 font-display text-[0.72rem] font-extrabold tracking-[0.1em] text-navy-900 uppercase">
           {p.badge}
@@ -556,7 +609,7 @@ function BoardingPass({ p, wide = false, index = 0, stamp }) {
 
         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
           <a href={ask} target="_blank" rel="noopener noreferrer" className="link-grow inline-flex items-center gap-2 font-display text-[1rem] font-bold text-palm">
-            <MessageCircle size={16} /> Ask about this trip
+            <MessageCircle size={16} /> Ask about this trip<span className="sr-only">: {p.name}</span>
           </a>
         </div>
 
@@ -582,13 +635,13 @@ function PackagesSection() {
   }, { scope: ref })
 
   return (
-    <section ref={ref} className="section">
+    <section ref={ref} aria-label="A few trips to start from" className="section">
       <div className="wrap">
         <div className="mb-10 grid gap-5 md:mb-14 md:grid-cols-[1fr_auto] md:items-end">
           <SectionHeading
             eyebrow="Handpicked holidays"
             title="A few trips to start from"
-            sub="Every package comes in Economy, Deluxe and Premium: same destination, your choice of comfort, on twin sharing."
+            sub="Tour packages from Bengaluru, each in Economy, Deluxe and Premium: same destination, your choice of comfort, on twin sharing."
             className="!mb-0"
           />
           <Reveal>
@@ -634,13 +687,14 @@ function ReviewsSection() {
   }, { dependencies: [k], scope: quote })
 
   return (
-    <section className="section paper overflow-hidden bg-sand">
+    <section aria-label="In our travellers' words" className="section paper overflow-hidden bg-sand">
       <div className="wrap">
         <div className="mb-10 flex flex-col gap-4 md:mb-14 md:flex-row md:items-end md:justify-between">
           <SectionHeading eyebrow="Client feedback" title="In our travellers' words" className="!mb-0" />
           <Reveal>
             <a href={BIZ.mapsUrl} target="_blank" rel="noopener noreferrer" className="link-grow inline-flex items-center gap-1.5 font-display text-[1rem] font-bold text-brand-500">
               Read more reviews on Google <ArrowUpRight size={16} />
+              <span className="sr-only">(opens in a new tab)</span>
             </a>
           </Reveal>
         </div>
@@ -729,7 +783,7 @@ function FromOurDesk() {
     : { src: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=700&q=72', alt: 'Masjid an-Nabawi, Madinah', caption: 'Makkah & Madinah' }
 
   return (
-    <section className="section overflow-hidden">
+    <section aria-label="From our desk on Hospital Road" className="section overflow-hidden">
       <div className="wrap">
         <div className="grid items-start gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           {/* Two photos, pinned slightly overlapping */}
@@ -746,7 +800,7 @@ function FromOurDesk() {
             <SplitHeading className="h-sec mt-4 text-balance">From our desk on Hospital Road</SplitHeading>
 
             <ScrubText className="mt-6 text-[1.22rem] leading-[1.7] text-ink text-pretty" dim={0.2}>
-              We have been booking trips out of Shivaji Nagar since 2009: flights, hotels, visas, passports,
+              We have been booking trips out of Shivaji Nagar, Bengaluru, since {BIZ.since}: flights, hotels, visas, passports,
               holidays, cruises and Umrah, all from the same office.
             </ScrubText>
             <Reveal delay={0.1}>
@@ -773,6 +827,7 @@ function FromOurDesk() {
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-slate-300 pt-6">
               <Link to="/about" className="btn btn-ghost !py-3 !text-[1rem]">More about us <ArrowRight size={16} /></Link>
+              <Link to="/contact" className="link-grow font-display text-[1rem] font-bold text-ink">Directions to our office</Link>
             </div>
           </div>
         </div>
@@ -803,7 +858,7 @@ function FromOurDesk() {
    ============================================================ */
 function FaqSection() {
   return (
-    <section className="section paper bg-sand">
+    <section aria-label="Questions we get asked a lot" className="section paper bg-sand">
       <div className="wrap grid items-start gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div className="lg:sticky lg:top-28">
           <Reveal><span className="eyebrow">Good to know</span></Reveal>
@@ -833,13 +888,13 @@ function FaqSection() {
    ============================================================ */
 function CtaSection() {
   return (
-    <section className="paper bg-sand pb-24">
+    <section aria-labelledby="cta-title" className="paper bg-sand pb-24">
       <div className="wrap">
         <ClipGrow className="relative isolate overflow-hidden rounded-5xl bg-navy-950 px-7 py-14 sm:px-12 md:px-16 md:py-20">
           <Parallax speed={0.2} className="absolute inset-0 -z-20">
             <img
-              src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=70"
-              alt="" aria-hidden="true" loading="lazy"
+              {...CTA_BG}
+              alt="" aria-hidden="true" width={1920} height={1280} loading="lazy" decoding="async"
               className="absolute -top-[15%] left-0 h-[130%] w-full object-cover opacity-45"
             />
           </Parallax>
@@ -857,13 +912,16 @@ function CtaSection() {
           <div className="grid items-center gap-10 lg:grid-cols-[1.4fr_0.6fr]">
             <div>
               <Reveal>
-                <h2 className="h-sec !text-white text-balance">
+                <h2 id="cta-title" className="h-sec !text-white text-balance">
                   Ready when <span className="accent text-gold-400">you are</span>
                 </h2>
               </Reveal>
               <Reveal delay={0.1}>
                 <p className="mt-5 max-w-xl text-[1.17rem] text-white/75 text-pretty">
-                  Tell us where you want to go. We will come back with a clear plan and a date you can book.
+                  Tell us where you want to go. We will come back with a clear plan and a date you can book, or{' '}
+                  <Link to="/contact" className="text-white underline decoration-white/35 underline-offset-4 hover:decoration-white">
+                    visit our office in Shivaji Nagar
+                  </Link>.
                 </p>
               </Reveal>
               <Reveal delay={0.2}>

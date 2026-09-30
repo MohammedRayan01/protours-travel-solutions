@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Star } from 'lucide-react'
 import { gsap, useGSAP, reduceMotion } from '../lib/gsap.js'
 import { Reveal, CountUp, SplitHeading } from './motion.jsx'
+import { photo } from '../lib/img.js'
 
 /* Scroll-driven animation lives in motion.jsx (GSAP + ScrollTrigger).
    Re-exported here so every existing import keeps working. */
@@ -17,7 +18,7 @@ export function Counter({ value, suffix = '' }) {
 /* ------------------------------------------------------------
    SectionHeading — headline words rise out of a masked line.
    ------------------------------------------------------------ */
-export function SectionHeading({ eyebrow, title, sub, center = false, light = false, className = '' }) {
+export function SectionHeading({ eyebrow, title, sub, center = false, light = false, className = '', id }) {
   return (
     <div className={`${center ? 'mx-auto max-w-3xl text-center' : 'max-w-2xl'} mb-10 md:mb-14 ${className}`}>
       {eyebrow && (
@@ -27,7 +28,7 @@ export function SectionHeading({ eyebrow, title, sub, center = false, light = fa
           </span>
         </Reveal>
       )}
-      <SplitHeading className={`h-sec mt-4 text-balance ${light ? '!text-white' : ''}`}>
+      <SplitHeading id={id} className={`h-sec mt-4 text-balance ${light ? '!text-white' : ''}`}>
         {title}
       </SplitHeading>
       {sub && (
@@ -86,7 +87,7 @@ export function PageHero({ img, alt, eyebrow, title, sub, children, tall = false
     >
       <img
         ref={imgRef}
-        src={img}
+        {...photo(img, { sizes: '100vw', widths: [640, 1080, 1440, 1920] })}
         alt={alt}
         className="absolute inset-0 -z-20 h-full w-full object-cover will-change-transform"
         fetchPriority="high"

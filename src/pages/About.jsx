@@ -9,6 +9,7 @@ import {
   ImageReveal, ScrubText, FlightPath, Polaroid, Stamp, DrawLine, CircleMark,
 } from '../components/fx.jsx'
 import { gsap, useGSAP, reduceMotion, enterTrigger } from '../lib/gsap.js'
+import { photo } from '../lib/img.js'
 
 /* Stock stand-ins, used only while the matching PHOTOS slot is empty. */
 const STOCK = {
@@ -33,12 +34,12 @@ function slot(key, real, stock) {
 const OFFICE = slot(
   'office',
   { alt: `The ${BIZ.shortName} office at A.M. Plaza, Hospital Road`, caption: 'Our office on Hospital Road' },
-  { alt: 'Houseboat on the Kerala backwaters', caption: 'Kerala backwaters' },
+  { alt: 'A traditional houseboat on the Kerala backwaters', caption: 'Kerala backwaters' },
 )
 const DESK = slot(
   'desk',
   { alt: `The ${BIZ.shortName} team at work`, caption: 'At the desk' },
-  { alt: 'Houseboats on Dal Lake, Srinagar', caption: null },
+  { alt: 'Shikaras and houseboats on Dal Lake, Srinagar', caption: null },
 )
 const FOUNDER = slot(
   'founder',
@@ -75,6 +76,9 @@ const VALUES = [
 ]
 
 const [DAYS, TIMES] = BIZ.hours.split(': ')
+
+/* The value photos sit in a 260px / 320px column on desktop, full width on phones. */
+const VALUE_SIZES = '(min-width: 1024px) 320px, (min-width: 768px) 260px, calc(100vw - 40px)'
 
 /* ------------------------------------------------------------
    RouteList — the checklist as a small route map: a line inks
@@ -134,7 +138,10 @@ function IataSeal({ className = '', rotate = 9 }) {
     >
       <div className="flex h-full w-full flex-col items-center justify-center rounded-full border border-dashed border-navy-900/70 text-navy-900">
         <span className="font-display text-[0.55rem] font-extrabold tracking-[0.26em] uppercase">Accredited</span>
-        <img src="/iata-logo.png" alt="IATA accredited travel agent" width={512} height={512} className="my-1 h-11 w-11" />
+        <img
+          src="/iata-logo.png" alt="IATA logo: Pro Tours is an IATA-accredited travel agent"
+          width={512} height={512} loading="lazy" decoding="async" className="my-1 h-11 w-11"
+        />
         <span className="font-display text-[0.55rem] font-extrabold tracking-[0.26em] uppercase">Travel agent</span>
       </div>
     </div>
@@ -146,20 +153,21 @@ export default function About() {
     <>
       <PageHero
         img={STOCK.hero}
-        alt="The Taj Mahal at sunrise"
-        eyebrow="About us"
+        alt="The Taj Mahal at sunrise, seen across its gardens"
+        eyebrow="About Pro Tours"
         title="A travel desk on Hospital Road"
         sub={`We have been booking flights, hotels, visas, holidays and Umrah from Shivaji Nagar for ${YEARS} years. Most of our clients found us through someone they know.`}
       />
 
       {/* ---- Who we are: text + pinned photos ---- */}
-      <section className="section overflow-hidden bg-paper">
+      <section aria-labelledby="about-who" className="section overflow-hidden bg-paper">
         <div className="wrap grid items-start gap-16 lg:grid-cols-[1.05fr_1fr] lg:gap-20">
           <div className="lg:pt-6">
             <Reveal><span className="eyebrow">Who we are</span></Reveal>
-            <h2 className="h-sec mt-4 text-balance">One office that handles the whole trip</h2>
+            <h2 id="about-who" className="h-sec mt-4 text-balance">One office that handles the whole trip</h2>
             <p className="mt-6 text-pretty">
-              {BIZ.name} is an IATA-accredited travel agency in Shivaji Nagar, Bengaluru. We started in {BIZ.since}{' '}
+              {BIZ.name} is an IATA-accredited travel agency in Shivaji Nagar, Bengaluru, run by its founder{' '}
+              {BIZ.owner}. We started in {BIZ.since}{' '}
               because booking one trip usually meant dealing with four different people: one for the ticket, one
               for the hotel, one for the visa and nobody at all when something went wrong.
             </p>
@@ -169,6 +177,12 @@ export default function About() {
               been booking with us since their first passport.
             </p>
             <RouteList items={OFFER} />
+            <p className="mt-8 text-[1.02rem] text-pretty">
+              See our{' '}
+              <Link to="/services" className="link-grow font-bold text-navy-900 hover:text-brand-500">full list of travel services</Link>,{' '}
+              <Link to="/visa" className="link-grow font-bold text-navy-900 hover:text-brand-500">visa and passport help</Link> and{' '}
+              <Link to="/umrah" className="link-grow font-bold text-navy-900 hover:text-brand-500">Umrah packages from Bengaluru</Link>.
+            </p>
           </div>
 
           {/* photo collage — a big print, a small one tucked under it, and the seal */}
@@ -202,7 +216,7 @@ export default function About() {
       </section>
 
       {/* ---- The idea: the one scrubbed statement on the page ---- */}
-      <section className="relative isolate overflow-hidden bg-navy-950 py-24 md:py-32">
+      <section aria-label="The idea we started with" className="relative isolate overflow-hidden bg-navy-950 py-24 md:py-32">
         <FlightPath
           className="absolute inset-x-0 top-1/2 -z-[1] -translate-y-1/2 opacity-35"
           start="top 90%"
@@ -221,7 +235,7 @@ export default function About() {
       </section>
 
       {/* ---- A note from the founder ---- */}
-      <section className="section paper overflow-hidden bg-sand">
+      <section aria-labelledby="about-founder" className="section paper overflow-hidden bg-sand">
         <div className="wrap grid items-center gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="relative mx-auto w-full max-w-[380px]">
             <Polaroid {...FOUNDER} rotate={-4} imgClassName="aspect-[4/4.6]" />
@@ -229,7 +243,7 @@ export default function About() {
 
           <Reveal y={24}>
             <article className="relative rounded-md border border-slate-200 bg-paper px-6 py-9 shadow-[0_24px_48px_-32px_rgb(60_40_20/0.55)] sm:px-10 sm:py-11">
-              <span className="eyebrow">A note from the founder</span>
+              <h2 id="about-founder" className="eyebrow">A note from the founder</h2>
               <div className="mt-6 grid gap-4 text-[1.1rem] text-pretty">
                 <p className="quote !text-[1.45rem] leading-snug text-navy-900">Dear traveller,</p>
                 <p>
@@ -257,14 +271,14 @@ export default function About() {
 
               <ul className="mt-8 grid gap-2 border-t border-slate-200 pt-6 text-[1.02rem] sm:grid-cols-2 sm:gap-x-6">
                 {[
-                  { href: `tel:${BIZ.phone}`, icon: Phone, label: BIZ.phoneDisplay },
-                  { href: `mailto:${BIZ.email2}`, icon: Mail, label: BIZ.email2 },
-                  { href: `mailto:${BIZ.email}`, icon: Mail, label: BIZ.email },
-                ].map(({ href, icon: Icon, label }) => (
+                  { href: `tel:${BIZ.phone}`, icon: Phone, label: BIZ.phoneDisplay, sr: 'Call' },
+                  { href: `mailto:${BIZ.email2}`, icon: Mail, label: BIZ.email2, sr: 'Email' },
+                  { href: `mailto:${BIZ.email}`, icon: Mail, label: BIZ.email, sr: 'Email' },
+                ].map(({ href, icon: Icon, label, sr }) => (
                   <li key={href}>
                     <a href={href} className="flex min-h-[44px] min-w-0 items-center gap-3 text-navy-900 hover:text-brand-500">
                       <Icon size={16} aria-hidden="true" className="shrink-0 text-gold-600" />
-                      <span className="link-grow min-w-0 break-words">{label}</span>
+                      <span className="link-grow min-w-0 break-words"><span className="sr-only">{sr} </span>{label}</span>
                     </a>
                   </li>
                 ))}
@@ -275,14 +289,18 @@ export default function About() {
       </section>
 
       {/* ---- How we work ---- */}
-      <section className="section bg-paper">
+      <section aria-label="How we work" className="section bg-paper">
         <div className="wrap">
           <SectionHeading eyebrow="How we work" title="Three things we don't cut corners on" />
           <ol className="border-t border-slate-300">
             {VALUES.map((v, i) => (
               <li key={v.title} className="grid items-center gap-6 border-b border-slate-300 py-8 md:grid-cols-[260px_1fr] md:gap-10 lg:grid-cols-[320px_1fr]">
                 <ImageReveal from={i % 2 ? 'right' : 'left'} className="rounded-xl">
-                  <img src={v.img} alt={v.alt} loading="lazy" className="aspect-[16/10] w-full object-cover" />
+                  <img
+                    {...photo(v.img, { sizes: VALUE_SIZES, widths: [320, 480, 640, 960], quality: 72 })}
+                    alt={v.alt} width={900} height={563} loading="lazy" decoding="async"
+                    className="aspect-[16/10] w-full object-cover"
+                  />
                 </ImageReveal>
                 <Reveal y={18}>
                   <span className="note text-[1.2rem] text-gold-600">No. {i + 1}</span>
@@ -296,20 +314,21 @@ export default function About() {
       </section>
 
       {/* ---- Visit us ---- */}
-      <section className="section paper overflow-hidden bg-sand">
+      <section aria-labelledby="about-visit" className="section paper overflow-hidden bg-sand">
         <div className="wrap grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <Reveal><span className="eyebrow">Visit us</span></Reveal>
-            <h2 className="h-sec mt-4 text-balance">Come in and say hello</h2>
+            <h2 id="about-visit" className="h-sec mt-4 text-balance">Come in and say hello</h2>
             <p className="mt-5 max-w-xl text-pretty">
-              Walk in during working hours, or send a WhatsApp message first if you'd like us to have your
-              options ready. Either is fine.
+              Our travel agency in Shivaji Nagar is open {DAYS}, {TIMES}. Walk in during working hours, or send a
+              WhatsApp message first if you'd like us to have your options ready. Either is fine.
             </p>
 
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               <div className="flex gap-3.5">
                 <MapPin size={20} aria-hidden="true" className="mt-1 shrink-0 text-clay" />
                 <address className="text-[1.04rem] not-italic">
+                  <span className="sr-only">{BIZ.name}, </span>
                   <span className="block font-display font-bold text-ink">{BIZ.address.line1}</span>
                   <span className="block">
                     Hospital Road, <CircleMark color="#b4532a">near Infantry Road</CircleMark>
@@ -328,7 +347,7 @@ export default function About() {
 
             <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
               <a href={BIZ.mapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-brand">
-                Get directions <ArrowUpRight size={17} aria-hidden="true" />
+                Get directions <span className="sr-only">to A.M. Plaza on Google Maps</span> <ArrowUpRight size={17} aria-hidden="true" />
               </a>
               <a
                 href={waLink()} target="_blank" rel="noopener noreferrer"
@@ -352,7 +371,7 @@ export default function About() {
               to="/contact"
               className="mt-14 inline-flex items-center gap-2 font-display text-[1rem] font-bold text-navy-900 hover:text-brand-500"
             >
-              All the ways to reach us <ArrowRight size={16} aria-hidden="true" />
+              All the ways to reach us <span className="sr-only">on the contact page</span> <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>
         </div>

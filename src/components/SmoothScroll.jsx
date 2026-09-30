@@ -43,7 +43,26 @@ export default function SmoothScroll({ children }) {
     const id = requestAnimationFrame(() => {
       requestAnimationFrame(() => ScrollTrigger.refresh())
     })
-    return () => cancelAnimationFrame(id)
+
+    // Deep links (/privacy#your-rights, /visa#passport…) on ANY page. The
+    // browser's own jump happens before a lazily-loaded route has rendered
+    // its sections, so on a first visit it silently lands at the top. Poll
+    // briefly for the target and scroll to it once it exists.
+    let tries = 0
+    let timer
+    const seek = () => {
+      let el = null
+      try { el = hash && document.getElementById(decodeURIComponent(hash.slice(1))) } catch { /* malformed hash */ }
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 90
+        window.scrollTo({ top, behavior: 'instant' })
+      } else if (hash && tries++ < 40) {
+        timer = setTimeout(seek, 75)
+      }
+    }
+    if (hash) timer = setTimeout(seek, 60)
+
+    return () => { cancelAnimationFrame(id); clearTimeout(timer) }
   }, [pathname, hash])
 
   // Images settling in changes page height, which moves every trigger below them.

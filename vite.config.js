@@ -44,13 +44,24 @@ function razorpayDevApi() {
   }
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, isSsrBuild }) => {
   // Vite only auto-injects VITE_-prefixed vars into client code; loadEnv with
   // an empty prefix pulls in RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET from
   // .env.local too, so the dev API middleware above can read them.
   const env = loadEnv(mode, process.cwd(), '')
   if (!process.env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_ID) process.env.RAZORPAY_KEY_ID = env.RAZORPAY_KEY_ID
   if (!process.env.RAZORPAY_KEY_SECRET && env.RAZORPAY_KEY_SECRET) process.env.RAZORPAY_KEY_SECRET = env.RAZORPAY_KEY_SECRET
+
+  // Second build pass used only by scripts/prerender.mjs (see package.json).
+  // gsap ships its plugins as ESM inside a CommonJS package, which Node can't
+  // import directly, so it's bundled into the server build instead.
+  if (isSsrBuild) {
+    return {
+      plugins: [react(), tailwindcss()],
+      ssr: { noExternal: ['gsap', '@gsap/react'] },
+      build: { outDir: 'dist-ssr', sourcemap: false, emptyOutDir: true },
+    }
+  }
 
   return {
     plugins: [react(), tailwindcss(), razorpayDevApi()],
@@ -61,11 +72,16 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           // Keep the big, rarely-changing libraries in their own cacheable chunks.
-          manualChunks: {
-            react: ['react', 'react-dom', 'react-router-dom'],
-            motion: ['framer-motion'],
-            gsap: ['gsap', '@gsap/react'],
-            icons: ['lucide-react'],
+          // Matched by path so sub-entries (react-dom/client, where React's
+          // renderer actually lives) land in the vendor chunk too — the old
+          // name list only caught the package root, leaving ~180 KB of React
+          // in the app chunk that changes on every content edit.
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return
+            if (/node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return 'react'
+            if (/node_modules[\\/](framer-motion|motion-dom|motion-utils)[\\/]/.test(id)) return 'motion'
+            if (/node_modules[\\/](gsap|@gsap)[\\/]/.test(id)) return 'gsap'
+            if (/node_modules[\\/]lucide-react[\\/]/.test(id)) return 'icons'
           },
         },
       },

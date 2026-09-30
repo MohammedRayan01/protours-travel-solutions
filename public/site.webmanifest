@@ -1,0 +1,16 @@
+{
+  "name": "Pro Tours & Travel Solutions",
+  "short_name": "Pro Tours",
+  "description": "Travel agency in Shivaji Nagar, Bengaluru — flights, hotels, visas, passports, tour packages, cruises and Hajj & Umrah.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#fbf7f0",
+  "theme_color": "#04182c",
+  "lang": "en-IN",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import { ArrowDownRight, ArrowRight, MessageCircle } from 'lucide-react'
 
 import { BIZ, SERVICES, waLink } from '../data/site.js'
-import { Reveal, SectionHeading, PageHero, Parallax, Stagger, SplitHeading } from '../components/ui.jsx'
+import { Reveal, SectionHeading, PageHero, Parallax, SplitHeading } from '../components/ui.jsx'
 import { ImageReveal, FlightPath, Polaroid, CircleMark } from '../components/fx.jsx'
 import { useHashScroll } from '../components/SmoothScroll.jsx'
-import { gsap, useGSAP, reduceMotion, enterTrigger } from '../lib/gsap.js'
+import { gsap, useGSAP, reduceMotion, enterTrigger, EASE } from '../lib/gsap.js'
+import { photo } from '../lib/img.js'
 
 /* Margin notes — the kind of thing someone scribbles beside a list.
    Deliberately not claims: just the question each service starts with. */
@@ -23,19 +24,59 @@ const NOTES = {
 
 /* Where each service has a page of its own. */
 const RELATED = {
-  umrah: { to: '/umrah', label: 'Umrah packages' },
+  umrah: { to: '/umrah', label: 'Umrah packages from Bengaluru' },
   visa: { to: '/visa', label: 'Visa guide' },
-  passport: { to: '/visa', label: 'Visa & passport guide' },
-  tours: { to: '/packages', label: 'Browse packages' },
-  flights: { to: '/flights-hotels#flights', label: 'Flights & hotels' },
-  hotels: { to: '/flights-hotels#hotels', label: 'Flights & hotels' },
+  passport: { to: '/visa#passport', label: 'Passport help' },
+  tours: { to: '/packages', label: 'Browse tour packages' },
+  tailor: { to: '/contact', label: 'Plan it with us in person' },
+  cruise: { to: '/packages', label: 'Cruise packages' },
+  flights: { to: '/flights-hotels#flights', label: 'Flight booking' },
+  hotels: { to: '/flights-hotels#hotels', label: 'Hotel booking' },
 }
+
+/* What each photograph actually shows (keyed by Unsplash photo id). */
+const ALT = {
+  '1436491865332': 'Aircraft wing above sunlit clouds',
+  '1566073771259': 'Resort pool and sun loungers beside a timber lodge',
+  '1488646953014': 'Travel map, notebook, camera and backpack laid out for trip planning',
+  '1469854523086': 'Camper van on a desert road between red rock formations',
+  '1450101499163': 'Hand signing a document with a fountain pen',
+  '1554224155': 'Paperwork, forms and a calculator spread across a desk',
+  '1599640842225': 'Cruise ship moored beside a white-sand beach',
+  '1580418827493': 'The clock towers above Masjid al-Haram in Makkah',
+}
+
+/* Responsive sources, computed once. The main photo fills 5 of 12
+   columns on desktop and the full width below that. */
+const MAIN_IMG = Object.fromEntries(SERVICES.map((s) => [s.id, {
+  ...photo(s.img, { sizes: '(min-width: 1280px) 520px, (min-width: 1024px) 40vw, 100vw', widths: [480, 768, 1080, 1440] }),
+  alt: ALT[s.img.match(/photo-(\d+)/)?.[1]] ?? s.title,
+}]))
 
 const EXTRAS = [
   { img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=72', alt: 'Signing a travel insurance document', title: 'Travel insurance', desc: 'Schengen-compliant medical cover, trip cancellation, baggage loss and senior-citizen plans, issued alongside your ticket.' },
-  { img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=72', alt: 'Chauffeur at the wheel of a car', title: 'Transfers & car rental', desc: 'Airport pickups, chauffeur-driven cars and coach hire for groups, in India and at your destination.' },
-  { img: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=72', alt: 'Colleagues planning around a table', title: 'Corporate travel desk', desc: 'Credit terms, GST invoicing, policy-compliant fares, monthly MIS reports and a named consultant for your company.' },
+  { img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=72', alt: 'Driver’s hands on the steering wheel of a car at dusk', title: 'Transfers & car rental', desc: 'Airport pickups, chauffeur-driven cars and coach hire for groups, in India and at your destination.' },
+  { img: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=72', alt: 'Two colleagues high-fiving across an office desk with a laptop', title: 'Corporate travel desk', desc: 'Credit terms, GST invoicing, policy-compliant fares, monthly MIS reports and a named consultant for your company.' },
 ]
+const EXTRA_IMG = EXTRAS.map((e) => photo(e.img, { sizes: '(min-width: 768px) 31vw, 100vw', widths: [480, 768, 1080] }))
+
+/* A list whose items rise in sequence as it scrolls in — the same motion
+   as <Stagger>, but rendered as a real <ul>/<ol> so it reads as a list. */
+function StaggerList({ as: Tag = 'ul', children, className = '', stagger = 0.07, y = 16 }) {
+  const ref = useRef(null)
+  useGSAP(() => {
+    const el = ref.current
+    if (!el) return
+    const kids = gsap.utils.toArray(el.children)
+    if (!kids.length) return
+    if (reduceMotion()) { gsap.set(kids, { opacity: 1, y: 0 }); return }
+    gsap.fromTo(kids, { opacity: 0, y }, {
+      opacity: 1, y: 0, duration: 0.95, ease: EASE, stagger: { each: stagger },
+      scrollTrigger: enterTrigger(el),
+    })
+  }, { scope: ref })
+  return <Tag ref={ref} role="list" className={className}>{children}</Tag>
+}
 
 /* The dark CTA band opens from an inset "window" to full width as it
    scrolls in. clip-path only, so layout never moves. */
@@ -95,10 +136,12 @@ function ServiceBlock({ s, i }) {
   const num = String(i + 1).padStart(2, '0')
   const rel = RELATED[s.id]
   const tall = i % 3 === 1
+  const img = MAIN_IMG[s.id]
 
   return (
     <section
       id={s.id}
+      aria-label={s.title}
       className={`section scroll-mt-24 overflow-x-clip ${i % 2 === 0 ? 'bg-white' : 'paper bg-sand'}`}
     >
       <div className="wrap grid items-start gap-8 lg:grid-cols-12 lg:gap-12">
@@ -120,14 +163,14 @@ function ServiceBlock({ s, i }) {
             <p className="mt-5 text-[1.12rem] text-pretty">{s.desc}</p>
           </Reveal>
 
-          <Stagger className="mt-7 grid gap-3 border-t border-slate-200 pt-6" stagger={0.07} y={16}>
+          <StaggerList className="mt-7 grid gap-3 border-t border-slate-200 pt-6">
             {s.points.map((p) => (
-              <div key={p} className="flex gap-3">
+              <li key={p} className="flex gap-3">
                 <Tick />
                 <span className="text-[1.05rem] text-pretty">{p}</span>
-              </div>
+              </li>
             ))}
-          </Stagger>
+          </StaggerList>
 
           <Reveal delay={0.2}>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
@@ -137,6 +180,7 @@ function ServiceBlock({ s, i }) {
                 className="btn btn-wa"
               >
                 <MessageCircle size={17} aria-hidden="true" /> Ask on WhatsApp
+                <span className="sr-only"> about {s.title}</span>
               </a>
               {rel && (
                 <Link to={rel.to} className="group/rel inline-flex items-center gap-1.5 font-display font-bold text-brand-500">
@@ -153,9 +197,11 @@ function ServiceBlock({ s, i }) {
           <ImageReveal from={flip ? 'left' : 'right'} className={`relative rounded-3xl ${tall ? 'aspect-[4/4.4]' : 'aspect-[4/3.2]'}`}>
             <Parallax speed={0.12} className="absolute inset-0">
               <img
-                src={s.img}
-                alt={s.title}
+                {...img}
+                width={1080}
+                height={864}
                 loading="lazy"
+                decoding="async"
                 className="absolute inset-x-0 -top-[8%] h-[116%] w-full object-cover"
               />
             </Parallax>
@@ -183,30 +229,31 @@ export default function Services() {
         img="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1800&q=74"
         alt="Aircraft wing above the clouds"
         eyebrow="Our services"
-        title="Eight services, one travel desk"
-        sub="Tickets, hotels, visas, passports, cruises, Umrah and tour packages. The same people look after your booking from the first message to the flight home."
+        title="Eight travel services, one desk in Bengaluru"
+        sub="Flight booking, hotels, visa assistance, passports, cruises, Umrah and tour packages. The same people look after your booking from the first message to the flight home."
       />
 
       {/* ---- Index: a contents page, not a ticker ---- */}
-      <nav aria-label="Jump to a service" className="section bg-white">
+      <nav aria-labelledby="index-title" className="section bg-white">
         <div className="wrap grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           <Reveal>
             <span className="eyebrow">What we do</span>
-            <h2 className="h-sec mt-4 text-balance">
+            <h2 id="index-title" className="h-sec mt-4 text-balance">
               The whole trip, from{' '}
               <CircleMark>one desk</CircleMark>
             </h2>
             <p className="mt-6 max-w-md text-[1.12rem] text-pretty">
-              We have been booking trips from Shivaji Nagar since {BIZ.since}. Tickets, visa, hotel and insurance can all
-              sit with the same people here, so nothing falls between two agencies.
+              {BIZ.name} is an IATA-accredited travel agency on Hospital Road, Shivaji Nagar, Bengaluru, booking
+              trips since {BIZ.since}. Tickets, visa, hotel and insurance can all sit with the same people here, so
+              nothing falls between two agencies.
             </p>
             <p className="note mt-5 text-[1.15rem] text-navy-900/70">Pick a line to jump straight to it.</p>
           </Reveal>
 
-          <Stagger className="border-b border-slate-200" stagger={0.05} y={14}>
+          <StaggerList as="ol" className="border-b border-slate-200" stagger={0.05} y={14}>
             {SERVICES.map((s, i) => (
+              <li key={s.id}>
               <a
-                key={s.id}
                 href={`#${s.id}`}
                 className="group grid grid-cols-[2.6rem_1fr_auto] items-center gap-3 border-t border-slate-200 py-4 sm:gap-5"
               >
@@ -221,22 +268,31 @@ export default function Services() {
                   className="text-slate-400 transition-[transform,color] duration-300 group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:text-brand-500"
                 />
               </a>
+              </li>
             ))}
-          </Stagger>
+          </StaggerList>
         </div>
       </nav>
 
       {SERVICES.map((s, i) => <ServiceBlock key={s.id} s={s} i={i} />)}
 
       {/* ---- Extras: a short list, not another card grid ---- */}
-      <section className="section bg-white">
+      <section aria-label="The smaller things we sort out too" className="section bg-white">
         <div className="wrap">
           <SectionHeading eyebrow="Also on the desk" title="The smaller things we sort out too" />
           <div className="grid gap-10 md:grid-cols-3 md:gap-8">
             {EXTRAS.map((e, i) => (
               <article key={e.title}>
                 <ImageReveal from="bottom" delay={i * 0.1} className="aspect-[16/10] rounded-2xl">
-                  <img src={e.img} alt={e.alt} loading="lazy" className="h-full w-full object-cover" />
+                  <img
+                    {...EXTRA_IMG[i]}
+                    alt={e.alt}
+                    width={1080}
+                    height={675}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
                 </ImageReveal>
                 <Reveal delay={0.1 + i * 0.08}>
                   <h3 className="mt-5 text-[1.28rem]">{e.title}</h3>
@@ -249,7 +305,7 @@ export default function Services() {
       </section>
 
       {/* ---- CTA ---- */}
-      <section className="paper bg-sand py-16 md:py-20">
+      <section aria-labelledby="services-cta-title" className="paper bg-sand py-16 md:py-20">
         <div className="wrap">
           <ExpandBand>
             <div className="relative isolate overflow-hidden rounded-5xl bg-navy-950 px-6 py-14 sm:px-10 md:px-16 md:py-20">
@@ -263,7 +319,7 @@ export default function Services() {
               <div className="max-w-2xl">
                 <Reveal>
                   <span className="eyebrow eyebrow-light">Not sure where to start?</span>
-                  <h2 className="h-sec mt-4 !text-white text-balance">Describe the trip. We’ll tell you what it needs.</h2>
+                  <h2 id="services-cta-title" className="h-sec mt-4 !text-white text-balance">Describe the trip. We’ll tell you what it needs.</h2>
                 </Reveal>
                 <Reveal delay={0.1}>
                   <p className="mt-5 text-[1.12rem] text-white/75 text-pretty">

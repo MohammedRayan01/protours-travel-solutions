@@ -68,7 +68,7 @@ export function Stagger({ children, className = '', stagger = 0.09, y = 40, from
    SplitHeading — SplitText line/word reveal for big headings.
    Masked by line so words rise out of an invisible edge.
    ============================================================ */
-export function SplitHeading({ children, as: Tag = 'h2', className = '', by = 'words', delay = 0 }) {
+export function SplitHeading({ children, as: Tag = 'h2', className = '', by = 'words', delay = 0, id }) {
   const ref = useRef(null)
 
   useGSAP(() => {
@@ -104,7 +104,7 @@ export function SplitHeading({ children, as: Tag = 'h2', className = '', by = 'w
     return () => split?.revert()
   }, { scope: ref })
 
-  return <Tag ref={ref} className={className}>{children}</Tag>
+  return <Tag ref={ref} id={id} className={className}>{children}</Tag>
 }
 
 /* ============================================================
