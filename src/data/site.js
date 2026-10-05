@@ -85,7 +85,7 @@ export const HERO_SLIDES = [
   },
 ]
 
-/* ---- The eight core services ---- */
+/* ---- The seven core services ---- */
 export const SERVICES = [
   {
     id: 'flights',
@@ -150,9 +150,9 @@ export const SERVICES = [
   {
     id: 'visa',
     icon: 'FileCheck',
-    title: 'Visa Services',
-    short: 'Tourist, business, visit & transit',
-    desc: 'Checklist, forms, covering letter, appointment and follow-up — for the Gulf, Schengen, UK, USA, Canada, Australia and all of Southeast Asia.',
+    title: 'Visa Consultancy',
+    short: 'Advice and paperwork for tourist, business & visit visas',
+    desc: 'We are visa consultants: we prepare your checklist, forms, covering letter and appointment, and follow up — for the Gulf, Schengen, UK, USA, Canada, Australia and all of Southeast Asia. The embassy or consulate makes the decision.',
     img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1000&q=72',
     img2: 'https://images.unsplash.com/photo-1586769852836-bc069f19e1b6?auto=format&fit=crop&w=1000&q=72',
     points: [
@@ -175,21 +175,6 @@ export const SERVICES = [
       'Tatkal when you are travelling at short notice',
       'Lost, damaged or exhausted-pages replacement',
       'Minors, post-marriage name change and address correction',
-    ],
-  },
-  {
-    id: 'cruise',
-    icon: 'Ship',
-    title: 'Cruise Holidays',
-    short: 'Arabian Gulf, Mediterranean & India',
-    desc: 'Cordelia, MSC, Royal Caribbean, Costa and Norwegian — cabin selection, dining plan, shore excursions and the pre- and post-cruise hotel nights.',
-    img: 'https://images.unsplash.com/photo-1599640842225-85d111c60e6b?auto=format&fit=crop&w=1000&q=72',
-    img2: 'https://images.unsplash.com/photo-1580541631950-7282082b53ce?auto=format&fit=crop&w=1000&q=72',
-    points: [
-      'India sailings with no visa required',
-      'Interior to balcony and suite — we explain the real difference',
-      'Port visas, shore excursions and insurance bundled',
-      'Family cabins and kids-club sailings',
     ],
   },
   {
@@ -234,11 +219,11 @@ export const PACKAGES = [
     badge: 'Best Seller',
     nights: '4N / 5D',
     img: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=900&q=72',
-    desc: 'Burj Khalifa level 124, a dhow cruise dinner on the Creek, red-dune desert safari with BBQ, and a full day in Abu Dhabi at the Grand Mosque.',
-    exc: ['Personal expenses, shopping and laundry', 'Tips and gratuities', 'Travel insurance (available on request)', 'Meals or activities not listed under your selected tier'],
+    desc: 'Burj Khalifa level 124, a dhow dinner on the Creek, red-dune desert safari with BBQ, and a full day in Abu Dhabi at the Grand Mosque.',
+    exc: ['Personal expenses, shopping and laundry', 'Tips and gratuities', 'Travel insurance (we can advise you on a policy)', 'Meals or activities not listed under your selected tier'],
     tiers: {
-      Economy: { hotel: '3★ Deira / Bur Dubai', inc: ['Return economy flights', 'Daily breakfast', 'Desert safari with BBQ', 'Shared transfers', 'UAE tourist visa'] },
-      Deluxe:  { hotel: '4★ Downtown / Marina', inc: ['Return flights, preferred airline', 'Breakfast + 2 dinners', 'Burj Khalifa 124 + Dhow cruise', 'Private AC transfers', 'UAE visa + insurance'] },
+      Economy: { hotel: '3★ Deira / Bur Dubai', inc: ['Return economy flights', 'Daily breakfast', 'Desert safari with BBQ', 'Shared transfers', 'UAE visa assistance'] },
+      Deluxe:  { hotel: '4★ Downtown / Marina', inc: ['Return flights, preferred airline', 'Breakfast + 2 dinners', 'Burj Khalifa 124 + Dhow dinner', 'Private AC transfers', 'UAE visa assistance + insurance advice'] },
       Premium: { hotel: '5★ Palm / Downtown', inc: ['Direct flights, extra baggage', 'Full board', 'Burj Khalifa 148 + Desert VIP', 'Private chauffeur throughout', 'Abu Dhabi day with guide'] },
     },
   },
@@ -250,11 +235,11 @@ export const PACKAGES = [
     badge: 'Honeymoon',
     nights: '3N / 4D',
     img: 'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?auto=format&fit=crop&w=900&q=72',
-    desc: 'A water villa with a private sundeck, sunset dolphin cruise, snorkelling on the house reef and a candle-light dinner on the sand.',
-    exc: ['Personal expenses and shopping', 'Tips and gratuities for resort staff', 'Travel insurance (available on request)', 'Spa treatments or excursions not listed under your selected tier'],
+    desc: 'A water villa with a private sundeck, sunset dolphin-watching boat trip, snorkelling on the house reef and a candle-light dinner on the sand.',
+    exc: ['Personal expenses and shopping', 'Tips and gratuities for resort staff', 'Travel insurance (we can advise you on a policy)', 'Spa treatments or excursions not listed under your selected tier'],
     tiers: {
       Economy: { hotel: 'Beach villa, 4★ resort', inc: ['Return flights', 'Breakfast + dinner', 'Speedboat transfers', 'Snorkelling equipment', 'Honeymoon cake & decor'] },
-      Deluxe:  { hotel: 'Water villa, 4★ resort', inc: ['Return flights', 'Full board', 'Speedboat transfers', 'Sunset dolphin cruise', 'Candle-light beach dinner'] },
+      Deluxe:  { hotel: 'Water villa, 4★ resort', inc: ['Return flights', 'Full board', 'Speedboat transfers', 'Sunset dolphin-watching boat trip', 'Candle-light beach dinner'] },
       Premium: { hotel: 'Water villa with pool, 5★', inc: ['Direct flights', 'All-inclusive with drinks', 'Seaplane transfer', 'Private sandbank picnic', 'Couple spa ritual'] },
     },
   },
@@ -267,7 +252,7 @@ export const PACKAGES = [
     nights: '5N / 6D',
     img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=72',
     desc: 'Rice terraces and temples in Ubud, beach days in Kuta, and a full-day Nusa Penida island trip with a floating breakfast to finish.',
-    exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (available on request)', 'Meals or excursions not listed under your selected tier'],
+    exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (we can advise you on a policy)', 'Meals or excursions not listed under your selected tier'],
     tiers: {
       Economy: { hotel: '3★ Kuta + Ubud', inc: ['Return flights', 'Daily breakfast', 'Ubud & Kintamani tour', 'Shared transfers', 'Visa on arrival guidance'] },
       Deluxe:  { hotel: '4★ + private pool villa', inc: ['Return flights', 'Breakfast + 3 dinners', 'Nusa Penida day trip', 'Private car with driver', 'Floating breakfast'] },
@@ -283,7 +268,7 @@ export const PACKAGES = [
     nights: '4N / 5D',
     img: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=900&q=72',
     desc: 'Gardens by the Bay, the Sentosa cable car, a Universal Studios day pass and a night safari — paced properly for travelling with children.',
-    exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (available on request)', 'Attraction tickets not listed under your selected tier'],
+    exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (we can advise you on a policy)', 'Attraction tickets not listed under your selected tier'],
     tiers: {
       Economy: { hotel: '3★ Little India', inc: ['Return flights', 'Daily breakfast', 'City tour + Gardens by the Bay', 'Shared transfers', 'Visa assistance'] },
       Deluxe:  { hotel: '4★ Clarke Quay', inc: ['Return flights', 'Breakfast + 2 dinners', 'Universal Studios + Sentosa', 'Private transfers', 'Night Safari'] },
@@ -299,10 +284,10 @@ export const PACKAGES = [
     nights: '8N / 9D',
     img: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=900&q=72',
     desc: 'The Eiffel Tower summit, Jungfraujoch, a Venice gondola and the Colosseum — on a comfortable coach-and-rail routing with Indian meals throughout.',
-    exc: ['Personal expenses and shopping', 'Tips and gratuities for coach driver and guide', 'Travel insurance (available on request)', 'Schengen visa fee, unless listed under your selected tier'],
+    exc: ['Personal expenses and shopping', 'Tips and gratuities for coach driver and guide', 'Travel insurance (we can advise you on a policy)', 'Schengen visa fee, unless listed under your selected tier'],
     tiers: {
       Economy: { hotel: '3★ city outskirts', inc: ['Return flights', 'Daily Indian breakfast + dinner', 'Coach tour with guide', 'Schengen visa assistance', 'Rail pass where applicable'] },
-      Deluxe:  { hotel: '4★ central', inc: ['Return flights', 'Full board, Indian meals', 'Eiffel summit + Jungfraujoch', 'Gondola ride, Swiss rail', 'Visa + travel insurance'] },
+      Deluxe:  { hotel: '4★ central', inc: ['Return flights', 'Full board, Indian meals', 'Eiffel summit + Jungfraujoch', 'Gondola ride, Swiss rail', 'Visa assistance + insurance advice'] },
       Premium: { hotel: '5★ landmark hotels', inc: ['Premium economy flights', 'Full board with wine dinners', 'Private guided tours', 'First-class Swiss rail', 'Airport-to-hotel chauffeur'] },
     },
   },
@@ -315,7 +300,7 @@ export const PACKAGES = [
     nights: '4N / 5D',
     img: 'https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=900&q=72',
     desc: 'Phi Phi by speedboat, James Bond island canoeing, and a free evening in Patong. Easy visa, short flight, excellent value.',
-    exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (available on request)', 'Optional excursions not listed under your selected tier'],
+    exc: ['Personal expenses and shopping', 'Tips and gratuities', 'Travel insurance (we can advise you on a policy)', 'Optional excursions not listed under your selected tier'],
     tiers: {
       Economy: { hotel: '3★ Patong', inc: ['Return flights', 'Daily breakfast', 'Phi Phi island tour', 'Shared transfers', 'Visa on arrival guidance'] },
       Deluxe:  { hotel: '4★ beachfront', inc: ['Return flights', 'Breakfast + 2 dinners', 'Phi Phi + James Bond island', 'Private transfers', 'Krabi extension'] },
@@ -331,7 +316,7 @@ export const PACKAGES = [
     nights: '4N / 5D',
     img: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=72',
     desc: 'Tea gardens in Munnar, a spice plantation walk in Thekkady, and an overnight private houseboat drifting the Alleppey backwaters.',
-    exc: ['Flights or train travel to Kochi/Kerala (not included in this package)', 'Personal expenses and shopping', 'Tips and gratuities for driver and guides', 'Travel insurance (available on request)'],
+    exc: ['Flights or train travel to Kochi/Kerala (not included in this package)', 'Personal expenses and shopping', 'Tips and gratuities for driver and guides', 'Travel insurance (we can advise you on a policy)'],
     tiers: {
       Economy: { hotel: '3★ + shared houseboat', inc: ['AC car throughout', 'Daily breakfast', 'Munnar & Thekkady sightseeing', 'Shared houseboat night', 'Driver allowance included'] },
       Deluxe:  { hotel: '4★ + private houseboat', inc: ['AC car throughout', 'Breakfast + dinner', 'Private houseboat with chef', 'Spice plantation tour', 'Kathakali show'] },
@@ -347,7 +332,7 @@ export const PACKAGES = [
     nights: '5N / 6D',
     img: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=900&q=72',
     desc: 'A shikara ride on Dal Lake, a night on a deluxe houseboat, the Gulmarg gondola and the meadows and pine valleys of Pahalgam.',
-    exc: ['Personal expenses and shopping', 'Adventure activity charges beyond the listed pass', 'Tips and gratuities', 'Travel insurance (available on request)'],
+    exc: ['Personal expenses and shopping', 'Adventure activity charges beyond the listed pass', 'Tips and gratuities', 'Travel insurance (we can advise you on a policy)'],
     tiers: {
       Economy: { hotel: '3★ + houseboat night', inc: ['Return flights', 'Breakfast + dinner', 'Shikara ride', 'Gulmarg & Pahalgam day trips', 'All transfers'] },
       Deluxe:  { hotel: '4★ + deluxe houseboat', inc: ['Return flights', 'Full board', 'Gondola phase 1 & 2', 'Private cab throughout', 'Sonmarg day trip'] },
@@ -378,44 +363,12 @@ export const PACKAGES = [
     badge: 'Long Weekend',
     nights: '3N / 4D',
     img: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=900&q=72',
-    desc: 'North and South Goa sightseeing, a Mandovi river cruise, and plenty of unscheduled beach time. Flights from Bengaluru included.',
-    exc: ['Personal expenses and shopping', 'Water sports beyond the package', 'Tips and gratuities', 'Travel insurance (available on request)'],
+    desc: 'North and South Goa sightseeing, a Mandovi river boat ride, and plenty of unscheduled beach time. Flights from Bengaluru included.',
+    exc: ['Personal expenses and shopping', 'Water sports beyond the package', 'Tips and gratuities', 'Travel insurance (we can advise you on a policy)'],
     tiers: {
-      Economy: { hotel: '3★ North Goa', inc: ['Return flights from BLR', 'Daily breakfast', 'North Goa sightseeing', 'Airport transfers', 'Mandovi river cruise'] },
+      Economy: { hotel: '3★ North Goa', inc: ['Return flights from BLR', 'Daily breakfast', 'North Goa sightseeing', 'Airport transfers', 'Mandovi river boat ride'] },
       Deluxe:  { hotel: '4★ beach resort', inc: ['Return flights', 'Breakfast + dinner', 'North & South Goa tours', 'Private cab', 'Water sports package'] },
-      Premium: { hotel: '5★ beachfront villa', inc: ['Return flights', 'Full board', 'Private yacht sunset cruise', 'Chauffeur throughout', 'Spa & candle-light dinner'] },
-    },
-  },
-  {
-    id: 'gulfcruise',
-    name: 'Arabian Gulf Cruise — MSC',
-    region: 'Dubai · Abu Dhabi · Doha',
-    cats: ['cruise', 'international', 'family'],
-    badge: 'Cruise',
-    nights: '3 Nights',
-    img: 'https://images.unsplash.com/photo-1599640842225-85d111c60e6b?auto=format&fit=crop&w=900&q=72',
-    desc: 'Sail Dubai, Abu Dhabi, Sir Bani Yas and Doha with all meals, live entertainment and the pool deck included on board.',
-    exc: ['Alcoholic beverages beyond the package drink plan', 'Shore excursions not listed under your selected tier', 'Gratuities for cabin/dining crew', 'Travel insurance (available on request)'],
-    tiers: {
-      Economy: { hotel: 'Interior cabin', inc: ['Return flights to Dubai', 'All meals on board', 'Port charges & taxes', 'Live entertainment', 'Port visas'] },
-      Deluxe:  { hotel: 'Balcony cabin', inc: ['Return flights', 'All meals + select drinks', 'Shore excursions', 'Pre-cruise Dubai night', 'Port visas & transfers'] },
-      Premium: { hotel: 'Yacht Club suite', inc: ['Direct flights', 'All-inclusive with butler', 'Private shore excursions', '2 nights 5★ Dubai', 'Priority embarkation'] },
-    },
-  },
-  {
-    id: 'cordelia',
-    name: 'Mumbai – Goa Cordelia Cruise',
-    region: 'India Sailing',
-    cats: ['cruise', 'india', 'family'],
-    badge: 'No Visa Needed',
-    nights: '2 Nights',
-    img: 'https://images.unsplash.com/photo-1580541631950-7282082b53ce?auto=format&fit=crop&w=900&q=72',
-    desc: 'India’s own cruise line — Indian and international buffets, casino, kids’ club, live shows and a full shore day in Goa.',
-    exc: ['Travel to the Mumbai departure port (not included)', 'Alcoholic beverages', 'Personal expenses and casino spend', 'Gratuities for cabin/dining crew'],
-    tiers: {
-      Economy: { hotel: 'Interior cabin', inc: ['All meals on board', 'Live entertainment', 'Kids’ club access', 'Port charges', 'No visa required'] },
-      Deluxe:  { hotel: 'Sea-view cabin', inc: ['All meals on board', 'Goa shore excursion', 'Speciality dining credit', 'Priority boarding', 'Port charges'] },
-      Premium: { hotel: 'Balcony suite', inc: ['All meals + beverage package', 'Private Goa excursion', 'Spa credit', 'Butler service', 'Mumbai hotel night'] },
+      Premium: { hotel: '5★ beachfront villa', inc: ['Return flights', 'Full board', 'Private sunset yacht ride', 'Chauffeur throughout', 'Spa & candle-light dinner'] },
     },
   },
   {
@@ -427,11 +380,11 @@ export const PACKAGES = [
     nights: '10–14 Nights',
     img: 'https://images.unsplash.com/photo-1580418827493-f2b22c0a76cb?auto=format&fit=crop&w=900&q=72',
     desc: 'Umrah visa, return tickets, hotels within walking distance of the Haram, Ziyarat tours and a group co-ordinator with you throughout.',
-    exc: ['Qurbani/sacrifice cost', 'Laundry and personal expenses', 'Ziyarat or excursions outside the group itinerary', 'Travel insurance (available on request)'],
+    exc: ['Qurbani/sacrifice cost', 'Laundry and personal expenses', 'Ziyarat or excursions outside the group itinerary', 'Travel insurance (we can advise you on a policy)'],
     tiers: {
-      Economy: { hotel: '3★, 600–800 m from Haram', inc: ['Umrah visa included', 'Return economy flights', 'Quad sharing rooms', 'Makkah–Madinah bus transfers', 'Ziyarat in both cities'] },
-      Deluxe:  { hotel: '4★, within 300 m of Haram', inc: ['Umrah visa included', 'Preferred-airline flights', 'Triple sharing, breakfast + dinner', 'Private AC coach transfers', 'Group co-ordinator throughout'] },
-      Premium: { hotel: '5★ Haram-view', inc: ['Umrah visa included', 'Direct flights, preferred seats', 'Double sharing, full board', 'Private car + Haramain train', 'Dedicated scholar with the group'] },
+      Economy: { hotel: '3★, 600–800 m from Haram', inc: ['Umrah visa processing', 'Return economy flights', 'Quad sharing rooms', 'Makkah–Madinah bus transfers', 'Ziyarat in both cities'] },
+      Deluxe:  { hotel: '4★, within 300 m of Haram', inc: ['Umrah visa processing', 'Preferred-airline flights', 'Triple sharing, breakfast + dinner', 'Private AC coach transfers', 'Group co-ordinator throughout'] },
+      Premium: { hotel: '5★ Haram-view', inc: ['Umrah visa processing', 'Direct flights, preferred seats', 'Double sharing, full board', 'Private car + Haramain train', 'Dedicated scholar with the group'] },
     },
   },
 ]

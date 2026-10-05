@@ -29,7 +29,7 @@ export default function Disclaimer() {
       <LegalSection title="3. Photos">
         <p>
           Some photos are stock images (for example, from Unsplash) used to show a destination. They are
-          representative only and may not show the exact hotel, room, ship or view you will get.
+          representative only and may not show the exact hotel, room or view you will get.
         </p>
       </LegalSection>
 
@@ -55,7 +55,7 @@ export default function Disclaimer() {
 
       <LegalSection title="6. Accreditation and suppliers">
         <p>
-          {BIZ.name} is an IATA-accredited travel agent. Mentioning an airline, hotel, cruise line, visa
+          {BIZ.name} is an IATA-accredited travel agent. Mentioning an airline, hotel, visa
           centre or other company on this site does not mean that company endorses us. Their names and logos
           belong to them. Services are provided by those suppliers under their own terms.
         </p>

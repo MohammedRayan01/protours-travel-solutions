@@ -27,7 +27,7 @@ const TIERS = [
     duration: '10 nights: 5 Makkah, 5 Madinah',
     featured: false,
     inc: [
-      'Umrah visa included',
+      'Umrah visa processing',
       'Return economy air tickets',
       '3★ hotels, 600–800 m from the Haram',
       'Quad sharing rooms',
@@ -41,7 +41,7 @@ const TIERS = [
     duration: '12 nights: 6 Makkah, 6 Madinah',
     featured: true,
     inc: [
-      'Umrah visa included',
+      'Umrah visa processing',
       'Preferred-airline return tickets',
       '4★ hotels within 300 m of the Haram',
       'Triple sharing, breakfast & dinner daily',
@@ -55,7 +55,7 @@ const TIERS = [
     duration: '14 nights: 7 Makkah, 7 Madinah',
     featured: false,
     inc: [
-      'Umrah visa included',
+      'Umrah visa processing',
       'Direct flights, preferred seating',
       '5★ Haram-view hotels',
       'Double sharing, full board',

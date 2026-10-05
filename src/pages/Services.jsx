@@ -18,7 +18,6 @@ const NOTES = {
   tours: 'same route, three tiers',
   visa: 'the checklist comes first',
   passport: 'tatkal, when time is short',
-  cruise: 'balcony or interior?',
   umrah: 'distance in metres',
 }
 
@@ -29,7 +28,6 @@ const RELATED = {
   passport: { to: '/visa#passport', label: 'Passport help' },
   tours: { to: '/packages', label: 'Browse tour packages' },
   tailor: { to: '/contact', label: 'Plan it with us in person' },
-  cruise: { to: '/packages', label: 'Cruise packages' },
   flights: { to: '/flights-hotels#flights', label: 'Flight booking' },
   hotels: { to: '/flights-hotels#hotels', label: 'Hotel booking' },
 }
@@ -42,7 +40,6 @@ const ALT = {
   '1469854523086': 'Camper van on a desert road between red rock formations',
   '1450101499163': 'Hand signing a document with a fountain pen',
   '1554224155': 'Paperwork, forms and a calculator spread across a desk',
-  '1599640842225': 'Cruise ship moored beside a white-sand beach',
   '1580418827493': 'The clock towers above Masjid al-Haram in Makkah',
 }
 
@@ -54,7 +51,7 @@ const MAIN_IMG = Object.fromEntries(SERVICES.map((s) => [s.id, {
 }]))
 
 const EXTRAS = [
-  { img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=72', alt: 'Signing a travel insurance document', title: 'Travel insurance', desc: 'Schengen-compliant medical cover, trip cancellation, baggage loss and senior-citizen plans, issued alongside your ticket.' },
+  { img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=72', alt: 'Signing a travel insurance document', title: 'Travel insurance advice', desc: 'We are insurance consultants, not insurers: we help you compare and choose Schengen-compliant medical cover, trip cancellation, baggage and senior-citizen plans. The policy is issued by the insurance company, which also decides claims.' },
   { img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=72', alt: 'Driver’s hands on the steering wheel of a car at dusk', title: 'Transfers & car rental', desc: 'Airport pickups, chauffeur-driven cars and coach hire for groups, in India and at your destination.' },
   { img: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=72', alt: 'Two colleagues high-fiving across an office desk with a laptop', title: 'Corporate travel desk', desc: 'Credit terms, GST invoicing, policy-compliant fares, monthly MIS reports and a named consultant for your company.' },
 ]
@@ -229,8 +226,8 @@ export default function Services() {
         img="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1800&q=74"
         alt="Aircraft wing above the clouds"
         eyebrow="Our services"
-        title="Eight travel services, one desk in Bengaluru"
-        sub="Flight booking, hotels, visa assistance, passports, cruises, Umrah and tour packages. The same people look after your booking from the first message to the flight home."
+        title="Seven travel services, one desk in Bengaluru"
+        sub="Flight booking, hotels, tour packages and Umrah, plus consultancy for visas, passports and travel insurance. The same people look after your booking from the first message to the flight home."
       />
 
       {/* ---- Index: a contents page, not a ticker ---- */}
@@ -244,7 +241,7 @@ export default function Services() {
             </h2>
             <p className="mt-6 max-w-md text-[1.12rem] text-pretty">
               {BIZ.name} is an IATA-accredited travel agency on Hospital Road, Shivaji Nagar, Bengaluru, booking
-              trips since {BIZ.since}. Tickets, visa, hotel and insurance can all sit with the same people here, so
+              trips since {BIZ.since}. Tickets, hotels, and advice on your visa and insurance can all sit with the same people here, so
               nothing falls between two agencies.
             </p>
             <p className="note mt-5 text-[1.15rem] text-navy-900/70">Pick a line to jump straight to it.</p>

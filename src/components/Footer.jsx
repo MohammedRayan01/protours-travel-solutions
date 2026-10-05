@@ -55,7 +55,7 @@ export default function Footer() {
               <img src="/logo-white.png" alt={BIZ.name} width={1200} height={209} className="h-11 w-auto" />
             </Link>
             <p className="max-w-sm text-[1.02rem] text-pretty">
-              {BIZ.tagline}. Air tickets, hotels, visas, holidays, cruises and Umrah, arranged from our office in
+              {BIZ.tagline}. Air tickets, hotels, holidays and Umrah, plus visa and insurance consultancy, from our office in
               Shivaji Nagar, Bengaluru.
             </p>
             <div className="mt-6 flex items-center gap-3.5">

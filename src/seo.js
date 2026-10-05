@@ -18,8 +18,8 @@ export const OG_IMAGE = `${SITE}/og-image.jpg`
 /** Route → [title, description, breadcrumb label]. Keep titles ≲ 60 chars
     and descriptions ≲ 160 chars so search results don't truncate them. */
 export const ROUTES = {
-  '/': ['Pro Tours & Travel Solutions | Travel Agency in Bengaluru', 'A Bengaluru travel agency since 2009 and IATA-accredited agent: flights, hotels, visas, passports, tour packages, cruises and Hajj & Umrah. Hospital Road, Shivaji Nagar.', 'Home'],
-  '/services': ['Travel Services in Bengaluru: Flights, Hotels, Visas | Pro Tours', 'Flight and hotel booking, tailor-made and group tours, visa and passport help, cruises and Umrah, handled by one desk in Shivaji Nagar, Bengaluru.', 'Services'],
+  '/': ['Pro Tours & Travel Solutions | Travel Agency in Bengaluru', 'A Bengaluru travel agency since 2009 and IATA-accredited agent: flights, hotels, visas, passports, tour packages, Hajj & Umrah, and visa & insurance consultancy. Hospital Road, Shivaji Nagar.', 'Home'],
+  '/services': ['Travel Services in Bengaluru: Flights, Hotels, Visas | Pro Tours', 'Flight and hotel booking, tailor-made and group tours, visa and passport consultancy, and Umrah, handled by one desk in Shivaji Nagar, Bengaluru.', 'Services'],
   '/packages': ['Tour Packages from Bengaluru: Dubai, Bali, Maldives | Pro Tours', 'Economy, Deluxe and Premium holiday packages from Bengaluru with inclusions and exclusions listed. Dubai, Maldives, Bali, Europe, Kerala, Kashmir and more.', 'Tour packages'],
   '/flights-hotels': ['Flight & Hotel Booking in Bengaluru | Pro Tours', 'Domestic and international air tickets and hotel bookings from Bengaluru, with fare rules explained and confirmed vouchers before you travel.', 'Flights & hotels'],
   '/umrah': ['Umrah Packages from Bengaluru | Pro Tours Hajj & Umrah', 'Umrah visa, flights and hotels near the Haram from Bengaluru, with walking distances quoted in metres, group co-ordinators and Ziyarat tours.', 'Hajj & Umrah'],
@@ -65,7 +65,7 @@ const agency = {
     opens: '10:00',
     closes: '20:00',
   }],
-  knowsAbout: ['Flight booking', 'Hotel booking', 'Tour packages', 'Visa assistance', 'Passport assistance', 'Cruise holidays', 'Umrah', 'Hajj'],
+  knowsAbout: ['Flight booking', 'Hotel booking', 'Tour packages', 'Visa consultancy', 'Passport assistance', 'Travel insurance advice', 'Umrah', 'Hajj'],
   sameAs: [BIZ.instagram],
 }
 

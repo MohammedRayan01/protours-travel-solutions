@@ -17,8 +17,9 @@ export default function Terms() {
           <a href={`mailto:${BIZ.email2}`} className={a}>{BIZ.email2}</a>.
         </p>
         <p>
-          Trading in Bengaluru since {BIZ.since}, we arrange flights, hotels, tour packages, visas, passport assistance, cruises, and Hajj &amp; Umrah
-          travel. These terms apply to this website and to every booking you make with us — online, on
+          Trading in Bengaluru since {BIZ.since}, we arrange flights, hotels, tour packages and Hajj &amp; Umrah, and act as consultants for visas, passports and travel insurance.
+          {BIZ.name} is a sole proprietorship owned and run by {BIZ.owner} (Proprietor); it is not a company,
+          partnership or LLP. These terms apply to this website and to every booking you make with us — online, on
           WhatsApp, by phone, by email or at our office. By booking or paying, you accept these terms, our{' '}
           <Link to="/refund-policy" className={a}>Cancellation &amp; Refund Policy</Link> and our{' '}
           <Link to="/privacy" className={a}>Privacy Policy</Link>.
@@ -27,8 +28,8 @@ export default function Terms() {
 
       <LegalSection title="2. Our role as your agent">
         <p>
-          We are a booking agent. The flight, hotel room, cruise, transfer or tour is provided by the airline,
-          hotel, cruise line or local operator (the “supplier”), and their own terms and conditions — fare
+          We are a booking agent. The flight, hotel room, transfer or tour is provided by the airline,
+          hotel or local operator (the “supplier”), and their own terms and conditions — fare
           rules, check-in times, baggage rules, cancellation terms — also apply to you. We will share the key
           supplier terms with you before you pay, and full terms on request.
         </p>
@@ -94,7 +95,7 @@ export default function Terms() {
         <LegalList
           items={[
             'Check vaccination and health entry rules for your destination (for example, meningitis vaccination for Hajj and Umrah, or yellow fever certificates for some countries) and speak to your doctor before travel.',
-            'We strongly recommend travel insurance that covers medical costs, cancellation and lost baggage. Some visas require it. We can help you buy it; the insurer decides claims.',
+            'We strongly recommend travel insurance that covers medical costs, cancellation and lost baggage. Some visas require it. We act only as consultants: we can help you compare and choose a policy, but the insurer issues it and decides claims.',
             'Tell us about any disability, medical condition or special assistance needs at the time of booking, so we can pass them to suppliers.',
           ]}
         />

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion'
-import { Check, Crown, Star, Sparkles, Plane, Ship, Car, MessageCircle } from 'lucide-react'
+import { Check, Crown, Star, Sparkles, Plane, Car, MessageCircle } from 'lucide-react'
 
 import { BIZ, PACKAGES, TIERS, waLink } from '../data/site.js'
 import { Reveal, SectionHeading, PageHero, Parallax } from '../components/ui.jsx'
@@ -15,7 +15,6 @@ const FILTERS = [
   { k: 'india', label: 'India' },
   { k: 'honeymoon', label: 'Honeymoon' },
   { k: 'family', label: 'Family' },
-  { k: 'cruise', label: 'Cruise' },
   { k: 'umrah', label: 'Umrah' },
 ]
 
@@ -26,7 +25,7 @@ const TIER_META = {
 }
 
 // "Best for" chips come straight from each package's own categories.
-const BEST_FOR = { family: 'Families', honeymoon: 'Couples', umrah: 'Pilgrims', cruise: 'Sea days' }
+const BEST_FOR = { family: 'Families', honeymoon: 'Couples', umrah: 'Pilgrims' }
 
 const INCLUDED = [
   ['Confirmed hotel vouchers', 'Issued before you travel, never “on request”.'],
@@ -47,8 +46,6 @@ const ALT = {
   '1595815771614': 'Houseboats moored on Dal Lake below snowy mountains, Srinagar',
   '1524492412937': 'The Taj Mahal in Agra, seen along its reflecting pool',
   '1512343879784': 'Palm-lined beach and turquoise sea in Goa',
-  '1599640842225': 'Cruise ship moored beside a white-sand beach',
-  '1580541631950': 'Cruise ship off an island jetty in clear blue water',
   '1580418827493': 'The clock towers above Masjid al-Haram in Makkah',
 }
 
@@ -91,7 +88,6 @@ const TICKET_CSS = `
 
 /* How you get there — read off the package itself, never guessed. */
 function modeIcon(p) {
-  if (p.cats.includes('cruise')) return Ship
   if (p.exc?.some((x) => /^Flights or train/i.test(x))) return Car
   return Plane
 }

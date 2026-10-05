@@ -12,7 +12,7 @@ export default function Privacy() {
     >
       <LegalSection title="1. Who we are">
         <p>
-          {BIZ.name} (“we”, “us”) is a travel agency at {BIZ.addressOneLine}, India. We decide why and
+          {BIZ.name} (“we”, “us”) is a travel agency at {BIZ.addressOneLine}, India, run as a sole proprietorship by {BIZ.owner} (Proprietor). We decide why and
           how your personal data is used for our services, so we are the <strong>Data Fiduciary</strong> under
           India’s Digital Personal Data Protection Act, 2023 (and the “controller” under the EU/UK GDPR,
           where it applies). You are the <strong>Data Principal</strong>.
@@ -91,7 +91,7 @@ export default function Privacy() {
         <p>We share your data only with those who need it to deliver what you asked for:</p>
         <LegalList
           items={[
-            'Airlines and airline booking systems (GDS), hotels, cruise lines, transport and local tour operators for your trip.',
+            'Airlines and airline booking systems (GDS), hotels, transport and local tour operators for your trip.',
             'Embassies, consulates, visa application centres (e.g. VFS Global, BLS International) and online visa portals; Passport Seva for passport services.',
             'For Umrah and Hajj: the Saudi authorities and platforms (such as Nusuk), and the licensed operators in Saudi Arabia who provide your visa, hotel and transport; for Hajj, also the Government of India / Haj Committee processes that apply.',
             'Travel insurers, if you ask us to arrange insurance.',

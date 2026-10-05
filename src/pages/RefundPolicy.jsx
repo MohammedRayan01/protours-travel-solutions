@@ -13,7 +13,7 @@ export default function RefundPolicy() {
       <LegalSection title="1. How this policy works">
         <LegalList
           items={[
-            'Flights, hotels, cruises and visas are provided by airlines, hotels, cruise lines and governments. Their own cancellation rules decide most of what can be refunded, and we pass those rules on to you.',
+            'Flights and hotels are provided by airlines and hotels, and visas are decided by governments. Their own cancellation rules decide most of what can be refunded, and we pass those rules on to you.',
             'Tour packages (including Umrah packages) follow the cancellation slabs in section 4.',
             'The cancellation terms for your booking are written on your quote or confirmation. If they differ from this page, the written terms for your booking apply.',
             'This policy applies however you paid — online through Razorpay, by bank transfer / UPI, or in cash.',

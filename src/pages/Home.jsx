@@ -218,8 +218,8 @@ function Hero() {
           </p>
 
           <p data-hero-copy className="js-hide mt-6 max-w-[38rem] text-[1.2rem] text-white/80 text-pretty">
-            An IATA-accredited travel agency in Bengaluru for flights, hotels, visas, passports, holidays,
-            cruises and Umrah. Planned and booked by people you can call, message, or walk in and meet.
+            An IATA-accredited travel agency in Bengaluru for flights, hotels, holidays and Umrah, and a consultant for visas,
+            passports and travel insurance. Planned and booked by people you can call, message, or walk in and meet.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
@@ -371,7 +371,7 @@ function ServicesSection() {
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mt-5 max-w-md text-[1.12rem] text-pretty">
-                Flight booking, hotels, tour packages, visa assistance, passports, cruises and Umrah: eight
+                Flight booking, hotels, tour packages, visa and passport consultancy, and Umrah: seven
                 services that cover a journey from the first enquiry to the day you land back in Bengaluru.
               </p>
             </Reveal>
@@ -800,8 +800,8 @@ function FromOurDesk() {
             <SplitHeading className="h-sec mt-4 text-balance">From our desk on Hospital Road</SplitHeading>
 
             <ScrubText className="mt-6 text-[1.22rem] leading-[1.7] text-ink text-pretty" dim={0.2}>
-              We have been booking trips out of Shivaji Nagar, Bengaluru, since {BIZ.since}: flights, hotels, visas, passports,
-              holidays, cruises and Umrah, all from the same office.
+              We have been booking trips out of Shivaji Nagar, Bengaluru, since {BIZ.since}: flights, hotels, holidays and Umrah,
+              plus visa, passport and insurance consultancy, all from the same office.
             </ScrubText>
             <Reveal delay={0.1}>
               <p className="mt-5 text-pretty">
