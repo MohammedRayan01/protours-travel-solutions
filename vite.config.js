@@ -10,9 +10,18 @@ import tailwindcss from '@tailwindcss/vite'
 function razorpayDevApi() {
   const mount = (server, route, file) => {
     server.middlewares.use(route, async (req, res) => {
-      if (req.method !== 'POST') {
+      if (req.method !== 'POST' && req.method !== 'GET') {
         res.statusCode = 405
         return res.end('Method not allowed')
+      }
+      res.status = (code) => { res.statusCode = code; return res }
+      res.json = (obj) => {
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify(obj))
+      }
+      if (req.method === 'GET') {
+        const mod = await server.ssrLoadModule(file)
+        return mod.default(req, res)
       }
       let raw = ''
       req.on('data', (c) => { raw += c })
@@ -40,6 +49,7 @@ function razorpayDevApi() {
     configureServer(server) {
       mount(server, '/api/create-order', '/api/create-order.js')
       mount(server, '/api/verify-payment', '/api/verify-payment.js')
+      mount(server, '/api/flights', '/api/flights.js')
     },
   }
 }
@@ -49,8 +59,10 @@ export default defineConfig(({ mode, isSsrBuild }) => {
   // an empty prefix pulls in RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET from
   // .env.local too, so the dev API middleware above can read them.
   const env = loadEnv(mode, process.cwd(), '')
-  if (!process.env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_ID) process.env.RAZORPAY_KEY_ID = env.RAZORPAY_KEY_ID
-  if (!process.env.RAZORPAY_KEY_SECRET && env.RAZORPAY_KEY_SECRET) process.env.RAZORPAY_KEY_SECRET = env.RAZORPAY_KEY_SECRET
+  // Server-only settings for the dev API (Razorpay, TBO, markup…). Never VITE_-prefixed.
+  for (const [k, v] of Object.entries(env)) {
+    if (/^(RAZORPAY_|TBO_|FLIGHT|ALLOW_FAKE|SIGNING_SECRET|CRON_SECRET|STAFF_)/.test(k) && process.env[k] === undefined) process.env[k] = v
+  }
 
   // Second build pass used only by scripts/prerender.mjs (see package.json).
   // gsap ships its plugins as ESM inside a CommonJS package, which Node can't

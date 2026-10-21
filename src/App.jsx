@@ -15,6 +15,7 @@ import Home from './pages/Home.jsx'
 const Services      = lazy(() => import('./pages/Services.jsx'))
 const Packages      = lazy(() => import('./pages/Packages.jsx'))
 const FlightsHotels = lazy(() => import('./pages/FlightsHotels.jsx'))
+const BookFlights   = lazy(() => import('./pages/BookFlights.jsx'))
 const Umrah         = lazy(() => import('./pages/Umrah.jsx'))
 const Visa          = lazy(() => import('./pages/Visa.jsx'))
 const Contact       = lazy(() => import('./pages/Contact.jsx'))
@@ -103,6 +104,7 @@ export default function App() {
             <Route path="/services"       element={<Page><Services /></Page>} />
             <Route path="/packages"       element={<Page><Packages /></Page>} />
             <Route path="/flights-hotels" element={<Page><FlightsHotels /></Page>} />
+            <Route path="/book-flights"   element={<Page><BookFlights /></Page>} />
             <Route path="/umrah"          element={<Page><Umrah /></Page>} />
             <Route path="/visa"           element={<Page><Visa /></Page>} />
             <Route path="/contact"        element={<Page><Contact /></Page>} />

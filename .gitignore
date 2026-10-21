@@ -5,3 +5,7 @@ dist
 *.log
 .DS_Store
 dist-ssr
+.data
+certification/**/logs-raw
+certification/
+docs/tbo/samples/

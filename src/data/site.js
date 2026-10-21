@@ -58,6 +58,7 @@ export const NAV = [
   { to: '/', label: 'Home' },
   { to: '/services', label: 'Services' },
   { to: '/packages', label: 'Packages' },
+  { to: '/book-flights', label: 'Book Flights' },
   { to: '/flights-hotels', label: 'Flights & Hotels' },
   { to: '/umrah', label: 'Hajj & Umrah' },
   { to: '/visa', label: 'Visa & Passport' },
