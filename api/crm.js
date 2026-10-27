@@ -120,6 +120,8 @@ export default async function handler(req, res) {
   try {
     return res.status(200).json(await fn(q))
   } catch (e) {
-    return res.status(e.status || 500).json({ error: e.message || 'CRM error' })
+    // Only our own (TboError) messages reach the browser; anything else is logged, not shown.
+    if (!(e instanceof TboError)) console.error('[crm]', q.action, e)
+    return res.status(e instanceof TboError ? e.status || 500 : 500).json({ error: e instanceof TboError ? e.message : 'Something went wrong in the CRM.' })
   }
 }

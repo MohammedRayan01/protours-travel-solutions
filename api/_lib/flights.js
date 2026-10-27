@@ -27,6 +27,7 @@ export async function search(input) {
   if (adults < 1 || adults + children + infants > 9) throw bad('Up to 9 travellers in total (including infants), with at least one adult.')
   if (infants > adults) throw bad('Each infant must travel with an adult.')
 
+  if (input.segments != null && !Array.isArray(input.segments)) throw bad("Choose where you are flying.")
   let segs = (input.segments || []).map((s) => ({ from: up(s.from), to: up(s.to), date: String(s.date || '') }))
   if (journey === 'return' || journey === 'special') {
     const s = segs[0] || {}
@@ -588,7 +589,8 @@ export async function ticket({ checkout: token, payment }) {
         status = t.Response?.TicketStatus
       }
     } catch (e) {
-      error = e.message
+      if (!(e instanceof TboError)) console.error('[flights] ticket', e)
+      error = e instanceof TboError ? e.message : 'Ticketing could not be completed. Our team will check this booking and call you.'
     }
     // Always call GetBookingDetails (certification requirement). Without a
     // BookingId (timeout / error) look it up by TraceId and poll, never re-book.

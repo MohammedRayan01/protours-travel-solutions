@@ -38,7 +38,8 @@ function razorpayDevApi() {
         } catch (e) {
           res.statusCode = 500
           res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify({ error: 'Dev API error: ' + e.message }))
+          console.error('[dev api]', e)
+          res.end(JSON.stringify({ error: 'Something went wrong. Please try again.' }))
         }
       })
     })

@@ -80,7 +80,8 @@ export default function BookFlights() {
             <Offline />
           ) : (
             <>
-              {error && (
+              {/* Each step shows its own error beside its button; this banner only covers the final step. */}
+              {error && step === 'done' && (
                 <div role="alert" className="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800">
                   <AlertTriangle size={20} className="mt-0.5 shrink-0" />
                   <div>
@@ -92,6 +93,7 @@ export default function BookFlights() {
 
               {step === 'search' && (
                 <SearchForm
+                  error={error}
                   busy={busy === 'search'}
                   onSearch={(form) =>
                     run('search', async () => {
@@ -106,6 +108,7 @@ export default function BookFlights() {
 
               {step === 'results' && found && (
                 <Results
+                  error={error}
                   found={found}
                   picked={picked}
                   setPicked={setPicked}
@@ -193,7 +196,7 @@ function AirportField({ id, value, onChange, labelText }) {
   )
 }
 
-function SearchForm({ onSearch, busy }) {
+function SearchForm({ onSearch, busy, error }) {
   const t = todayIso()
   const [journeyType, setJourney] = useState('oneway')
   const [segs, setSegs] = useState([{ from: 'BLR', to: '', date: addDays(t, 7) }])
@@ -283,13 +286,14 @@ function SearchForm({ onSearch, busy }) {
           <button className="btn btn-brand" disabled={busy}>{busy ? <><Loader2 className="animate-spin" size={18} /> Searching…</> : <><Plane size={18} /> Search flights</>}</button>
         </div>
       </div>
+      {error && !busy && <p role="alert" className="mt-3 flex gap-2 rounded-xl bg-red-50 p-3 text-[0.92rem] font-semibold text-red-800"><AlertTriangle size={18} className="mt-0.5 shrink-0" />{error}</p>}
     </form>
   )
 }
 
 /* ---------------- results ---------------- */
 
-function Results({ found, picked, setPicked, onBack, onContinue, busy }) {
+function Results({ found, picked, setPicked, onBack, onContinue, busy, error }) {
   const [filter, setFilter] = useState({ nonstop: false, airline: '' })
   const twoLists = found.lists.length === 2
   const airlines = [...new Set(found.lists.flat().map((r) => r.airline))].filter(Boolean)
@@ -339,6 +343,7 @@ function Results({ found, picked, setPicked, onBack, onContinue, busy }) {
         })}
       </div>
 
+      {error && !busy && <p role="alert" className="mt-3 flex gap-2 rounded-xl bg-red-50 p-3 text-[0.92rem] font-semibold text-red-800"><AlertTriangle size={18} className="mt-0.5 shrink-0" />{error}</p>}
       <div className="sticky bottom-3 z-10 mt-6 flex items-center justify-between gap-4 rounded-2xl bg-navy-950 p-4 text-white shadow-xl">
         <p>{ready ? <>Total for all travellers <strong className="ml-1 text-[1.2rem]">{inr(total)}</strong></> : twoLists ? 'Pick an outbound and a return flight' : 'Pick a flight'}</p>
         <button className="btn btn-gold" disabled={!ready || busy} onClick={onContinue}>{busy ? <><Loader2 className="animate-spin" size={18} /> Checking fare…</> : 'Continue'}</button>
