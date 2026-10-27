@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { recordBooking } from './store.js'
 import { air, authenticate, seal, unseal, customerPrice, fakePaymentsAllowed, IS_LIVE, TboError } from './tbo.js'
 import { AIRPORTS } from './airports.js'
 
@@ -23,7 +24,7 @@ const dateOk = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(
 export async function search(input) {
   const journey = JOURNEY[input.journeyType] ? input.journeyType : 'oneway'
   const adults = int(input.adults, 1), children = int(input.children, 0), infants = int(input.infants, 0)
-  if (adults < 1 || adults + children > 9) throw bad('1 to 9 travellers (adults + children), with at least one adult.')
+  if (adults < 1 || adults + children + infants > 9) throw bad('Up to 9 travellers in total (including infants), with at least one adult.')
   if (infants > adults) throw bad('Each infant must travel with an adult.')
 
   let segs = (input.segments || []).map((s) => ({ from: up(s.from), to: up(s.to), date: String(s.date || '') }))
@@ -45,8 +46,8 @@ export async function search(input) {
 
   const domestic = segs.every((s) => isDomesticCode(s.from) && isDomesticCode(s.to))
   const cabin = CABIN[input.cabin] || CABIN.economy
-  const auth = await authenticate()
-  const r = await air('Search', { tokenId: auth.tokenId }, {
+  let auth = await authenticate()
+  const searchBody = {
     AdultCount: String(adults),
     ChildCount: String(children),
     InfantCount: String(infants),
@@ -62,6 +63,12 @@ export async function search(input) {
       PreferredArrivalTime: `${s.date}T00:00:00`,
     })),
     Sources: Array.isArray(input.sources) && input.sources.length ? input.sources.map(String) : null,
+  }
+  // TBO: ErrorCode 6 = invalid token (check the code, not the message) → fresh token, retry once.
+  const r = await air('Search', { tokenId: auth.tokenId }, searchBody).catch(async (e) => {
+    if (e.code !== 6) throw e
+    auth = await authenticate({ force: true })
+    return air('Search', { tokenId: auth.tokenId }, searchBody)
   })
 
   const lists = (r.Results || []).map((list) => list.map((x) => ({ ...summarise(x), ...(journey === 'advance' ? { rbd: rbdItem(x) } : {}) })).sort((a, b) => (a.price ?? 1e12) - (b.price ?? 1e12)))
@@ -197,6 +204,9 @@ export async function quote({ session: token, resultIndexes, rbd }) {
       passportAtBook: !!(R.IsPassportRequiredAtBook || R.IsPassportFullDetailRequiredAtBook),
       passportAtTicket: !!R.IsPassportRequiredAtTicket,
       panRequired: !!(R.IsPanRequiredAtBook || R.IsPanRequiredAtTicket),
+      passportFull: !!R.IsPassportFullDetailRequiredAtBook,
+      detailChange: fq.FlightDetailChangeInfo || null,
+      airlineCode: R.AirlineCode || R.Segments?.[0]?.[0]?.Airline?.AirlineCode || '',
       priceChanged: !!fq.IsPriceChanged,
       // Super 6E / SpiceMax style fares: a (free) meal and seat must be sent in Ticket.
       mealRequired: !!(R.RequiredFieldValidators?.IsMealRequired || R.IsMealMandatory || R.ismealmandatory),
@@ -218,8 +228,8 @@ export async function quote({ session: token, resultIndexes, rbd }) {
     journey: s.journey,
     international,
     pax: s.pax,
-    legs: priced.map(({ resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, segments, mealRequired, seatRequired }) => ({
-      resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, mealRequired, seatRequired,
+    legs: priced.map(({ resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, segments, mealRequired, seatRequired, panRequired, passportFull, airlineCode, source }) => ({
+      resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, mealRequired, seatRequired, panRequired, passportFull, airlineCode, source,
       depDate: segments?.[0]?.[0]?.Origin?.DepTime,
       lastDepDate: segments?.at(-1)?.at(-1)?.Origin?.DepTime,
     })),
@@ -240,6 +250,8 @@ export async function quote({ session: token, resultIndexes, rbd }) {
       gstAllowed: l.gstAllowed,
       passportRequired: international || l.passportAtBook || l.passportAtTicket,
       panRequired: l.panRequired,
+      passportFull: l.passportFull,
+      detailChange: l.detailChange,
       firstNameFormat: l.firstNameFormat,
       lastNameFormat: l.lastNameFormat,
       journeys: summarise({ ...l, Segments: l.segments, Fare: l.fare, ResultIndex: l.resultIndex, IsLCC: l.isLCC, AirlineCode: l.segments?.[0]?.[0]?.Airline?.AirlineCode }).journeys,
@@ -297,7 +309,7 @@ export async function checkout({ quote: token, passengers, contact, gst, choices
       ssrTotal += extra.cost
       return toTboPassenger(p, leg, pi === 0, gst, paxList.contact, extra.fields)
     })
-    payloads.push({ isLCC: leg.isLCC, resultIndex: leg.resultIndex, passengers: passengersReq })
+    payloads.push({ isLCC: leg.isLCC, resultIndex: leg.resultIndex, passengers: passengersReq, quotedFare: Number(leg.fare.PublishedFare) || 0 })
   }
 
   const fareTotal = q.legs.reduce((t, l) => t + l.price, 0)
@@ -313,7 +325,7 @@ export async function checkout({ quote: token, passengers, contact, gst, choices
     throw new TboError('Online payment is not switched on yet. Please call or WhatsApp us to book this fare.', { status: 503 })
   }
 
-  const checkoutToken = seal({ session: q.session, payloads, amount, orderId: payment.orderId, orderRef }, 15 * 60 * 1000)
+  const checkoutToken = seal({ session: q.session, payloads, amount, orderId: payment.orderId, orderRef, contact: paxList.contact }, 15 * 60 * 1000)
   return { checkout: checkoutToken, amount, fareTotal, ssrTotal: Math.ceil(ssrTotal), orderRef, payment }
 }
 
@@ -324,7 +336,8 @@ function buildSsr(raw, opts, isLCC, paxType, pick, leg = {}, usedSeats = new Set
   if (isLCC) {
     const all = (g) => (g || []).flat()
     // One item per sector. Choose the customer's pick, else the free "no" item.
-    const perSector = (groups, picks, freeCode, required) => {
+    // Included (Price 0) items must be sent to be availed: intl LCC baggage, I5 baggage+meal (TBO checklist).
+    const perSector = (groups, picks, freeCode, required, preferIncluded) => {
       const bySector = new Map()
       for (const x of all(groups)) {
         const k = [x.Origin, x.Destination, x.WayType].join('|')
@@ -337,7 +350,7 @@ function buildSsr(raw, opts, isLCC, paxType, pick, leg = {}, usedSeats = new Set
         const chosen = items.find((x) => picks.includes(ssrKey(x))) ||
           (required
             ? real.find((x) => !x.Price) || [...real].sort((a, b) => a.Price - b.Price)[0]
-            : items.find((x) => x.Code === freeCode) || items.find((x) => !x.Price))
+            : (preferIncluded && real.find((x) => !x.Price)) || items.find((x) => x.Code === freeCode) || items.find((x) => !x.Price))
         if (chosen) {
           out.push(chosen)
           cost += Number(chosen.Price) || 0
@@ -346,8 +359,8 @@ function buildSsr(raw, opts, isLCC, paxType, pick, leg = {}, usedSeats = new Set
       return out
     }
     // Infants: no baggage, no seat (TBO rule). Arrays are never sent as null.
-    if (paxType !== PAX.INFANT && raw.Baggage?.length) fields.Baggage = perSector(raw.Baggage, pick.baggage || [], 'NoBaggage')
-    if (raw.MealDynamic?.length) fields.MealDynamic = perSector(raw.MealDynamic, pick.meals || [], 'NoMeal', leg.mealRequired)
+    if (paxType !== PAX.INFANT && raw.Baggage?.length) fields.Baggage = perSector(raw.Baggage, pick.baggage || [], 'NoBaggage', false, true)
+    if (raw.MealDynamic?.length) fields.MealDynamic = perSector(raw.MealDynamic, pick.meals || [], 'NoMeal', leg.mealRequired, String(leg.airlineCode) === 'I5')
     // Seat-mandatory fares: one free, open seat per segment for each non-infant.
     if (leg.seatRequired && paxType !== PAX.INFANT && raw.SeatDynamic?.length) {
       const seats = []
@@ -423,16 +436,34 @@ export function validatePassengers(list, q, contact) {
     }
     const gender = ['Mr', 'Mstr'].includes(p.title) ? 1 : 2
 
+    // PAN: adults their own; child/infant pass parent/guardian PAN + name (TBO PAN validation).
+    const panNeeded = q.legs.some((l) => l.panRequired)
+    const PANRE = /^[A-Z]{5}[0-9]{4}[A-Z]$/
+    let pan = String(p.pan || '').toUpperCase().trim()
+    let guardian = null
+    if (pan && !PANRE.test(pan)) throw bad(`${n}: PAN format is not valid.`)
+    if (panNeeded && paxType === PAX.ADULT && !pan) throw bad(`${n}: PAN is required for this fare.`)
+    if (panNeeded && paxType !== PAX.ADULT && !pan) {
+      const g = p.guardian || {}
+      const gp = String(g.pan || '').toUpperCase().trim()
+      if (!PANRE.test(gp) || !NAME.test(clean(g.firstName)) || !NAME.test(clean(g.lastName))) throw bad(`${n}: enter the parent/guardian name and PAN exactly as on the PAN card.`)
+      guardian = { Title: ['Mr', 'Mrs', 'Ms'].includes(g.title) ? g.title : 'Mr', FirstName: clean(g.firstName), LastName: clean(g.lastName), PAN: gp }
+    }
+    // TruJet / Zoom Air: no space allowed in last name.
+    if (q.legs.some((l) => ['2T', 'ZO'].includes(l.airlineCode)) && last.includes(' ')) throw bad(`${n}: this airline does not allow spaces in the last name.`)
+    const passportNeeded = q.international || q.legs.some((l) => l.passportAtBook || l.passportAtTicket)
+    const passportFull = q.legs.some((l) => l.passportFull)
     let passport = null
-    if (q.international) {
+    if (passportNeeded) {
       const no = String(p.passportNo || '').toUpperCase().replace(/\s/g, '')
       if (!/^[A-Z0-9]{6,15}$/.test(no)) throw bad(`${n}: enter the passport number.`)
       if (!dateOk(p.passportExpiry || '')) throw bad(`${n}: enter the passport expiry date.`)
       if (new Date(p.passportExpiry) <= new Date(lastDep)) throw bad(`${n}: passport expires before travel.`)
       if (p.passportIssue && (!dateOk(p.passportIssue) || p.passportIssue < dob || new Date(p.passportIssue) > new Date())) throw bad(`${n}: passport issue date must be after the date of birth and not in the future.`)
+      if (passportFull && (!dateOk(p.passportIssue || '') || !/^[A-Za-z]{2}$/.test(p.passportCountry || ''))) throw bad(`${n}: this fare needs the passport issue date and issuing country.`)
       passport = { no, expiry: p.passportExpiry, issueCountry: up(p.passportCountry || 'IN').slice(0, 2), issueDate: p.passportIssue || '' }
     }
-    return { paxType, title: p.title, first, last, gender, dob, passport, nationality: up(p.nationality || 'IN').slice(0, 2) }
+    return { paxType, title: p.title, first, last, gender, dob, passport, pan, guardian, nationality: up(p.nationality || 'IN').slice(0, 2) }
   })
   for (const t of [1, 2, 3]) if (have[t] !== need[t]) throw bad('Passenger count does not match your search.')
   out.contact = { phone: String(contact.phone).replace(/\D/g, '').slice(-10), email: contact.email.trim(), address: clean(contact.address || '') || 'Bengaluru', city: clean(contact.city || '') || 'Bengaluru' }
@@ -450,8 +481,12 @@ function toTboPassenger(p, leg, isLead, gst, contact, ssrFields) {
   const n = fb.PassengerCount || 1
   const per = (k) => round2((Number(fb[k]) || 0) / n)
   const F = leg.fare
+  // Navitaire 4X (SpiceJet) titles: child MR/MS, infant MSTR/MR/MS.
+  const sgTitle = leg.airlineCode === 'SG' && p.paxType === PAX.CHILD ? (p.title === 'Mstr' ? 'Mr' : 'Ms') : p.title
   const pax = {
-    Title: p.title,
+    Title: sgTitle,
+    ...(p.pan ? { PAN: p.pan } : {}),
+    ...(p.guardian ? { GuardianDetails: p.guardian } : {}),
     FirstName: p.first,
     LastName: p.last,
     PaxType: p.paxType,
@@ -477,6 +512,9 @@ function toTboPassenger(p, leg, isLead, gst, contact, ssrFields) {
       BaseFare: per('BaseFare'),
       Tax: per('Tax'),
       YQTax: per('YQTax'),
+      // TBO Book/Ticket spec lists these as mandatory per passenger.
+      TransactionFee: per('TransactionFee'),
+      AirTransFee: per('AirTransFee'),
       AdditionalTxnFeePub: per('AdditionalTxnFeePub'),
       AdditionalTxnFeeOfrd: per('AdditionalTxnFeeOfrd'),
       OtherCharges: round2((F.OtherCharges || 0) / paxTotal(leg)),
@@ -518,23 +556,35 @@ export async function ticket({ checkout: token, payment }) {
       if (leg.isLCC) {
         // SSR must be the last call before each leg's Ticket (matters for the 2nd PNR of a domestic return).
         await air('SSR', c.session, { ResultIndex: leg.resultIndex }, { allowError: true }).catch(() => null)
-        const t = await air('Ticket', c.session, { ResultIndex: leg.resultIndex, Passengers: passengers, PreferredCurrency: null, IsBaseCurrencyRequired: false })
-        const b = t.Response
-        // Fare moved at ticketing: never auto-accept — the customer paid a fixed amount.
+        const lccReq = { ResultIndex: leg.resultIndex, Passengers: passengers, PreferredCurrency: null, IsBaseCurrencyRequired: false }
+        let t = await air('Ticket', c.session, lccReq)
+        let b = t.Response
+        // Price changed at ticketing: TBO says call Ticket again with IsPriceChangeAccepted.
+        // The customer paid a fixed amount, so accept only if the new fare is not higher.
         if (t.IsPriceChanged || b?.IsPriceChanged || b?.TicketStatus === 8) {
-          throw new TboError('The airline changed the fare at ticketing. Nothing was ticketed; our team will call you to refund or rebook.', { status: 409 })
+          if (!fareNotHigher(b, leg)) throw new TboError('The airline raised the fare at ticketing. Nothing was ticketed; our team will call you to refund or rebook.', { status: 409 })
+          t = await air('Ticket', c.session, { ...lccReq, IsPriceChangeAccepted: true })
+          b = t.Response
         }
         bookingId = b?.BookingId
         pnr = b?.PNR
         status = b?.TicketStatus
       } else {
         const bk = await air('Book', c.session, { ResultIndex: leg.resultIndex, Passengers: passengers })
-        if (bk.Response?.IsPriceChanged || bk.Response?.IsTimeChanged) {
-          throw new TboError('The airline changed the price or timing at booking. Nothing was ticketed — please search again or call us.', { status: 409 })
+        const priceChanged = !!bk.Response?.IsPriceChanged
+        if (bk.Response?.IsTimeChanged) {
+          throw new TboError('The airline changed the flight timing at booking. Nothing was ticketed; please search again or call us.', { status: 409 })
+        }
+        if (priceChanged && !fareNotHigher(bk.Response, leg)) {
+          throw new TboError('The airline raised the fare at booking. Nothing was ticketed; please search again or call us.', { status: 409 })
         }
         bookingId = bk.Response?.BookingId
         pnr = bk.Response?.PNR
-        const t = await air('Ticket', c.session, { PNR: pnr, BookingId: bookingId })
+        // Book reported a price change we can absorb → Ticket with IsPriceChangeAccepted (TBO rule).
+        let t = await air('Ticket', c.session, { PNR: pnr, BookingId: bookingId, ...(priceChanged ? { IsPriceChangeAccepted: true } : {}) })
+        if (t.Response?.IsPriceChanged && fareNotHigher(t.Response, leg)) {
+          t = await air('Ticket', c.session, { PNR: pnr, BookingId: bookingId, IsPriceChangeAccepted: true })
+        }
         status = t.Response?.TicketStatus
       }
     } catch (e) {
@@ -543,7 +593,8 @@ export async function ticket({ checkout: token, payment }) {
     // Always call GetBookingDetails (certification requirement). Without a
     // BookingId (timeout / error) look it up by TraceId and poll, never re-book.
     let details = null
-    for (let attempt = 0; attempt < (bookingId ? 1 : 4); attempt++) {
+    // TBO: on timeout poll GetBookingDetails every 10–15 s ("booking under process") instead of re-booking.
+    for (let attempt = 0; attempt < (bookingId ? 1 : 10); attempt++) {
       if (attempt) await new Promise((r) => setTimeout(r, 12000))
       try {
         const d = await air('GetBookingDetails', c.session, bookingId ? { BookingId: bookingId, PNR: pnr } : {}, { allowError: true })
@@ -559,7 +610,15 @@ export async function ticket({ checkout: token, payment }) {
     }
     results.push({ bookingId, pnr, ticketStatus: status, error, details })
   }
-  return { orderRef: c.orderRef, amount: c.amount, results }
+  const out = { orderRef: c.orderRef, amount: c.amount, results }
+  recordBooking({ ...out, traceId: c.session.traceId, paymentId: payment?.paymentId || c.orderId, contact: c.contact })
+  return out
+}
+
+/** New published fare from a Book/Ticket response is not above what the customer was quoted. */
+function fareNotHigher(r, leg) {
+  const now = Number(r?.FlightItinerary?.Fare?.PublishedFare)
+  return Number.isFinite(now) && now > 0 && now <= leg.quotedFare + 0.5
 }
 
 function bookingSummary(d) {

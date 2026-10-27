@@ -4,5 +4,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /crm
 
 Sitemap: https://www.protoursandtravelsolutions.com/sitemap.xml

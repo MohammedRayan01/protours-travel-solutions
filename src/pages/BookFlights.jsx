@@ -365,10 +365,13 @@ const TITLES = { 1: ['Mr', 'Mrs', 'Ms'], 2: ['Mstr', 'Miss'], 3: ['Mstr', 'Miss'
 function Travellers({ q, onPay, onBack, busy }) {
   const intl = q.international
   const needPassport = intl || q.legs.some((l) => l.passportRequired)
+  const panNeeded = q.legs.some((l) => l.panRequired)
+  const passportFull = q.legs.some((l) => l.passportFull)
+  const detailChange = q.legs.map((l) => l.detailChange).filter(Boolean)
   const gstMandatory = q.legs.some((l) => l.isGSTMandatory)
   const gstAllowed = gstMandatory || q.legs.some((l) => l.gstAllowed)
   const initial = []
-  for (const [t, n] of [[1, q.pax.adults], [2, q.pax.children], [3, q.pax.infants]]) for (let i = 0; i < n; i++) initial.push({ paxType: t, title: TITLES[t][0], firstName: '', lastName: '', dob: '', passportNo: '', passportExpiry: '', nationality: 'IN' })
+  for (const [t, n] of [[1, q.pax.adults], [2, q.pax.children], [3, q.pax.infants]]) for (let i = 0; i < n; i++) initial.push({ paxType: t, title: TITLES[t][0], firstName: '', lastName: '', dob: '', passportNo: '', passportExpiry: '', passportIssue: '', passportCountry: 'IN', nationality: 'IN', pan: '', guardian: { title: 'Mr', firstName: '', lastName: '', pan: '' } })
   const [pax, setPax] = useState(initial)
   const [contact, setContact] = useState({ phone: '', email: '', address: '', city: 'Bengaluru' })
   const [gstOn, setGstOn] = useState(gstMandatory)
@@ -378,6 +381,7 @@ function Travellers({ q, onPay, onBack, busy }) {
   const [showRules, setShowRules] = useState(false)
 
   const setP = (i, k, v) => setPax((p) => p.map((x, j) => (j === i ? { ...x, [k]: v } : x)))
+  const setG = (i, k, v) => setPax((p) => p.map((x, j) => (j === i ? { ...x, guardian: { ...x.guardian, [k]: v } } : x)))
   const extras = q.legs.reduce((t, leg, li) => t + choices[li].reduce((s, c) => s + [...c.baggage, ...c.meals].reduce((a, key) => a + (findSsr(leg, key)?.price || 0), 0), 0), 0)
 
   const pick = (li, pi, kind, sectorKey, key) =>
@@ -393,6 +397,7 @@ function Travellers({ q, onPay, onBack, busy }) {
       <div className="grid gap-6">
         <button type="button" className="w-fit font-bold text-brand-500" onClick={onBack}>← Back to flights</button>
 
+        {detailChange.length > 0 && <p className="rounded-xl bg-gold-500/15 p-3 font-semibold text-navy-900">The airline updated this flight ({detailChange.join(', ')}). Please check the details below before paying.</p>}
         {q.legs.some((l) => l.priceChanged) && <p className="rounded-xl bg-gold-500/15 p-3 font-semibold text-navy-900">The airline updated this fare. The price below is the latest.</p>}
 
         {pax.map((p, i) => (
@@ -412,6 +417,24 @@ function Travellers({ q, onPay, onBack, busy }) {
                 <div><label className={label} htmlFor={`pn${i}`}>Passport no.</label><input id={`pn${i}`} className={input} required value={p.passportNo} onChange={(e) => setP(i, 'passportNo', e.target.value.toUpperCase())} /></div>
                 <div><label className={label} htmlFor={`pe${i}`}>Passport expiry</label><input id={`pe${i}`} type="date" className={input} required min={todayIso()} value={p.passportExpiry} onChange={(e) => setP(i, 'passportExpiry', e.target.value)} /></div>
                 <div><label className={label} htmlFor={`na${i}`}>Nationality</label><input id={`na${i}`} className={input} maxLength={2} value={p.nationality} onChange={(e) => setP(i, 'nationality', e.target.value.toUpperCase())} /></div>
+              </div>
+            )}
+            {passportFull && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div><label className={label} htmlFor={`pi${i}`}>Passport issue date</label><input id={`pi${i}`} type="date" className={input} required max={todayIso()} value={p.passportIssue} onChange={(e) => setP(i, 'passportIssue', e.target.value)} /></div>
+                <div><label className={label} htmlFor={`pc${i}`}>Issuing country (2 letters)</label><input id={`pc${i}`} className={input} required maxLength={2} value={p.passportCountry} onChange={(e) => setP(i, 'passportCountry', e.target.value.toUpperCase())} /></div>
+              </div>
+            )}
+            {panNeeded && p.paxType === 1 && (
+              <div className="mt-3 sm:w-64"><label className={label} htmlFor={`pan${i}`}>PAN (as on card)</label><input id={`pan${i}`} className={input} required maxLength={10} pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]" value={p.pan} onChange={(e) => setP(i, 'pan', e.target.value.toUpperCase())} /></div>
+            )}
+            {panNeeded && p.paxType !== 1 && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-[6rem_1fr_1fr_10rem]">
+                <p className="text-[0.88rem] text-slate-500 sm:col-span-4">Parent / guardian PAN details (exactly as on the PAN card)</p>
+                <div><label className={label} htmlFor={`gt${i}`}>Title</label><select id={`gt${i}`} className={input} value={p.guardian.title} onChange={(e) => setG(i, 'title', e.target.value)}>{['Mr', 'Mrs', 'Ms'].map((t) => <option key={t}>{t}</option>)}</select></div>
+                <div><label className={label} htmlFor={`gf${i}`}>First name</label><input id={`gf${i}`} className={input} required value={p.guardian.firstName} onChange={(e) => setG(i, 'firstName', e.target.value)} /></div>
+                <div><label className={label} htmlFor={`gl${i}`}>Last name</label><input id={`gl${i}`} className={input} required value={p.guardian.lastName} onChange={(e) => setG(i, 'lastName', e.target.value)} /></div>
+                <div><label className={label} htmlFor={`gp${i}`}>PAN</label><input id={`gp${i}`} className={input} required maxLength={10} value={p.guardian.pan} onChange={(e) => setG(i, 'pan', e.target.value.toUpperCase())} /></div>
               </div>
             )}
             {q.legs.map((leg, li) => <Extras key={li} leg={leg} li={li} legs={q.legs.length} pax={p} choice={choices[li][i]} onPick={(kind, sector, key) => pick(li, i, kind, sector, key)} />)}

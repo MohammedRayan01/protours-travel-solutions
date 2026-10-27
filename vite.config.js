@@ -50,6 +50,7 @@ function razorpayDevApi() {
       mount(server, '/api/create-order', '/api/create-order.js')
       mount(server, '/api/verify-payment', '/api/verify-payment.js')
       mount(server, '/api/flights', '/api/flights.js')
+      mount(server, '/api/crm', '/api/crm.js')
     },
   }
 }
@@ -61,7 +62,7 @@ export default defineConfig(({ mode, isSsrBuild }) => {
   const env = loadEnv(mode, process.cwd(), '')
   // Server-only settings for the dev API (Razorpay, TBO, markup…). Never VITE_-prefixed.
   for (const [k, v] of Object.entries(env)) {
-    if (/^(RAZORPAY_|TBO_|FLIGHT|ALLOW_FAKE|SIGNING_SECRET|CRON_SECRET|STAFF_)/.test(k) && process.env[k] === undefined) process.env[k] = v
+    if (/^(RAZORPAY_|TBO_|FLIGHT|ALLOW_FAKE|SIGNING_SECRET|CRON_SECRET|STAFF_|CRM_|SUPABASE_)/.test(k) && process.env[k] === undefined) process.env[k] = v
   }
 
   // Second build pass used only by scripts/prerender.mjs (see package.json).
