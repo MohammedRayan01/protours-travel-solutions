@@ -58,7 +58,7 @@ export default function BookFlights() {
 
   return (
     <>
-      <section className="bg-navy-950 pt-28 pb-10 text-white md:pt-36">
+      <section className="bg-navy-950 pt-36 pb-10 text-white md:pt-44">
         <div className="wrap">
           <p className="eyebrow text-gold-400">Book flights online</p>
           <h1 className="mt-3 font-display text-[2rem] leading-tight font-bold md:text-[2.8rem]">Search fares and get your e-ticket</h1>

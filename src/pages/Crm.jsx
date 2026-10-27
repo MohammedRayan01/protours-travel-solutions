@@ -25,7 +25,7 @@ export default function Crm() {
   useEffect(() => { get('overview').then(setOv).catch((e) => setErr(e.message)) }, [])
 
   return (
-    <section className="min-h-screen bg-slate-50 pt-28 pb-16">
+    <section className="min-h-screen bg-slate-50 pt-36 pb-16 md:pt-44">
       <div className="wrap">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
