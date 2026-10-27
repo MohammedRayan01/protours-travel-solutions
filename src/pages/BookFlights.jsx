@@ -123,6 +123,7 @@ export default function BookFlights() {
 
               {step === 'travellers' && q && (
                 <Travellers
+                  error={error}
                   q={q}
                   busy={busy}
                   onBack={() => setStep('results')}
@@ -362,7 +363,7 @@ function JourneyRow({ j }) {
 const TYPE_NAME = { 1: 'Adult', 2: 'Child', 3: 'Infant' }
 const TITLES = { 1: ['Mr', 'Mrs', 'Ms'], 2: ['Mstr', 'Miss'], 3: ['Mstr', 'Miss'] }
 
-function Travellers({ q, onPay, onBack, busy }) {
+function Travellers({ q, onPay, onBack, busy, error }) {
   const intl = q.international
   const needPassport = intl || q.legs.some((l) => l.passportRequired)
   const panNeeded = q.legs.some((l) => l.panRequired)
@@ -480,6 +481,7 @@ function Travellers({ q, onPay, onBack, busy }) {
         <button className="btn btn-brand mt-4 w-full" disabled={!!busy}>
           {busy === 'pay' ? <><Loader2 className="animate-spin" size={18} /> Starting payment…</> : busy === 'ticket' ? <><Loader2 className="animate-spin" size={18} /> Issuing ticket — don’t close</> : `Pay ${inr(q.total + extras)}`}
         </button>
+        {error && !busy && <p role="alert" className="mt-3 flex gap-2 rounded-xl bg-red-50 p-3 text-[0.92rem] font-semibold text-red-800"><AlertTriangle size={18} className="mt-0.5 shrink-0" />{error}</p>}
       </aside>
     </form>
   )
