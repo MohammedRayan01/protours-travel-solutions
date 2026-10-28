@@ -1,5 +1,5 @@
 import { search, quote, checkout, ticket, calendar } from './_lib/flights.js'
-import { TboError, IS_LIVE } from './_lib/tbo.js'
+import { TboError, IS_LIVE, withEndUserIp, clientIp } from './_lib/tbo.js'
 
 /**
  * Vercel serverless function — the website's only door to the TBO Air API.
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   if (!fn) return res.status(400).json({ error: 'Unknown action.' })
 
   try {
-    const data = await fn(payload)
+    const data = await withEndUserIp(clientIp(req), () => fn(payload))
     res.setHeader('Cache-Control', 'no-store')
     return res.status(200).json(data)
   } catch (e) {

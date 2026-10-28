@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
+import { AsyncLocalStorage } from 'node:async_hooks'
 
 /**
  * TBO (Tek Travels) Air API client — server only.
@@ -37,7 +38,22 @@ if (IS_LIVE && (!URLS.auth || !URLS.air)) console.error('[tbo] TBO_ENV=live but 
 // Booking-side methods go to the booking host on live; search-side to the air host.
 const BOOKING_METHODS = new Set(['Book', 'Ticket', 'GetBookingDetails', 'SendChangeRequest', 'GetChangeRequestStatus', 'GetCancellationCharges', 'ReleasePNRRequest'])
 
-export const END_USER_IP = process.env.TBO_END_USER_IP || '192.168.10.10'
+// TBO's EndUserIp is "IP address of the end user". Web requests run inside withEndUserIp() with the
+// visitor's real address; scripts and tests fall back to a fixed address.
+const DEFAULT_IP = process.env.TBO_END_USER_IP || '192.168.10.10'
+const ipStore = new AsyncLocalStorage()
+export const withEndUserIp = (ip, fn) => ipStore.run(ip, fn)
+export const endUserIp = () => ipStore.getStore() || DEFAULT_IP
+/**
+ * The visitor's IPv4 address from x-forwarded-for / socket, or null.
+ * IPv6 is deliberately dropped: TBO stores EndUserIp in a ~15-character column, and an IPv6
+ * address makes Authenticate fail with a database truncation error. Loopback is useless too.
+ */
+export function clientIp(req) {
+  const raw = String(req.headers?.['x-forwarded-for'] || req.headers?.['x-real-ip'] || req.socket?.remoteAddress || '').split(',')[0].trim().replace(/^::ffff:/, '')
+  const v4 = /^(\d{1,3})(\.\d{1,3}){3}$/.test(raw) && raw.split('.').every((n) => Number(n) <= 255)
+  return v4 && !raw.startsWith('127.') && !raw.startsWith('0.') ? raw : null
+}
 
 const LOG_MODE = process.env.TBO_LOG_SEARCH || 'summary' // full | summary
 const LOG_DIR = process.env.VERCEL ? null : path.resolve(process.cwd(), '.data', 'tbo-logs')
@@ -110,6 +126,7 @@ async function post(url, method, body, traceId, timeoutMs = 60000) {
     })
     text = await res.text()
   } catch (e) {
+    console.error('[tbo] network error on', method, '-', e.cause?.code || e.cause?.message || e.message)
     throw new TboError(e.name === 'AbortError' ? `${method} timed out` : `${method} could not reach TBO`, { method, status: 504 })
   } finally {
     clearTimeout(t)
@@ -141,10 +158,12 @@ export async function authenticate({ force = false } = {}) {
     ClientId: 'ApiIntegrationNew',
     UserName: TBO_USERNAME,
     Password: TBO_PASSWORD,
-    EndUserIp: END_USER_IP,
+    EndUserIp: endUserIp(),
   })
   if (json.Status !== 1 || !json.TokenId) {
-    throw new TboError(json?.Error?.ErrorMessage || 'TBO login failed', { method: 'Authenticate', code: json?.Error?.ErrorCode, status: 502 })
+    // TBO's own text can contain database internals — keep it in the server log only.
+    console.error('[tbo] Authenticate failed:', json?.Error?.ErrorCode, json?.Error?.ErrorMessage)
+    throw new TboError('Flight booking is temporarily unavailable. Please try again in a few minutes or call us.', { method: 'Authenticate', code: json?.Error?.ErrorCode, status: 503 })
   }
   cached = { tokenId: json.TokenId, agencyId: json.Member?.AgencyId, memberId: json.Member?.MemberId, day: today() }
   return cached
@@ -154,14 +173,22 @@ export async function authenticate({ force = false } = {}) {
  * Calls an Air method and unwraps `Response`, throwing on TBO errors.
  * `session` carries the TokenId (+ TraceId) for the whole booking.
  */
+/** TBO guide: 300 s for Book/Ticket, 60 s for the rest; Search gets longer (international can take 60 s+). */
+export const timeoutFor = (method) => (method === 'Book' || method === 'Ticket' ? 300000 : method === 'Search' || method === 'PriceRBD' || method === 'GetCalendarFare' ? 120000 : 60000)
+
 export async function air(method, session, body = {}, { allowError = false } = {}) {
   const url = BOOKING_METHODS.has(method) ? URLS.booking : URLS.air
-  const req = { EndUserIp: END_USER_IP, TokenId: session.tokenId, ...(session.traceId ? { TraceId: session.traceId } : {}), ...body }
+  const req = { EndUserIp: endUserIp(), TokenId: session.tokenId, ...(session.traceId ? { TraceId: session.traceId } : {}), ...body }
   // TBO guide: 300 s for Book/Ticket, 60 s for everything else.
-  const timeout = method === 'Book' || method === 'Ticket' ? 300000 : method === 'Search' || method === 'PriceRBD' || method === 'GetCalendarFare' ? 120000 : 60000
+  const timeout = timeoutFor(method)
   const json = await post(url, method, req, session.traceId || body.TraceId, timeout)
   const r = json.Response ?? json
   const err = r?.Error
+  if (err?.ErrorCode === 6 && method !== 'Search') {
+    // Invalid token (checked by code, not message). The TraceId belongs to this token, so a fresh
+    // token cannot continue this booking — the customer has to search again.
+    throw new TboError('Your session expired. Please search again.', { method, code: 6, status: 410 })
+  }
   if (!allowError && err && err.ErrorCode && err.ErrorCode !== 0) {
     throw new TboError(err.ErrorMessage || `${method} failed`, { method, code: err.ErrorCode, status: 422 })
   }
@@ -170,7 +197,7 @@ export async function air(method, session, body = {}, { allowError = false } = {
 
 export async function shared(method, body) {
   const s = await authenticate()
-  return post(URLS.auth, method, { EndUserIp: END_USER_IP, TokenId: s.tokenId, ...body })
+  return post(URLS.auth, method, { EndUserIp: endUserIp(), TokenId: s.tokenId, ...body })
 }
 
 /* ---------- sealed session (TokenId never reaches the browser in clear) ---------- */

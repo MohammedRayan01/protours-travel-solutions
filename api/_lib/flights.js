@@ -35,6 +35,7 @@ export async function search(input) {
     segs = [s, { from: s.to, to: s.from, date: input.returnDate }]
   }
   if (journey === 'oneway' || journey === 'advance') segs = segs.slice(0, 1)
+  if (journey === 'special' && Array.isArray(input.sources) && input.sources.length > 1) throw bad('Special Return can be searched with one airline source at a time.')
   if (!segs.length) throw bad('Choose where you are flying.')
   const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
   segs.forEach((s, i) => {
@@ -207,6 +208,8 @@ export async function quote({ session: token, resultIndexes, rbd }) {
       passportAtTicket: !!R.IsPassportRequiredAtTicket,
       panRequired: !!(R.IsPanRequiredAtBook || R.IsPanRequiredAtTicket),
       passportFull: !!R.IsPassportFullDetailRequiredAtBook,
+      // TBO: TruJet (Source 50) and Zoom Air allow no space in the last name.
+      noSpaceLast: Number(R.Source) === 50 || (R.Segments || []).flat(2).some((g) => /zoom|tru\s*jet/i.test(g.Airline?.AirlineName || '')),
       detailChange: fq.FlightDetailChangeInfo || null,
       airlineCode: R.AirlineCode || R.Segments?.[0]?.[0]?.Airline?.AirlineCode || '',
       priceChanged: !!fq.IsPriceChanged,
@@ -230,8 +233,8 @@ export async function quote({ session: token, resultIndexes, rbd }) {
     journey: s.journey,
     international,
     pax: s.pax,
-    legs: priced.map(({ resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, segments, mealRequired, seatRequired, panRequired, passportFull, airlineCode, source }) => ({
-      resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, mealRequired, seatRequired, panRequired, passportFull, airlineCode, source,
+    legs: priced.map(({ resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, segments, mealRequired, seatRequired, panRequired, passportFull, airlineCode, source, noSpaceLast }) => ({
+      resultIndex, isLCC, isGSTMandatory, passportAtBook, passportAtTicket, fare, breakdown, price, mealRequired, seatRequired, panRequired, passportFull, airlineCode, source, noSpaceLast,
       depDate: segments?.[0]?.[0]?.Origin?.DepTime,
       lastDepDate: segments?.at(-1)?.at(-1)?.Origin?.DepTime,
     })),
@@ -454,7 +457,7 @@ export function validatePassengers(list, q, contact) {
       guardian = { Title: ['Mr', 'Mrs', 'Ms'].includes(g.title) ? g.title : 'Mr', FirstName: clean(g.firstName), LastName: clean(g.lastName), PAN: gp }
     }
     // TruJet / Zoom Air: no space allowed in last name.
-    if (q.legs.some((l) => ['2T', 'ZO'].includes(l.airlineCode)) && last.includes(' ')) throw bad(`${n}: this airline does not allow spaces in the last name.`)
+    if (q.legs.some((l) => l.noSpaceLast) && last.includes(' ')) throw bad(`${n}: this airline does not allow spaces in the last name.`)
     const passportNeeded = q.international || q.legs.some((l) => l.passportAtBook || l.passportAtTicket)
     const passportFull = q.legs.some((l) => l.passportFull)
     let passport = null
@@ -486,7 +489,7 @@ function toTboPassenger(p, leg, isLead, gst, contact, ssrFields) {
   const per = (k) => round2((Number(fb[k]) || 0) / n)
   const F = leg.fare
   // Navitaire 4X (SpiceJet) titles: child MR/MS, infant MSTR/MR/MS.
-  const sgTitle = leg.airlineCode === 'SG' && p.paxType === PAX.CHILD ? (p.title === 'Mstr' ? 'Mr' : 'Ms') : p.title
+  const sgTitle = leg.airlineCode === 'SG' && p.paxType !== PAX.ADULT ? (p.title === 'Mstr' ? (p.paxType === PAX.CHILD ? 'Mr' : 'Mstr') : 'Ms') : p.title
   const pax = {
     Title: sgTitle,
     ...(p.pan ? { PAN: p.pan } : {}),
@@ -521,14 +524,8 @@ function toTboPassenger(p, leg, isLead, gst, contact, ssrFields) {
       AirTransFee: per('AirTransFee'),
       AdditionalTxnFeePub: per('AdditionalTxnFeePub'),
       AdditionalTxnFeeOfrd: per('AdditionalTxnFeeOfrd'),
-      OtherCharges: round2((F.OtherCharges || 0) / paxTotal(leg)),
-      Discount: round2((F.Discount || 0) / paxTotal(leg)),
-      PublishedFare: round2(F.PublishedFare / paxTotal(leg)),
-      OfferedFare: round2(F.OfferedFare / paxTotal(leg)),
-      TdsOnCommission: round2((F.TdsOnCommission || 0) / paxTotal(leg)),
-      TdsOnPLB: round2((F.TdsOnPLB || 0) / paxTotal(leg)),
-      TdsOnIncentive: round2((F.TdsOnIncentive || 0) / paxTotal(leg)),
-      ServiceFee: round2((F.ServiceFee || 0) / paxTotal(leg)),
+      // Only what TBO documents as mandatory in the request. Published/Offered/TDS are response fields.
+      PGCharge: per('PGCharge'),
     },
     ...ssrFields,
   }
@@ -555,7 +552,7 @@ export async function ticket({ checkout: token, payment }) {
   const results = []
   for (const leg of c.payloads) {
     const passengers = leg.passengers
-    let bookingId, pnr, status, error
+    let bookingId, pnr, status, error, err
     try {
       if (leg.isLCC) {
         // SSR must be the last call before each leg's Ticket (matters for the 2nd PNR of a domestic return).
@@ -592,6 +589,7 @@ export async function ticket({ checkout: token, payment }) {
         status = t.Response?.TicketStatus
       }
     } catch (e) {
+      err = e
       if (!(e instanceof TboError)) console.error('[flights] ticket', e)
       error = e instanceof TboError ? e.message : 'Ticketing could not be completed. Our team will check this booking and call you.'
     }
@@ -599,8 +597,10 @@ export async function ticket({ checkout: token, payment }) {
     // BookingId (timeout / error) look it up by TraceId and poll, never re-book.
     let details = null
     // TBO: on timeout poll GetBookingDetails every 10–15 s ("booking under process") instead of re-booking.
-    for (let attempt = 0; attempt < (bookingId ? 1 : 10); attempt++) {
-      if (attempt) await new Promise((r) => setTimeout(r, 12000))
+    // A definite answer from TBO (error code) gets one check; no reply at all gets the full polling.
+    const noReply = !bookingId && (!(err instanceof TboError) || err.code == null)
+    for (let attempt = 0; attempt < (noReply ? 10 : 1); attempt++) {
+      if (attempt) await new Promise((r) => setTimeout(r, Number(process.env.TBO_POLL_MS) || 12000))
       try {
         const d = await air('GetBookingDetails', c.session, bookingId ? { BookingId: bookingId, PNR: pnr } : {}, { allowError: true })
         details = bookingSummary(d)
