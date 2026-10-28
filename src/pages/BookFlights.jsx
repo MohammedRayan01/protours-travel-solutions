@@ -219,6 +219,8 @@ function SearchForm({ onSearch, busy, error }) {
     setMsg('')
     if (segs.some((s) => !s.from || !s.to)) return setMsg('Pick the airports from the list.')
     if (pax.infants > pax.adults) return setMsg('Each infant must travel with an adult.')
+    // TBO hard limit: 9 passengers in total, infants included.
+    if (pax.adults + pax.children + pax.infants > 9) return setMsg('A booking can have at most 9 travellers, including infants.')
     onSearch({ journeyType, segments: segs, returnDate: journeyType === 'return' ? returnDate : undefined, ...pax, cabin, directOnly })
   }
 
@@ -267,9 +269,9 @@ function SearchForm({ onSearch, busy, error }) {
       </div>
 
       <div className="mt-6 grid gap-5 border-t border-slate-200 pt-6 md:grid-cols-[1fr_1fr_1fr_12rem]">
-        <div><p className={label}>Adults (12+)</p>{counter('adults', 1, 9 - pax.children)}</div>
-        <div><p className={label}>Children (2–11)</p>{counter('children', 0, 9 - pax.adults)}</div>
-        <div><p className={label}>Infants (under 2)</p>{counter('infants', 0, pax.adults)}</div>
+        <div><p className={label}>Adults (12+)</p>{counter('adults', 1, 9 - pax.children - pax.infants)}</div>
+        <div><p className={label}>Children (2–11)</p>{counter('children', 0, 9 - pax.adults - pax.infants)}</div>
+        <div><p className={label}>Infants (under 2)</p>{counter('infants', 0, Math.min(pax.adults, 9 - pax.adults - pax.children))}</div>
         <div>
           <label htmlFor="cabin" className={label}>Cabin</label>
           <select id="cabin" className={input} value={cabin} onChange={(e) => setCabin(e.target.value)}>
