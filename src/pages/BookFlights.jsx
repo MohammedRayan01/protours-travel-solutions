@@ -224,11 +224,20 @@ function SearchForm({ onSearch, busy, error }) {
     onSearch({ journeyType, segments: segs, returnDate: journeyType === 'return' ? returnDate : undefined, ...pax, cabin, directOnly })
   }
 
+  // One place decides every change, so the totals can never break TBO's rules:
+  // 9 travellers in total (infants included), 1+ adult, each infant with an adult.
+  const MAX_PAX = 9
+  const change = (k, delta) => setPax((p) => {
+    const n = { ...p, [k]: Math.max(k === 'adults' ? 1 : 0, p[k] + delta) }
+    if (n.adults + n.children + n.infants > MAX_PAX) return p
+    if (n.infants > n.adults) n.infants = n.adults
+    return n
+  })
   const counter = (k, min, max) => (
     <div className="flex items-center gap-2">
-      <button type="button" className="h-9 w-9 rounded-full border border-slate-300 text-lg font-bold disabled:opacity-40" disabled={pax[k] <= min} onClick={() => setPax((p) => ({ ...p, [k]: p[k] - 1 }))} aria-label={`Fewer ${k}`}>−</button>
+      <button type="button" className="h-9 w-9 rounded-full border border-slate-300 text-lg font-bold disabled:opacity-40" disabled={pax[k] <= min} onClick={() => change(k, -1)} aria-label={`Fewer ${k}`}>−</button>
       <span className="w-6 text-center font-bold">{pax[k]}</span>
-      <button type="button" className="h-9 w-9 rounded-full border border-slate-300 text-lg font-bold disabled:opacity-40" disabled={pax[k] >= max} onClick={() => setPax((p) => ({ ...p, [k]: p[k] + 1 }))} aria-label={`More ${k}`}>+</button>
+      <button type="button" className="h-9 w-9 rounded-full border border-slate-300 text-lg font-bold disabled:opacity-40" disabled={pax[k] >= max} onClick={() => change(k, 1)} aria-label={`More ${k}`}>+</button>
     </div>
   )
 

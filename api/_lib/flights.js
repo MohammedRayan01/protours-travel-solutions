@@ -171,6 +171,7 @@ function summarise(x) {
 
 export async function quote({ session: token, resultIndexes, rbd }) {
   const s = unseal(token)
+  if (s.pax.adults + s.pax.children + s.pax.infants > 9) throw bad('A booking can have at most 9 travellers, including infants.')
   const idx = [].concat(resultIndexes || []).filter(Boolean)
   // One pick per result list: 2 for domestic return / LCC special return, else 1.
   const want = s.lists || ((s.journey === 'return' && s.domestic) || s.journey === 'special' ? 2 : 1)
@@ -402,6 +403,8 @@ function ageOn(dob, on) {
 
 export function validatePassengers(list, q, contact) {
   if (!Array.isArray(list)) throw bad('Passenger details are missing.')
+  // TBO: never more than 9 passengers in a journey, whatever the form sends.
+  if (list.length > 9 || q.pax.adults + q.pax.children + q.pax.infants > 9) throw bad('A booking can have at most 9 travellers, including infants.')
   const need = { [PAX.ADULT]: q.pax.adults, [PAX.CHILD]: q.pax.children, [PAX.INFANT]: q.pax.infants }
   const have = { 1: 0, 2: 0, 3: 0 }
   const lastDep = q.legs.map((l) => l.lastDepDate).filter(Boolean).sort().at(-1) || new Date().toISOString()
