@@ -22,8 +22,10 @@ fs.rmSync(OUT, { recursive: true, force: true })
 fs.mkdirSync(OUT, { recursive: true })
 
 const order = (id) => (id === 'S' ? 0 : Number(id))
+// SKIP=10 leaves out cases whose newest successful run predates the latest code.
+const SKIP = new Set(String(process.env.SKIP || '').split(',').filter(Boolean))
 const cases = fs.readdirSync(ROOT)
-  .filter((d) => d.startsWith('case-') && fs.existsSync(path.join(ROOT, d, 'result.json')))
+  .filter((d) => d.startsWith('case-') && !SKIP.has(d.slice(5)) && fs.existsSync(path.join(ROOT, d, 'result.json')))
   .map((d) => JSON.parse(fs.readFileSync(path.join(ROOT, d, 'result.json'), 'utf8')))
   .sort((a, b) => order(a.case) - order(b.case))
 
@@ -67,6 +69,7 @@ const row = (r) => {
     traceId: r.traceId || '',
     pnr: legs.map((l) => l.pnr || '-').join(' + '),
     bookingId: legs.map((l) => l.bookingId || '-').join(' + '),
+    run: fs.statSync(path.join(ROOT, `case-${r.case}`, 'result.json')).mtime.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
     note: legs.map((l) => l.error).filter(Boolean).join('; '),
   }
 }
@@ -76,9 +79,9 @@ const md = [
   '',
   `Environment: TBO staging · Agency: ProTours (AgencyId 58561) · ClientId: ApiIntegrationNew · Generated ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`,
   '',
-  '| Case | Scenario | Result | Sector | TraceId | PNR | BookingId | Note |',
-  '|---|---|---|---|---|---|---|---|',
-  ...rows.map((x) => `| ${x.case} | ${x.scenario} | ${x.result} | ${x.sector} | ${x.traceId} | ${x.pnr} | ${x.bookingId} | ${x.note} |`),
+  '| Case | Scenario | Result | Sector | TraceId | PNR | BookingId | Run at | Note |',
+  '|---|---|---|---|---|---|---|---|---|',
+  ...rows.map((x) => `| ${x.case} | ${x.scenario} | ${x.result} | ${x.sector} | ${x.traceId} | ${x.pnr} | ${x.bookingId} | ${x.run} | ${x.note} |`),
   '',
   'Each case folder holds the JSON request and response of every method in call order',
   '(Authenticate → Search → [PriceRBD] → FareRule → FareQuote → SSR → [Book] → Ticket → GetBookingDetails).',
@@ -87,7 +90,7 @@ const md = [
   '',
 ].join('\n')
 fs.writeFileSync(path.join(OUT, '00-SUMMARY.md'), md)
-const csv = [['Case', 'Scenario', 'Result', 'Sector', 'TraceId', 'PNR', 'BookingId', 'Note'], ...rows.map((x) => Object.values(x))]
+const csv = [['Case', 'Scenario', 'Result', 'Sector', 'TraceId', 'PNR', 'BookingId', 'Run at', 'Note'], ...rows.map((x) => Object.values(x))]
   .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n')
 fs.writeFileSync(path.join(OUT, '00-SUMMARY.csv'), '\ufeff' + csv)
 

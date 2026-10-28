@@ -47,7 +47,9 @@ const DOB = { 1: ['1988-04-12', '1991-09-23'], 2: ['2017-06-15', '2019-02-08'], 
 const SURNAMES = ['Sharma', 'Khan', 'Rao', 'Iyer', 'Patel', 'Reddy', 'Nair', 'Gupta']
 
 function passengers([a, c, i], intl, caseId) {
-  const surname = SURNAMES[Math.abs(hash(caseId + Date.now())) % SURNAMES.length] + 'test'
+  // Letters only; random tail so the same flight + names never trips TBO's 24 h duplicate-booking rule.
+  const tail = Array.from({ length: 5 }, () => 'abcdefghijklmnopqrstuvwxyz'[Math.random() * 26 | 0]).join('')
+  const surname = SURNAMES[Math.abs(hash(caseId + Date.now())) % SURNAMES.length] + tail
   const list = []
   const add = (type, n) => {
     for (let k = 0; k < n; k++) {
