@@ -9,3 +9,6 @@ dist-ssr
 certification/**/logs-raw
 certification/
 docs/tbo/samples/
+
+.vercel
+.env*
